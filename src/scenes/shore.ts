@@ -9,6 +9,7 @@ import type { Frame, Label, StageScene } from './types';
 const OPEN = CHAPTERS[CH.shore];
 const HORIZON = beatStart('shore', 'horizon');
 const LIFT = beatStart('shore', 'lift');
+const STARS = beatStart('shore', 'stars');
 const ANDROMEDA = beatStart('return', 'andromeda');
 const LENSES = beatStart('return', 'lenses');
 const ALWAYS = beatStart('return', 'always');
@@ -58,7 +59,8 @@ export function createShore(): StageScene {
     render(renderer, f: Frame) {
       const opening = f.chapter === CH.shore;
       const L = f.local;
-      const dusk = opening ? lerp(0.15, 0.62, range(L, 0, OPEN.duration)) : 0.72;
+      // Dark enough for the first stars by the line that names them, then deepening slowly.
+      const dusk = opening ? lerp(0.15, 0.5, range(L, 0, STARS + 4)) + 0.12 * range(L, STARS + 4, OPEN.duration) : 0.72;
       const lift = opening ? smoothstep(LIFT, OPEN.duration - 0.5, L) : 1 - smoothstep(0, 6, L);
       const andromeda = opening ? 0 : smoothstep(ANDROMEDA, ANDROMEDA + 3, L);
       // The seabed is sounded as the horizon is named, and again as the closing names instruments.

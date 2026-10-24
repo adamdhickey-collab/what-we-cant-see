@@ -124,7 +124,7 @@ export function createWeb(mobile: boolean): StageScene {
       webMat.uniforms.uOpacity.value = w * smoothstep(23.2, 24.2, s) * (1 - smoothstep(26.2, 26.7, s));
       webMat.uniforms.uRef.value = D * 0.6;
       const picks = f.state.reduced ? (f.local >= PICKS ? 1 : 0) : smoothstep(PICKS, PICKS + 3, f.local);
-      webMat.uniforms.uTag.value = f.state.picks ? ZOOBOT_SHARE * picks : 0;
+      webMat.uniforms.uTag.value = ZOOBOT_SHARE * picks;
       hazeMat.uniforms.uOpacity.value = w * smoothstep(25.9, 26.5, s);
       shellMat.uniforms.uOpacity.value = w * smoothstep(26.3, 26.85, s);
       for (const m of [galMat, webMat, hazeMat, shellMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;

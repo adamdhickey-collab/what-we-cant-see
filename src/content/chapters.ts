@@ -3,18 +3,18 @@
 // director, the stage, the narrative and the scale navigator all read from
 // this one list. The prose companion is research/STORYBOARD.md.
 //
-// Nobody writes a line's timing by hand. Each line stays on screen for as long
-// as an unhurried reader needs (READ_LEAD plus READ_WPS words a second), so
-// the guided ride can never outrun the person reading it, and everything that
-// moves with the story is keyed to a line's id rather than to a second.
+// The ride plays straight through, start to finish, like a film: nothing waits
+// for the viewer. Nobody writes a line's timing by hand. Each line stays on
+// screen for as long as an unhurried reader needs (READ_LEAD plus READ_WPS
+// words a second), so the ride can never outrun the person reading it, and
+// everything that moves with the story is keyed to a line's id rather than
+// to a second.
 // scripts/check-script.mjs holds the line length and the sources to account.
 
+import type { LensId } from './extras';
 import type { Kind } from './sources';
 
 export type SceneId = 'none' | 'shore' | 'cosmos' | 'web' | 'star' | 'within';
-
-/** A moment where the ride stops and waits for the viewer to try something. */
-export type HoldId = 'blindspot' | 'transit' | 'confidence' | 'lenses';
 
 /** Something drawn in the page over the stage while a line is up. */
 export type AsideId = 'spectrum' | 'composition';
@@ -30,9 +30,9 @@ export interface BeatDef {
   question?: boolean;
   /** The detail a curious reader can open: names, dates, the exact numbers. */
   more?: string;
-  /** At the end of this line, the ride waits for the viewer. */
-  hold?: HoldId;
   aside?: AsideId;
+  /** On the closing shore, the other eyes this line looks through. */
+  lens?: LensId;
   /** Seconds beyond reading time, for a picture that needs to land. */
   extra?: number;
 }
@@ -93,40 +93,21 @@ export const readTime = (text: string) => Math.ceil((READ_LEAD + words(text) / R
 
 const DEFS: ChapterDef[] = [
   {
-    id: 'eyes',
-    title: 'Your eyes',
-    tagline: 'Your brain edits what you see',
-    scene: 'none',
-    beats: [
-      { text: 'Your eyes' },
-      { text: 'Before we go anywhere, a quick test.' },
-      { id: 'test', text: 'Close your left eye and stare at the cross. Lean slowly in, or back.', hold: 'blindspot' },
-      {
-        id: 'reveal',
-        text: 'That’s your blind spot, where the nerve leaves the eye. Nothing there can sense light.',
-        sources: ['blind-spot'],
-        kind: 'measured',
-        more: 'Where the optic nerve and blood vessels leave the retina there are no rods or cones: a gap about 15 degrees to the outer side of where you look.',
-      },
-      { id: 'paint', text: 'You have one in each eye, right now. Your brain paints over both with whatever is nearby.', sources: ['blind-spot'], kind: 'measured' },
-      { text: 'It edits a lot more than that. Let’s go find what it leaves out.', question: true },
-    ],
-    scale: [{ at: 0, log10m: 0.23 }],
-    facts: [
-      { text: 'Your sharp vision covers about 2 degrees, roughly your thumbnail at arm’s length. The rest is your eyes darting about.', sources: ['fovea'] },
-      { text: 'Your eyes jump about three times a second. Your brain hides the blur of every jump from you.', sources: ['saccades'] },
-    ],
-    camera: 'A dark field. A cross and a dot on a line, set apart so the dot falls in the viewer’s blind spot at a comfortable distance; the line looks unbroken when the dot vanishes.',
-    reducedMotion: 'Nothing moves; the test is still.',
-  },
-  {
     id: 'shore',
     title: 'The shore',
     tagline: 'The edges of your senses',
     scene: 'shore',
     beats: [
-      { text: 'What we can’t see', extra: 1 },
+      { text: 'What we can’t see', extra: 1.5 },
       { text: 'You’re sitting at the edge of the water. The sun went down a few minutes ago.' },
+      {
+        id: 'stars',
+        text: 'The first stars are coming out. They were there all day, hidden by the light.',
+        sources: ['daylight-stars'],
+        kind: 'inferred',
+        extra: 2,
+        more: 'Sunlight scattered by the air makes the daytime sky far brighter than all but the brightest stars. As it fades, the stars that were always overhead appear.',
+      },
       {
         id: 'horizon',
         text: 'Everything you can see of the sea ends 4.7 kilometers away, where the Earth curves out of sight.',
@@ -144,6 +125,13 @@ const DEFS: ChapterDef[] = [
         more: 'Visible light runs from about 380 to 750 nanometers: less than one doubling of wavelength. Radio waves can be kilometers long; gamma rays are smaller than an atom.',
       },
       {
+        id: 'blindspot',
+        text: 'Even that much is edited. Each eye has a blind spot, and your brain quietly paints it over.',
+        sources: ['blind-spot'],
+        kind: 'measured',
+        more: 'Where the optic nerve leaves the retina there are no light sensors: a gap about 15 degrees to the outer side of where you look. The brain fills it from what surrounds it.',
+      },
+      {
         id: 'spin',
         text: 'It feels still. It isn’t. The ground under you spins with the planet, faster than a jet flies.',
         sources: ['earth-rotation'],
@@ -159,10 +147,11 @@ const DEFS: ChapterDef[] = [
       { at: 'end', log10m: 3.9 },
     ],
     facts: [
+      { text: 'Your sharp vision covers about 2 degrees, roughly your thumbnail at arm’s length. The rest is your eyes darting about.', sources: ['fovea'] },
+      { text: 'Your eyes jump about three times a second. Your brain hides the blur of every jump from you.', sources: ['saccades'] },
       { text: 'Bees see ultraviolet. Many flowers carry ultraviolet patterns, invisible to you, that guide bees to their nectar.', sources: ['bee-uv'] },
-      { text: 'Pit vipers sense the warmth of bodies in the dark, through pits that detect infrared.', sources: ['pit-viper'] },
     ],
-    camera: 'Locked off, eye height, horizon at 42% of the frame: a person on a rock at dusk. The seabed is sounded as the horizon is named; a spectrum bar shows how narrow visible light is; in the last seconds the horizon becomes a row of points.',
+    camera: 'Locked off, eye height, horizon at 42% of the frame: a person on a rock at dusk. The sky darkens and the first stars come out; the seabed is sounded as the horizon is named; a spectrum bar shows how narrow visible light is; in the last seconds the horizon becomes a row of points.',
     reducedMotion: 'Water and stars hold still; the horizon resolves to points without travelling.',
   },
   {
@@ -318,8 +307,8 @@ const DEFS: ChapterDef[] = [
         kind: 'measured',
         more: 'By about 150 parts per million, or 0.015%. An Earth-size planet would dim a Sun-like star by about 84 parts per million.',
       },
-      { id: 'guess', text: 'Can you spot it? Tap the chart where you think the planet is passing.', hold: 'transit' },
-      { id: 'nobody', text: 'Almost nobody can. Each dip is smaller than the star’s ordinary flicker.' },
+      { id: 'look', text: 'Look along the dots. The planet passes again and again, and still you can’t see it.', extra: 2 },
+      { id: 'nobody', text: 'Each dip is smaller than the star’s ordinary flicker.' },
       { id: 'sweep', text: 'So a computer tries every possible orbit, stacking the measurements to see if a dip lines up.', sources: ['bls'], kind: 'inferred', extra: 2 },
       { id: 'searching', text: 'Thousands of guesses give only noise. Until one lines up.', extra: 1 },
       { id: 'lock', text: 'At 3.21 days, the dip appears. No single measurement showed it.', sources: ['bls', 'kepler-1772b'], kind: 'inferred', extra: 1 },
@@ -338,7 +327,7 @@ const DEFS: ChapterDef[] = [
       { text: 'In a famous study, about half the people counting basketball passes missed a person in a gorilla suit walking through.', sources: ['gorilla'] },
       { text: 'People routinely miss big changes between two pictures if there’s a blink between them.', sources: ['change-blindness'] },
     ],
-    camera: 'Still. A single star, dim, behind the instrument: 90 days of real Kepler measurements of Kepler-1772. The viewer guesses where the planet is; then a period search sweeps until the 3.21-day orbit appears.',
+    camera: 'Still. A single star, dim, behind the instrument: 90 days of real Kepler measurements of Kepler-1772. A scan line runs along them and finds nothing; then a period search sweeps until the 3.21-day orbit appears.',
     reducedMotion: 'The period search jumps to its result instead of sweeping.',
   },
   {
@@ -368,7 +357,7 @@ const DEFS: ChapterDef[] = [
     ],
     scale: [{ at: 0, log10m: 0.23 }],
     facts: [{ text: 'GPS only works because it corrects for relativity: satellite clocks gain about 38 microseconds a day on ours.', sources: ['gps'] }],
-    camera: 'A ruler of time from a thousandth of a second to billions of years, with the narrow band a person can watch happen. Above it, a wing too fast to see and a clock too slow to see, with a control to speed time up.',
+    camera: 'A ruler of time from a thousandth of a second to billions of years, with the narrow band a person can watch happen. Above it, a wing too fast to see and a clock too slow to see, which speeds itself up 3,600 times partway through its line.',
     reducedMotion: 'The wing is drawn as a still blur; the clock moves only when sped up.',
   },
   {
@@ -437,8 +426,8 @@ const DEFS: ChapterDef[] = [
         kind: 'measured',
         more: 'The recipe is the protein’s sequence of amino acids. Demis Hassabis and John Jumper shared the 2024 Nobel Prize in Chemistry for AlphaFold.',
       },
-      { id: 'guess', text: 'It also marks where it’s unsure. Where would you guess: the folded middle, or the loose ends?', hold: 'confidence' },
-      { id: 'reveal', text: 'The loose ends. Violet marks guesses: 117 of its 393 building blocks score below 50 out of 100.', sources: ['plddt', 'p53'], kind: 'measured' },
+      { id: 'mark', text: 'It also marks where it is unsure. Most of the doubt gathers in the loose ends.', sources: ['plddt'], kind: 'measured' },
+      { id: 'reveal', text: 'In violet: 117 of its 393 building blocks score below 50 out of 100.', sources: ['plddt', 'p53'], kind: 'measured', extra: 1 },
       { id: 'floppy', text: 'Some of that is a protein that’s genuinely floppy. Some is the model not knowing.', sources: ['plddt'], kind: 'inferred' },
       { id: 'check', text: 'Only an experiment can tell which. A machine’s blind spot, like yours, needs checking.' },
       { id: 'pattern', text: 'A model can find a pattern without understanding it.' },
@@ -469,7 +458,12 @@ const DEFS: ChapterDef[] = [
       { text: 'The same shore. The same dusk. Nothing in front of you has changed.' },
       { id: 'andromeda', text: 'That faint smudge is the Andromeda Galaxy, the farthest thing your eyes can see unaided.', sources: ['andromeda'], kind: 'measured' },
       { text: 'Its light left 2.5 million years ago, before there were any people.', sources: ['andromeda'], kind: 'inferred' },
-      { id: 'lenses', text: 'Now try on other eyes. Each one shows something that is here all along.', hold: 'lenses' },
+      { id: 'lenses', text: 'Now look again, through eyes that aren’t yours.' },
+      { lens: 'infrared', text: 'In infrared, warm things glow. A pit viper sees you like this in the dark.', sources: ['body-infrared', 'pit-viper'], kind: 'inferred', extra: 2 },
+      { lens: 'radio', text: 'In radio, the air is thick with signals, and a faint hiss left by the Big Bang.', sources: ['cmb-static', 'radio-air'], kind: 'inferred', extra: 2 },
+      { lens: 'neutrinos', text: 'Neutrinos from the Sun stream up through the Earth beneath you, and through you.', sources: ['neutrinos'], kind: 'inferred', extra: 2 },
+      { lens: 'magnetic', text: 'Overhead arcs the magnetic field that migrating birds can feel.', sources: ['bird-magnet'], kind: 'measured', extra: 2 },
+      { lens: 'dark', text: 'And all around, if our models are right, dark matter drifts through, unseen.', sources: ['dark-matter'], kind: 'inferred', extra: 2 },
       { id: 'always', text: 'Every instrument we build shows us a little more of what was always there.' },
       { id: 'last', text: 'So what’s in front of you right now that you haven’t learned to see?', question: true, extra: 3 },
     ],
@@ -477,8 +471,7 @@ const DEFS: ChapterDef[] = [
       { at: 0, log10m: -2 },
       { at: 0, shift: 3, log10m: 0.23 },
     ],
-    facts: [{ text: 'Many migrating birds sense Earth’s magnetic field and use it to find their way.', sources: ['bird-magnet'] }],
-    camera: 'The opening frame, exactly, with Andromeda named. Then lenses over the same frame: infrared, radio, neutrinos, the magnetic field, dark matter.',
+    camera: 'The opening frame, exactly, with Andromeda named. Then the same frame through other eyes, one line each: infrared, radio, neutrinos, the magnetic field, dark matter. Then clear again for the closing question.',
     reducedMotion: 'Holds the opening composition; lenses change without motion.',
   },
 ];
@@ -539,11 +532,6 @@ export function beatIndexAt(chapter: Chapter, local: number): number {
   });
   return b;
 }
-
-/** Every hold on the timeline, at the moment the ride stops: the end of its line. */
-export const HOLDS = CHAPTERS.flatMap((c, i) =>
-  c.beats.filter((b) => b.hold).map((b) => ({ id: b.hold as HoldId, t: STARTS[i] + b.at + b.dur - 0.05 })),
-);
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 

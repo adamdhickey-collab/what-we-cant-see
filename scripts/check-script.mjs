@@ -7,7 +7,7 @@
 
 import { CHAPTERS, MAX_WORDS, words, readTime } from '../src/content/chapters.ts';
 import { SOURCES } from '../src/content/sources.ts';
-import { LENSES, METERS } from '../src/content/extras.ts';
+import { METERS } from '../src/content/extras.ts';
 
 const ids = new Set(SOURCES.map((s) => s.id));
 const used = new Set();
@@ -26,7 +26,7 @@ for (const c of CHAPTERS) {
     if (!ids.has(id)) problems.push(`${c.id}: unknown source “${id}”`);
   }
 }
-for (const x of [...LENSES, ...METERS])
+for (const x of METERS)
   for (const id of x.sources) {
     used.add(id);
     if (!ids.has(id)) problems.push(`${x.id}: unknown source “${id}”`);

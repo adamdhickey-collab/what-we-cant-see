@@ -3,7 +3,7 @@
 
 import { useEffect, useRef } from 'react';
 import { CHAPTERS } from '../content/chapters';
-import { LENSES, METERS } from '../content/extras';
+import { METERS } from '../content/extras';
 import { KIND_LABEL, RETRIEVED, SOURCES, sourceById, type Source } from '../content/sources';
 
 function Dialog({ open, onClose, label, children }: { open: boolean; onClose: () => void; label: string; children: React.ReactNode }) {
@@ -68,8 +68,8 @@ export function SourcesPanel({ open, focus, onClose }: { open: boolean; focus: s
         </section>
       ))}
       <section className="panel-section">
-        <h2 className="panel-chapter">Along the way · the meter and the lenses</h2>
-        {[...new Set([...METERS, ...LENSES].flatMap((x) => x.sources))]
+        <h2 className="panel-chapter">Along the way · the meter</h2>
+        {[...new Set(METERS.flatMap((x) => x.sources))]
           .filter((id) => !CHAPTERS.some((c) => c.sources.includes(id)))
           .map((id) => sourceById(id))
           .filter((s): s is Source => !!s)
@@ -104,7 +104,6 @@ export function TextPanel({ open, onClose, onSource }: { open: boolean; onClose:
                 ))}
               </p>
               {b.more && <p className="transcript-more">{b.more}</p>}
-              {b.hold && <p className="transcript-visual">The ride stops here for you to try it.</p>}
             </div>
           ))}
           {c.facts?.map((f) => (

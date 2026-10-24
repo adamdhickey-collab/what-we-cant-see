@@ -6,15 +6,15 @@ out, and the instruments, AI among them, that find it. By Adam Hickey.
 > What happens to our understanding of ourselves when we can perceive more
 > of the universe than our senses ever evolved to see?
 
-It starts with you finding your own blind spot. Then a shore at dusk, and
-one stop for each reason we can't see something: too far (the galaxy, and
+It plays like a film, nine minutes straight through. It opens on a shore at
+dusk as the first stars come out, stars that were there all day, and then
+gives a chapter to each reason we can't see something: too far (the galaxy, and
 the dark matter holding it together), too many (113,741 real galaxies, and
-the machine that looks at them for us), too faint (a planet you try and fail
-to spot in real Kepler data before a search finds it), too fast or too slow,
+the machine that looks at them for us), too faint (a planet hidden in real
+Kepler data until a search finds it), too fast or too slow,
 too small (your cells, your bacteria, a protein, an atom), and too unsure (an
-AI's own blind spots). It ends on the same shore, seen through other eyes.
-Four times the ride stops for the viewer to try something, and every claim
-says how we know it.
+AI's own blind spots). It ends on the same shore, seen through other eyes, and
+every claim says how we know it.
 
 **Live:** https://adamdhickey-collab.github.io/what-we-cant-see/
 
@@ -30,8 +30,8 @@ npm run build      # typecheck and build to dist/
 npm run preview    # serve the build
 ```
 
-`?kiosk` plays from the first frame, carries on by itself at each stop, and
-loops after a ten-second rest, for a wall display. `?music` turns the music
+`?kiosk` plays from the first frame and loops after a ten-second rest, for a
+wall display. `?music` turns the music
 on (a wall display will also need the browser's autoplay allowed), and
 `?from=<seconds>` starts it later in the story.
 
@@ -53,14 +53,14 @@ of the music for tuning the cues.
 | [`research/SCIENTIFIC-SOURCES.md`](research/SCIENTIFIC-SOURCES.md) | Every figure, its source, its kind of claim |
 | [`research/TECHNOLOGY.md`](research/TECHNOLOGY.md) | The stack, what was left out and why, which medium draws which scene |
 | [`research/VISUAL-DIRECTION.md`](research/VISUAL-DIRECTION.md) | References, color as meaning, type, motion |
-| [`research/STORYBOARD.md`](research/STORYBOARD.md) | The nine chapters, the stops, the transitions, reduced motion |
+| [`research/STORYBOARD.md`](research/STORYBOARD.md) | The eight chapters, the transitions, reduced motion |
 | [`research/EXPERIENCE-AUDIT.md`](research/EXPERIENCE-AUDIT.md) | The audit that turned the piece into a ride, and what changed |
 | [`research/ASSET-LICENSES.md`](research/ASSET-LICENSES.md) | What ships and under what terms |
 
 ```
 src/
   content/     chapters.ts (the script as data), sources.ts (the ledger), extras.ts (lenses, meter)
-  animation/   director.ts (the one clock, the stops), ease.ts
+  animation/   director.ts (the one clock), music.ts, ease.ts
   audio/       sound.ts (synthesized beds and bells, the read-aloud voice)
   experience/  Stage.ts (one renderer, crossfading scenes, labels), loaded as its own chunk
   scenes/      shore, lenses, cosmos, galaxy, sky, web, star, within
@@ -78,11 +78,12 @@ scripts/
 
 **Working now**
 
-- Nine chapters, the ride (about 8 min 40 s) and Wander, on one clock:
+- Eight chapters, the ride (9 minutes, never stopping) and Wander, on one clock:
   play, pause, scrub, scroll or swipe by line, jump by chapter or by
   landmark on a true logarithmic scale navigator that speaks plainly.
-- Four stops: a blind-spot test, a guess at a planet in real Kepler data,
-  a guess at where AlphaFold is unsure, five lenses over the closing shore.
+- Scripted moments in place of interaction: a scan along real Kepler data,
+  a clock that speeds itself up, five lenses dissolving over the closing
+  shore, one narrated line each.
 - A real slice of the universe: 113,741 SDSS galaxies placed by redshift.
 - The galaxy turning too fast for what we can see, and its dark matter halo.
 - A working period search on 90 days of real Kepler data for Kepler-1772.

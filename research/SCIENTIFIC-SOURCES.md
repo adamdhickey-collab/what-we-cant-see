@@ -52,7 +52,7 @@ navigator draws it that way rather than flattering the viewer.
 | `zoobot` | Galaxies classified by the Zoobot model in that release | > 380,000, trained with 9,976 Galaxy Zoo volunteers | measured | Same | A catalogue of shapes, not distances |
 | `euclid-lenses` | Strong gravitational lens candidates | 500, almost all new | measured | Same | Built from AI, citizen science, **expert vetting** and modelling |
 | `exominer` | Kepler planets validated by ExoMiner | 301 | measured | Valizadegan et al. 2022, ApJ 926, 120; NASA Ames, 22 Nov 2021 | "Validated" is statistical, not independent confirmation. At 99% precision it recovered 93.6% of known planets in its test set |
-| `kepler-1772` | The light curve in Chapter 5 | 3,803 measurements of Kepler-1772 (KIC 4149450), 29.4-minute cadence, 19 Dec 2009 to 19 Mar 2010 | measured | NASA Kepler quarter 4 long cadence, MAST: `kplr004149450-2010078095331_llc.fits` | Reduced by `scripts/fetch-lightcurve.py` (below) |
+| `kepler-1772` | The light curve in Chapter 4 | 3,803 measurements of Kepler-1772 (KIC 4149450), 29.4-minute cadence, 19 Dec 2009 to 19 Mar 2010 | measured | NASA Kepler quarter 4 long cadence, MAST: `kplr004149450-2010078095331_llc.fits` | Reduced by `scripts/fetch-lightcurve.py` (below) |
 | `kepler-1772-star` | The star | ≈ 5,540 K, 0.93 R☉, ≈ 870 pc (2,800 ly) | inferred | NASA Exoplanet Archive, composite parameters | |
 | `kepler-1772b` | The planet | P = 3.21509 d; depth ≈ 158 ppm; ≈ 3.9 h | inferred | NASA Exoplanet Archive; validated in Valizadegan et al. 2022 | Radius 1.5 R⊕ (KOI table) or 2.7 R⊕ (composite): the star's size is uncertain, so the piece says "a few times wider than Earth" |
 | `bls` | The period search | 3.215 d at signal-to-noise ≈ 11; fitted depth ≈ 130 ppm; strongest unrelated period ≈ 6 | inferred | Box least squares, Kovács, Zucker & Mazeh 2002, A&A 391, 369, run live over 3,000 periods | Multiples of the period (12.86 d) score higher than 6 because they contain the same dips |
@@ -62,7 +62,7 @@ navigator draws it that way rather than flattering the viewer.
 | `plddt` | What AlphaFold's confidence score means | > 90 very high, 70-90 confident, 50-70 low, < 50 very low | measured | Jumper et al. 2021, Nature 596, 583 | Low can mean disorder **or** a poor prediction |
 | `p53` | The structure drawn in the two inner chapters | AF-P04637-F1, model v6, 393 residues, 117 below pLDDT 50 | measured | alphafold.ebi.ac.uk, fetched by `scripts/fetch-protein.mjs` | p53's ends are known to be intrinsically disordered |
 
-## Chapter 5's data, and how it was chosen
+## Chapter 4's data, and how it was chosen
 
 The light curve is real: NASA Kepler's quarter 4 observations of
 Kepler-1772, a planet that ExoMiner validated in 2021. It was chosen in three
@@ -119,7 +119,7 @@ real signals from look-alikes.
 | id | Claim | Value | Kind | Source | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `grapefruit` | The solar system at grapefruit scale | Sun 13 cm; Earth 1.2 mm at 14 m; Proxima Centauri about 3,700 km away | inferred | Arithmetic: a scale of about 1 to 10.7 billion, from the IAU nominal solar radius (695,700 km), the astronomical unit and Proxima’s distance |  |
-| `dark-matter` | Galaxies hold together with more mass than we can see | stars far from a galaxy’s center orbit about as fast as those near it, which visible matter alone cannot explain | inferred | Rubin, Ford & Thonnard 1980, Astrophysical Journal 238, 471 (https://doi.org/10.1086/158003) | What dark matter is remains unknown. The violet halo in Chapter 3, and the dark matter lens at the end, are illustrative. |
+| `dark-matter` | Galaxies hold together with more mass than we can see | stars far from a galaxy’s center orbit about as fast as those near it, which visible matter alone cannot explain | inferred | Rubin, Ford & Thonnard 1980, Astrophysical Journal 238, 471 (https://doi.org/10.1086/158003) | What dark matter is remains unknown. The violet halo in Chapter 2, and the dark matter lens at the end, are illustrative. |
 | `composition` | What the universe is made of | ordinary matter about 5%, dark matter about 27%, dark energy about 68% | inferred | Planck Collaboration 2020, “Planck 2018 results VI”, A&A 641, A6 (https://doi.org/10.1051/0004-6361/201833910) |  |
 | `cmb-static` | The Big Bang’s afterglow in everyday static | the cosmic microwave background, 2.725 K, arrives from every direction; a small part (often estimated near 1%) of an untuned analog TV’s static came from it | inferred | NASA WMAP, “Tests of Big Bang: The CMB” (https://map.gsfc.nasa.gov/universe/bb_tests_cmb.html) | The share of static depends on the antenna and the set; the figure is an estimate. |
 | `neutrinos` | Neutrinos from the Sun | about 65 billion per square centimeter per second at Earth, by day and by night | inferred | Bahcall, Serenelli & Basu 2005, Astrophysical Journal 621, L85 (standard solar model), confirmed by solar neutrino detectors (https://doi.org/10.1086/428929) | Almost all pass through the whole Earth untouched, so at night they arrive from below. A thumbnail is about one square centimeter. |
@@ -129,24 +129,24 @@ real signals from look-alikes.
 | `gps` | Relativity in GPS | satellite clocks gain about 38 microseconds a day on clocks on the ground (45.9 from weaker gravity, minus 7.2 from their speed) | inferred | Ashby 2003, “Relativity in the Global Positioning System”, Living Reviews in Relativity 6, 1 (https://doi.org/10.12942/lrr-2003-1) | Uncorrected, positions would drift by roughly 10 km a day. |
 | `plate-drift` | How fast tectonic plates move | a few centimeters a year, typically 2 to 5 | measured | USGS, This Dynamic Earth: The Story of Plate Tectonics (https://pubs.usgs.gov/gip/dynamic/understanding.html) | Measured directly by GPS stations. |
 | `fingernails` | How fast fingernails grow | about 3.5 mm a month, a little over 4 cm a year | measured | Yaemsiri, Hou, Slining & He 2010, Journal of the European Academy of Dermatology and Venereology 24, 420 (https://doi.org/10.1111/j.1468-3083.2009.03426.x) |  |
-| `sdss` | The galaxies drawn in Chapter 4 | 113,741 galaxies with spectroscopic redshifts between 0.005 and 0.2, in a band 6 degrees wide along the celestial equator | measured | Sloan Digital Sky Survey Data Release 17 (Abdurro’uf et al. 2022, ApJS 259, 35), queried through SkyServer (https://doi.org/10.3847/1538-4365/ac4414) | Positions are measured on the sky; distances are inferred from redshift with a flat ΛCDM cosmology (H0 = 67.7 km/s/Mpc, Ωm = 0.31), out to about 2.7 billion light-years (scripts/fetch-galaxies.mjs). |
+| `sdss` | The galaxies drawn in Chapter 3 | 113,741 galaxies with spectroscopic redshifts between 0.005 and 0.2, in a band 6 degrees wide along the celestial equator | measured | Sloan Digital Sky Survey Data Release 17 (Abdurro’uf et al. 2022, ApJS 259, 35), queried through SkyServer (https://doi.org/10.3847/1538-4365/ac4414) | Positions are measured on the sky; distances are inferred from redshift with a flat ΛCDM cosmology (H0 = 67.7 km/s/Mpc, Ωm = 0.31), out to about 2.7 billion light-years (scripts/fetch-galaxies.mjs). |
 | `great-wall` | The Sloan Great Wall | a sheet of galaxies about 1.37 billion light-years long, about a billion light-years away | measured | Gott et al. 2005, “A map of the universe”, Astrophysical Journal 624, 463 (https://doi.org/10.1086/428890) | Found in the same survey drawn here. Whether it is one bound structure is debated; it is a pattern in the map. |
 | `euclid-time` | Looking at Euclid’s 26 million galaxies yourself | 26 million seconds is about 301 days | inferred | Arithmetic, one galaxy a second without a break |  |
-| `fingertip` | The fingertip drawn in Chapter 7 | generated ridges, about 2 cm across | illustrative | Generated in the browser |  |
+| `fingertip` | The fingertip drawn in Chapter 6 | generated ridges, about 2 cm across | illustrative | Generated in the browser |  |
 | `microbiome` | Bacteria in and on a reference adult | about 38 trillion (3.8 × 10¹³), a ratio to human cells of about 1.3 to 1 | inferred | Sender, Fuchs & Milo 2016, PLoS Biology 14(8): e1002533 (https://doi.org/10.1371/journal.pbio.1002533) | Mostly in the colon. The bacteria drawn around the cell are schematic. |
 | `turnover` | Cells the body replaces | about 330 billion a day, about 3.8 million a second, mostly blood cells and gut lining | inferred | Sender & Milo 2021, “The distribution of cellular turnover in the human body”, Nature Medicine 27, 45 (https://doi.org/10.1038/s41591-020-01182-9) |  |
 | `wood-wide-web` | The “wood wide web” | field evidence that trees share resources or warnings through fungal networks is weaker than popular accounts say | inferred | Karst et al. 2023, Nature Ecology & Evolution 7, 501 (https://doi.org/10.1038/s41559-023-01986-1) |  |
 
 ## Illustrative, said so on screen
 
-- **Chapter 3's galaxy is illustrative**: a two-armed log spiral with a bar,
+- **Chapter 2's galaxy is illustrative**: a two-armed log spiral with a bar,
   roughly the Milky Way's form. Its dark matter halo is illustrative too:
   the extent follows the models, the look does not depict data.
-- **Chapter 4's galaxies are real** (`sdss`): every point beyond our own
+- **Chapter 3's galaxies are real** (`sdss`): every point beyond our own
   galaxy is an SDSS galaxy with a measured redshift. Zoobot's teal share is
   the true ratio, about 1 in 70, but which galaxies are marked is
   illustrative, and the Euclid galaxies Zoobot actually sorted are not these.
-- **The fingertip, the bacteria around the cell, and the cell** in Chapter 7
+- **The fingertip, the bacteria around the cell, and the cell** in Chapter 6
   are schematic.
 - **The lenses** on the shore at the end draw real phenomena in an
   illustrative way; `radio-air` says so.

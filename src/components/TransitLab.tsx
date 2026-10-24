@@ -11,7 +11,8 @@ import { beatStart, CH, STARTS } from '../content/chapters';
 import { boxSearch, fold, loadLightCurve, periodogram, P_MAX, P_MIN, STAR, type LightCurve } from '../data/transit';
 
 const CHAPTER = CH.faint;
-const GUESS = beatStart('faint', 'guess');
+const LOOK = beatStart('faint', 'look');
+const NOBODY = beatStart('faint', 'nobody');
 const SWEEP_START = beatStart('faint', 'sweep');
 const LOCK = beatStart('faint', 'lock');
 const SWEEP_END = LOCK - 1.5;
@@ -47,8 +48,8 @@ function LabView({ lc, pg }: Search) {
   const local = useDirector((s) => s.t - STARTS[CHAPTER]);
   const reduced = useDirector((s) => s.reduced);
   const manual = useDirector((s) => s.foldPeriod);
-  const guess = useDirector((s) => s.answers.transit);
-  const asking = useDirector((s) => s.waiting === 'transit' || (s.t - STARTS[CHAPTER] >= GUESS && s.t - STARTS[CHAPTER] < SWEEP_START && !s.answers.transit));
+  // While the narration asks you to look, a scan line runs along the measurements, finding nothing.
+  const scan = local >= LOOK && local < NOBODY ? (local - LOOK) / (NOBODY - LOOK) : null;
   const [searched, setSearched] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const glide = useRef(0);
@@ -102,7 +103,7 @@ function LabView({ lc, pg }: Search) {
     let top = 14;
     const xd = scaleLinear().domain([0, lc.span]).range([0, W]);
     const yr = yppm(top, rawH);
-    label(narrow ? 'Each dot: one brightness measurement' : 'Each dot: one measurement of the star’s brightness, over 90 days', 0, 0, asking ? ivory : faint);
+    label(narrow ? 'Each dot: one brightness measurement' : 'Each dot: one measurement of the star’s brightness, over 90 days', 0, 0, scan !== null ? ivory : faint);
     g.fillStyle = copper;
     g.globalAlpha = 0.55;
     for (let i = 0; i < lc.ppm.length; i++) g.fillRect(xd(lc.time[i]), yr(lc.ppm[i]), 1.4, 1.4);
@@ -112,20 +113,17 @@ function LabView({ lc, pg }: Search) {
       for (let t = fit.phase * fit.period; t < lc.span; t += fit.period) g.fillRect(xd(t) - 0.5, top + rawH + 3, 1, 6);
       if (W > 700) label('ticks: every time the planet passes', W, 0, teal, 'right');
     }
-    if (guess) {
-      const gx = xd(+guess);
-      g.setLineDash([2, 3]);
-      g.strokeStyle = ivory;
-      g.beginPath();
-      g.moveTo(gx, 14);
-      g.lineTo(gx, top + rawH);
-      g.stroke();
-      g.setLineDash([]);
-      label('your guess', gx + 4, top + rawH - 12, ivory);
-    } else if (asking) {
-      g.strokeStyle = ivory;
-      g.globalAlpha = 0.5 + 0.3 * Math.sin(performance.now() / 300);
-      g.strokeRect(0.5, 12.5, W - 1, rawH + 4);
+    if (scan !== null && !reduced) {
+      const sx = easeInOutCubic(Math.min(1, scan * 1.15)) * W;
+      const grad = g.createLinearGradient(sx - 60, 0, sx, 0);
+      grad.addColorStop(0, 'transparent');
+      grad.addColorStop(1, ivory);
+      g.globalAlpha = 0.18;
+      g.fillStyle = grad;
+      g.fillRect(sx - 60, 14, 60, rawH);
+      g.globalAlpha = 0.8;
+      g.fillStyle = ivory;
+      g.fillRect(sx - 0.5, 14, 1, rawH);
       g.globalAlpha = 1;
     }
 
@@ -163,7 +161,7 @@ function LabView({ lc, pg }: Search) {
         label(`−${Math.round(fit.depthPpm)} ppm`, xh(half) + 8, yf(-fit.depthPpm) - 6, ivory);
       }
     } else {
-      label('Stacked · waiting for a guess at the orbit', 0, top);
+      label('Stacked · waiting for an orbit to try', 0, top);
       g.strokeStyle = hair;
       g.beginPath();
       g.moveTo(0, yf(0));
@@ -213,25 +211,7 @@ function LabView({ lc, pg }: Search) {
   };
   useEffect(() => () => cancelAnimationFrame(glide.current), []);
 
-  // A tap on the raw measurements is the viewer's guess at where the planet passes.
-  const onPick = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const c = e.currentTarget, box = c.getBoundingClientRect();
-    const y = e.clientY - box.top;
-    if (y > box.height * 0.3 + 20) return;
-    const day = ((e.clientX - box.left) / box.width) * lc.span;
-    director.answer('transit', day.toFixed(1));
-    // Having guessed, the ride carries on after a moment to see the mark land.
-    if (director.get().waiting === 'transit') setTimeout(() => director.get().waiting === 'transit' && director.resolve(), 1400);
-  };
-  const best = boxSearch(lc, pg.best.period);
-  const nearest = guess ? Math.abs(((((+guess - best.phase * best.period) % best.period) + best.period * 1.5) % best.period) - best.period / 2) : null;
-  const verdict = !guess
-    ? null
-    : !locked
-      ? `You picked day ${guess}. Hold that thought.`
-      : `You picked day ${guess}, ${(nearest! * 24).toFixed(0)} hours from a real pass. The planet crosses ${Math.floor(lc.span / best.period)} times in these 90 days, and not one dip stands out by itself.`;
-
-  const summary = verdict && (locked || manual === null) ? verdict : !fit
+  const summary = !fit
     ? `90 days of Kepler measurements of ${STAR}, ${lc.ppm.length.toLocaleString('en-US')} in all. No period has been tried yet.`
     : fit.snr >= 8
       ? `Folded at ${fit.period.toFixed(2)} days, the brightness drops by about ${Math.round(fit.depthPpm)} parts per million for ${(fit.durationDays * 24).toFixed(1)} hours: ${fit.snr.toFixed(1)} times the noise. A planet-like signal.`
@@ -243,7 +223,7 @@ function LabView({ lc, pg }: Search) {
         <h2 id="lab-title" className="lab-title">A star’s brightness</h2>
         <span className="kind kind-measured">Kepler data · 2009–10</span>
       </header>
-      <canvas ref={canvas} className={`lab-canvas${asking ? ' is-asking' : ''}`} role="img" aria-label={summary} onPointerDown={onPick} />
+      <canvas ref={canvas} className="lab-canvas" role="img" aria-label={summary} />
       <p className="lab-summary" aria-live={manual !== null ? 'polite' : 'off'}>
         {summary}
       </p>

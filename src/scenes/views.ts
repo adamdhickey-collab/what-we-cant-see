@@ -9,8 +9,7 @@ export function autoView(local: number): Exclude<ProteinView, 'auto'> | 'shape' 
   const c = CHAPTERS[CH.unsure];
   if (local < beatStart('unsure', 'alphafold')) return 'shape';
   const id = beatIdAt(c, local);
-  // The viewer guesses before the confidence is shown.
-  if (id === 'alphafold' || id === 'guess') return 'prediction';
+  if (id === 'alphafold') return 'prediction';
   if (id === 'floppy' || id === 'check') return 'verify';
   return 'confidence';
 }

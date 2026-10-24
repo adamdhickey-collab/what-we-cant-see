@@ -1,5 +1,5 @@
 """Fetch a star's Kepler long-cadence light curve from MAST and reduce it to
-what Chapter 5 draws: time in days and brightness in parts per million.
+what Chapter 4 draws: time in days and brightness in parts per million.
 
     python3 scripts/fetch-lightcurve.py 4814502 Q1 Q2 Q3 Q4   (Kepler-1933)
 

@@ -1199,36 +1199,6 @@ input[type='range']::-moz-range-thumb {
   gap: var(--s-4);
 }
 
-.hold-prompt {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-2) var(--s-4);
-  margin-top: var(--s-4);
-  padding: var(--s-2) var(--s-4);
-  border: 1px solid var(--ivory);
-  border-radius: var(--radius);
-  background: var(--surface);
-  font-size: var(--t-small);
-  animation: fade-in var(--dur-slow) var(--ease-out) both;
-}
-
-.hold-prompt .tool {
-  color: var(--text);
-}
-
-.timeline-stop {
-  position: absolute;
-  top: 7px;
-  left: var(--p);
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--ivory);
-  background: var(--ink);
-  transform: translateX(-50%) rotate(45deg);
-  pointer-events: none;
-}
-
 .btn-quiet {
   border-color: transparent;
   color: var(--text-dim);
@@ -1312,79 +1282,6 @@ input[type='range']::-moz-range-thumb {
   font-size: var(--t-data);
   line-height: 1.45;
   color: var(--text-faint);
-}
-
-/* ---------- The blind spot ---------- */
-
-.blindspot {
-  position: fixed;
-  left: var(--gutter);
-  right: var(--gutter);
-  top: 18vh;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-5);
-  text-align: center;
-  animation: fade-in var(--dur-slow) var(--ease-out) both;
-}
-
-.blindspot-field {
-  --gap: min(52vw, 440px);
-  position: relative;
-  width: calc(var(--gap) + 40px);
-  height: 40px;
-}
-
-.blindspot-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 2px;
-  background: var(--text-dim);
-}
-
-.blindspot-cross {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 40px;
-  transform: translateY(-52%);
-  font-family: var(--font-data);
-  font-size: 2rem;
-  line-height: 1;
-  background: var(--ink);
-  color: var(--ivory);
-}
-
-.blindspot-dot {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--copper);
-  transform: translateY(-50%);
-}
-
-.blindspot-hint {
-  max-width: var(--measure);
-  margin: 0;
-  font-size: var(--t-small);
-  line-height: 1.55;
-  color: var(--text-dim);
-}
-
-.blindspot-actions,
-.guess-options,
-.souvenir-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--s-3);
 }
 
 /* ---------- Asides ---------- */
@@ -1496,11 +1393,7 @@ input[type='range']::-moz-range-thumb {
   color: var(--violet);
 }
 
-/* ---------- Instruments: the lab's guess, time, the protein's guess, lenses ---------- */
-
-.lab-canvas.is-asking {
-  cursor: crosshair;
-}
+/* ---------- Instruments: time and the protein bands ---------- */
 
 .time-lab {
   justify-content: center;
@@ -1655,84 +1548,12 @@ input[type='range']::-moz-range-thumb {
   opacity: 1;
 }
 
-.guess {
-  display: grid;
-  gap: var(--s-3);
-}
-
-.guess-options {
-  justify-content: flex-start;
-}
-
 .bands {
   transition: opacity var(--dur-slow) var(--ease-out);
 }
 
 .bands.is-hidden {
   opacity: 0.25;
-}
-
-.instrument-lenses {
-  right: var(--gutter);
-  top: 20vh;
-  width: 380px;
-}
-
-.lenses {
-  display: grid;
-  gap: var(--s-3);
-  padding: var(--s-5);
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  backdrop-filter: blur(6px);
-}
-
-.lens-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-}
-
-.lens-row button {
-  min-height: 36px;
-  padding: 0 var(--s-3);
-  font-size: 0.8125rem;
-  color: var(--text-dim);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius);
-}
-
-.lens-row button.is-on {
-  background: var(--ivory);
-  border-color: var(--ivory);
-  color: var(--ink);
-}
-
-.lens-text {
-  margin: 0;
-  min-height: 4.5em;
-  font-size: var(--t-small);
-  line-height: 1.55;
-  color: var(--text-dim);
-}
-
-.lens-who {
-  display: block;
-  font-family: var(--font-data);
-  font-size: var(--t-data);
-  letter-spacing: var(--track-kicker);
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: var(--s-1);
-}
-
-.picks-toggle {
-  position: fixed;
-  right: var(--gutter);
-  top: 72px;
-  z-index: 2;
-  animation: fade-in var(--dur-slow) var(--ease-out) both;
 }
 
 /* ---------- The meter of hidden systems ---------- */
@@ -1792,8 +1613,7 @@ input[type='range']::-moz-range-thumb {
 
 /* The instruments and diagrams take the right of the frame; the meter steps aside. */
 .app:has(.aside) .meter,
-.app:has(.picks-toggle) .meter,
-.chapter-eyes .meter,
+.chapter-shore .meter,
 .chapter-faint .meter,
 .chapter-time .meter,
 .chapter-unsure .meter,
@@ -1803,8 +1623,7 @@ input[type='range']::-moz-range-thumb {
 
 /* ---------- The souvenir ---------- */
 
-.is-ended .narrative,
-.is-ended .picks-toggle {
+.is-ended .narrative {
   display: none;
 }
 
@@ -1864,6 +1683,9 @@ input[type='range']::-moz-range-thumb {
 }
 
 .souvenir-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
   justify-content: flex-start;
   align-items: center;
 }
@@ -1921,12 +1743,6 @@ input[type='range']::-moz-range-thumb {
   .show-narrow {
     display: inline;
   }
-  .blindspot {
-    top: 110px;
-  }
-  .blindspot-field {
-    --gap: 70vw;
-  }
   .aside {
     left: var(--gutter);
     right: var(--gutter);
@@ -1960,18 +1776,6 @@ input[type='range']::-moz-range-thumb {
   }
   .time-lab {
     gap: var(--s-4);
-  }
-  .instrument-lenses {
-    left: var(--gutter);
-    right: var(--gutter);
-    top: 90px;
-    width: auto;
-  }
-  .lenses {
-    padding: var(--s-3);
-  }
-  .picks-toggle {
-    top: 90px;
   }
   .souvenir {
     left: var(--gutter);

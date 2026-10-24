@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { director } from '../animation/director';
 import { smoothstep } from '../animation/ease';
-import { CH, CHAPTERS, STARTS, TOTAL, heldTime, scaleAt, type SceneId } from '../content/chapters';
+import { CHAPTERS, STARTS, TOTAL, heldTime, scaleAt, type SceneId } from '../content/chapters';
 import { INK_HEX } from '../shaders/palette';
 import { createCosmos } from '../scenes/cosmos';
 import { createLenses } from '../scenes/lenses';
@@ -81,12 +81,6 @@ export class Stage {
 
   /** Presence of a scene, and which of its chapters it is drawing. */
   private weigh(id: SceneId, t: number) {
-    // The intro sits over the opening shore, which gives way to the dark pre-show once the ride begins.
-    if (id === 'shore' && t < STARTS[CH.eyes] + CHAPTERS[CH.eyes].duration - FADE) {
-      const s = director.get();
-      const weight = s.started ? 1 - smoothstep(0, 2.5, t - STARTS[CH.eyes]) : 1;
-      if (weight > 0) return { weight, chapter: CH.shore, opening: true };
-    }
     let best = { weight: 0, chapter: 0 };
     for (const i of this.windows[id]) {
       const start = STARTS[i], end = start + CHAPTERS[i].duration;
@@ -95,7 +89,7 @@ export class Stage {
       const weight = fadeIn * fadeOut;
       if (weight > best.weight) best = { weight, chapter: i };
     }
-    return { ...best, opening: false };
+    return best;
   }
 
   private loop = (now: number) => {
@@ -116,7 +110,7 @@ export class Stage {
     this.renderer.clear();
     const labels: Label[] = [];
     for (const scene of this.scenes) {
-      const { weight, chapter, opening } = this.weigh(scene.id, t);
+      const { weight, chapter } = this.weigh(scene.id, t);
       if (weight < 0.002) continue;
       const frame: Frame = {
         t,
@@ -124,9 +118,9 @@ export class Stage {
         elapsed: this.elapsed,
         weight,
         chapter,
-        local: opening ? 0 : t - STARTS[chapter],
+        local: t - STARTS[chapter],
         // Across a crossfade, each scene keeps the scale of its own chapter.
-        scale: opening ? scaleAt(STARTS[chapter]) : scaleAt(Math.max(STARTS[chapter], Math.min(STARTS[chapter] + CHAPTERS[chapter].duration - 1e-3, t))),
+        scale: scaleAt(Math.max(STARTS[chapter], Math.min(STARTS[chapter] + CHAPTERS[chapter].duration - 1e-3, t))),
         width: w,
         height: h,
         aspect: w / h,

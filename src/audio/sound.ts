@@ -217,9 +217,7 @@ class Sound {
       }
       this.lastKey = key;
     }
-    if (p && !p.waiting && s.waiting) this.bell([587.33], 0.07);
-    if (p && p.answers !== s.answers) this.bell([783.99, 1046.5], 0.06);
-    if (p && p.playing && !s.playing && !s.waiting && typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+    if (p && p.playing && !s.playing && typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
   };
 
   dispose() {

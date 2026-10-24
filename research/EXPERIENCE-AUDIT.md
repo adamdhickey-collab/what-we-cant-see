@@ -21,6 +21,13 @@
 >   galaxies Zoobot flagged by eye.
 > - **The fly-and-floodlight comparison** (item 7) was dropped; its numbers
 >   would not hold up.
+>
+> **Later the same day:** the ride became fully scripted, at Adam's request,
+> for a relaxing film that tells its story on its own. The stops (items 10,
+> 11 and 15) became scripted motion: the blind-spot test gave way to opening
+> on the shore as the first stars come out, the Kepler guess to a scan line,
+> the AlphaFold guess to a narrated reveal, the lenses to one narrated line
+> each. The ride plays straight through in 9 minutes.
 
 An audit of the working seven-chapter build, walked through at 1280×800 and
 375×812, against one goal: make it feel like a ride. A general audience

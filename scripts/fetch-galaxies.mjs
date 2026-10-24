@@ -1,4 +1,4 @@
-// Fetches a real slice of the universe for Chapter 4: every galaxy with a
+// Fetches a real slice of the universe for Chapter 3: every galaxy with a
 // good spectroscopic redshift in a thin band along the celestial equator,
 // from the Sloan Digital Sky Survey, and places each one in 3D around us.
 //

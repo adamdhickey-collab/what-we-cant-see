@@ -164,7 +164,7 @@ export const SOURCES: Source[] = [
   },
   {
     id: 'kepler-1772',
-    claim: 'The light curve in Chapter 5',
+    claim: 'The light curve in Chapter 4',
     value: '3,803 measurements of Kepler-1772 (KIC 4149450), every 29.4 minutes, 19 December 2009 to 19 March 2010',
     kind: 'measured',
     source: 'NASA Kepler, quarter 4 long-cadence light curve, from the Mikulski Archive for Space Telescopes (MAST)',
@@ -190,7 +190,7 @@ export const SOURCES: Source[] = [
   },
   {
     id: 'bls',
-    claim: 'The period search in Chapter 5',
+    claim: 'The period search in Chapter 4',
     value: 'recovers 3.215 days at about 11 times the noise, with a fitted depth near 130 ppm; the strongest period unrelated to it scores about 6 (its multiples, such as 12.86 days, score higher because they contain the same dips)',
     kind: 'inferred',
     source: 'Box least squares (Kovács, Zucker & Mazeh 2002, A&A 391, 369), run live in the browser over 3,000 trial periods from 1 to 20 days (src/data/transit.ts)',
@@ -217,14 +217,14 @@ export const SOURCES: Source[] = [
   },
   {
     id: 'cell-points',
-    claim: 'The cell drawn in Chapter 7',
+    claim: 'The cell drawn in Chapter 6',
     value: 'a schematic of membrane, nucleus and contents',
     kind: 'illustrative',
     source: 'Generated in the browser',
   },
   {
     id: 'p53',
-    claim: 'The protein drawn in Chapters 7 and 8: human p53',
+    claim: 'The protein drawn in Chapters 6 and 7: human p53',
     value: 'AlphaFold prediction AF-P04637-F1, model v6, 393 residues',
     kind: 'inferred',
     source: 'AlphaFold Protein Structure Database (EMBL-EBI and Google DeepMind), CC BY 4.0',
@@ -278,6 +278,14 @@ export const SOURCES: Source[] = [
   },
 
   // Perception: what your own senses do and leave out.
+  {
+    id: 'daylight-stars',
+    claim: 'Why stars are invisible by day',
+    value: 'sunlight scattered by the air makes the daytime sky far brighter than all but the brightest stars, which stay overhead all day',
+    kind: 'inferred',
+    source: 'NASA Space Place, “Why is the sky blue?” (Rayleigh scattering)',
+    url: 'https://spaceplace.nasa.gov/blue-sky/',
+  },
   {
     id: 'blind-spot',
     claim: 'Each eye’s blind spot, where the optic nerve leaves the retina',
@@ -412,7 +420,7 @@ export const SOURCES: Source[] = [
     kind: 'inferred',
     source: 'Rubin, Ford & Thonnard 1980, Astrophysical Journal 238, 471',
     url: 'https://doi.org/10.1086/158003',
-    note: 'What dark matter is remains unknown. The violet halo in Chapter 3, and the dark matter lens at the end, are illustrative.',
+    note: 'What dark matter is remains unknown. The violet halo in Chapter 2, and the dark matter lens at the end, are illustrative.',
   },
   {
     id: 'composition',
@@ -490,7 +498,7 @@ export const SOURCES: Source[] = [
   },
   {
     id: 'sdss',
-    claim: 'The galaxies drawn in Chapter 4',
+    claim: 'The galaxies drawn in Chapter 3',
     value: '113,741 galaxies with spectroscopic redshifts between 0.005 and 0.2, in a band 6 degrees wide along the celestial equator',
     kind: 'measured',
     source: 'Sloan Digital Sky Survey Data Release 17 (Abdurro’uf et al. 2022, ApJS 259, 35), queried through SkyServer',
@@ -506,7 +514,7 @@ export const SOURCES: Source[] = [
   },
   {
     id: 'fingertip',
-    claim: 'The fingertip drawn in Chapter 7',
+    claim: 'The fingertip drawn in Chapter 6',
     value: 'generated ridges, about 2 cm across',
     kind: 'illustrative',
     source: 'Generated in the browser',

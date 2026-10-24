@@ -1,14 +1,13 @@
-// The transport: play and pause, the timeline with its stops, the ride map
-// of chapters, and the switch between taking the ride and wandering.
+// The transport: play and pause, the timeline, the ride map of chapters, and
+// the switch between taking the ride and wandering.
 
 import { director, useDirector } from '../animation/director';
-import { chapterIndexAt, CHAPTERS, HOLDS, STARTS, TOTAL } from '../content/chapters';
+import { chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
 import { clock } from './format';
 
 export function Controls() {
   const t = useDirector((s) => Math.round(s.t * 10) / 10);
   const playing = useDirector((s) => s.playing);
-  const waiting = useDirector((s) => s.waiting);
   const ended = useDirector((s) => s.ended);
   const mode = useDirector((s) => s.mode);
   const ci = chapterIndexAt(t);
@@ -19,7 +18,7 @@ export function Controls() {
         <button type="button" className="icon-btn" onClick={() => director.step(-1)} aria-label="Previous line">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5 6 8l4.5 4.5" /></svg>
         </button>
-        <button type="button" className="play" onClick={() => director.toggle()} aria-label={playing ? 'Pause' : ended ? 'Replay' : waiting ? 'Continue' : 'Play'}>
+        <button type="button" className="play" onClick={() => director.toggle()} aria-label={playing ? 'Pause' : ended ? 'Replay' : 'Play'}>
           {playing ? (
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9" /></svg>
           ) : ended ? (
@@ -60,9 +59,6 @@ export function Controls() {
             director.seek(+e.target.value);
           }}
         />
-        {HOLDS.map((h) => (
-          <span key={h.id} className="timeline-stop" style={{ ['--p' as string]: `${(h.t / TOTAL) * 100}%` }} aria-hidden="true" title="Your turn" />
-        ))}
         <ol className="chapters" aria-label="Ride map">
           {CHAPTERS.map((c, i) => (
             <li key={c.id} style={{ flexGrow: c.duration }}>

@@ -1,12 +1,12 @@
 // The time chapter's instrument. Above, two things you can't see change: a
 // wing beating 50 times a second, drawn the way you see it (a blur), and a
-// clock at the real time, whose hour hand you never see move unless you
-// speed time up. Below, a ruler of durations from a millisecond to billions
+// clock at the real time, whose hour hand you never see move, until partway
+// through its line time speeds up 3,600 times by itself. Below, a ruler of durations from a millisecond to billions
 // of years, with the narrow band a person can watch happen.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDirector } from '../animation/director';
-import { beatIdAt, CH, CHAPTERS, STARTS } from '../content/chapters';
+import { beatIdAt, beatStart, CH, CHAPTERS, STARTS } from '../content/chapters';
 
 const YEAR = 3.156e7;
 const MIN = -3, MAX = 17;
@@ -30,12 +30,14 @@ const TICKS: [number, string][] = [
   [1e9 * YEAR, '1 billion years'],
 ];
 const SPEED = 3600;
+// The clock runs at real time for the first part of its line, then fast until the next.
+const FAST_FROM = beatStart('time', 'clock') + 3.5;
+const FAST_TO = beatStart('time', 'drift');
 
-function Demos({ reduced }: { reduced: boolean }) {
+function Demos({ reduced, fast }: { reduced: boolean; fast: boolean }) {
   const wing = useRef<SVGGElement>(null);
   const hour = useRef<SVGLineElement>(null);
   const minute = useRef<SVGLineElement>(null);
-  const [fast, setFast] = useState(false);
   const clock = useRef({ base: Date.now(), at: performance.now() });
 
   useEffect(() => {
@@ -56,12 +58,14 @@ function Demos({ reduced }: { reduced: boolean }) {
     return () => cancelAnimationFrame(raf);
   }, [fast, reduced]);
 
-  const toggle = () => {
+  // Re-base the clock at each change of speed, so the hands never jump.
+  const was = useRef(fast);
+  if (was.current !== fast) {
     const c = clock.current;
-    c.base = c.base + (performance.now() - c.at) * (fast ? SPEED : 1);
+    c.base = c.base + (performance.now() - c.at) * (was.current ? SPEED : 1);
     c.at = performance.now();
-    setFast(!fast);
-  };
+    was.current = fast;
+  }
 
   return (
     <div className="time-demos">
@@ -88,11 +92,16 @@ function Demos({ reduced }: { reduced: boolean }) {
           <line ref={hour} x1="60" y1="60" x2="60" y2="32" className="clock-hour" />
         </svg>
         <figcaption>
-          <strong>Too slow.</strong> The real time: the hour hand never seems to move.
+          {fast ? (
+            <>
+              <strong>Sped up {SPEED.toLocaleString('en-US')}×.</strong> An hour passes every second, and now you see it move.
+            </>
+          ) : (
+            <>
+              <strong>Too slow.</strong> The real time: the hour hand never seems to move.
+            </>
+          )}
         </figcaption>
-        <button type="button" className="btn" aria-pressed={fast} onClick={toggle}>
-          {fast ? 'Back to real time' : `Speed up ${SPEED.toLocaleString('en-US')}×`}
-        </button>
       </figure>
     </div>
   );
@@ -101,12 +110,16 @@ function Demos({ reduced }: { reduced: boolean }) {
 export function TimeLab() {
   const id = useDirector((s) => beatIdAt(CHAPTERS[CH.time], s.t - STARTS[CH.time]));
   const reduced = useDirector((s) => s.reduced);
+  const fast = useDirector((s) => {
+    const local = s.t - STARTS[CH.time];
+    return local >= FAST_FROM && local < FAST_TO;
+  });
   return (
     <section className="lab time-lab" aria-labelledby="time-title">
       <header className="lab-head">
         <h2 id="time-title" className="lab-title">How long things take</h2>
       </header>
-      <Demos reduced={reduced} />
+      <Demos reduced={reduced} fast={fast} />
       <div className="time-ruler" role="img" aria-label="A logarithmic ruler of durations from a thousandth of a second to billions of years. What a person can watch happen spans roughly a tenth of a second to an hour.">
         <span className={`time-window${id === 'window' ? ' is-on' : ''}`} style={{ left: at(0.1), width: `calc(${at(3600)} - ${at(0.1)})` }}>
           <span className="time-window-name">What you can watch happen</span>

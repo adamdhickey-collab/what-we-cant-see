@@ -5,9 +5,7 @@
 // The music does not drive the clock. The story keeps its own seconds, so
 // every line still gets its full reading time, and the music follows: it
 // plays while the ride plays, waits at every stop and pause, and jumps when
-// the viewer scrubs. At a stop, where the ride waits for the viewer to try
-// something, the music keeps going and the story picks up under wherever it
-// has got to. It starts the moment the ride does and, being shorter
+// the viewer scrubs. It starts the moment the ride does and, being shorter
 // than the ride, ends partway through; the sound effects, if on, carry the
 // rest. ?from=<story seconds> starts it somewhere else.
 
@@ -27,10 +25,8 @@ class Music {
   private audio: HTMLAudioElement | null = null;
   private length = FALLBACK_LENGTH;
   private from: number | null = null;
-  /** Story time at which the music's first note falls; moves on by however long each stop takes. */
+  /** Story time at which the music's first note falls. */
   private anchor = 0;
-  private began = 0;
-  private holding = false;
   private playing = false;
 
   constructor() {
@@ -87,22 +83,6 @@ class Music {
     const a = this.audio;
     if (!a) return;
     const s = director.get();
-    // A new ride, or a replay, starts the music from its own beginning again.
-    if (s.beganAt !== this.began) {
-      this.began = s.beganAt;
-      this.anchor = this.from ?? 0;
-    }
-    // Through a stop the music plays on; afterwards the story continues under it.
-    if (s.waiting && this.playing && s.music) {
-      this.holding = true;
-      return;
-    }
-    if (this.holding) {
-      this.holding = false;
-      this.anchor = s.t - a.currentTime;
-    }
-    // Scrubbed back before where the music now starts: line it up with the story again.
-    if (this.from === null && s.t < this.anchor) this.anchor = 0;
     const at = s.t - this.offset();
     const inside = at >= 0 && at < this.length;
     const should = s.music && s.playing && inside;

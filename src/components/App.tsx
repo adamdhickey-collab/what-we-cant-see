@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { director, useDirector } from '../animation/director';
 import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
-import { beatStart, CH, chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
+import { CH, chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
 import { Aside } from './Aside';
-import { BlindSpot } from './BlindSpot';
 import { Controls } from './Controls';
-import { LensPanel } from './LensPanel';
 import { Meter } from './Meter';
 import { Narrative } from './Narrative';
 import { Options } from './Options';
@@ -20,9 +18,8 @@ import { TransitLab, warmTransit } from './TransitLab';
 type Panel = null | { kind: 'sources'; focus: string | null } | { kind: 'text' };
 
 const params = new URLSearchParams(location.search);
-/** ?kiosk plays from the first frame, carries on by itself at each stop, and loops, for a wall. */
+/** ?kiosk plays from the first frame and loops, for a wall. */
 const KIOSK = params.has('kiosk');
-director.kiosk = KIOSK;
 const MINUTES = Math.round(TOTAL / 60);
 
 export function App() {
@@ -32,7 +29,6 @@ export function App() {
   const started = useDirector((s) => s.started);
   const webgl = useDirector((s) => s.webgl);
   const ended = useDirector((s) => s.ended);
-  const waiting = useDirector((s) => s.waiting);
   const soundOn = useDirector((s) => s.sound);
   const musicOn = useDirector((s) => s.music);
   const ci = useDirector((s) => chapterIndexAt(s.t));
@@ -40,8 +36,6 @@ export function App() {
   const near = (i: number) => (s: { t: number }) => s.t > STARTS[i] - 0.4 && s.t < STARTS[i] + CHAPTERS[i].duration + 1;
   const showLab = useDirector(near(CH.faint));
   const showTime = useDirector(near(CH.time));
-  const showPicks = useDirector((s) => ci === CH.many && s.t - STARTS[CH.many] >= beatStart('many', 'zoobot') && s.t - STARTS[CH.many] < beatStart('many', 'haze'));
-  const picks = useDirector((s) => s.picks);
 
   useEffect(() => {
     // Three.js and the scenes arrive as their own chunk, so the page and its text come up first.
@@ -68,13 +62,6 @@ export function App() {
     const id = setTimeout(() => director.play(), 10_000);
     return () => clearTimeout(id);
   }, [ended]);
-
-  // On a wall, each stop waits a few seconds and carries on. The lenses cycle themselves.
-  useEffect(() => {
-    if (!(KIOSK && waiting) || waiting === 'lenses') return;
-    const id = setTimeout(() => director.resolve(), 7000);
-    return () => clearTimeout(id);
-  }, [waiting]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -148,7 +135,7 @@ export function App() {
   const chapterId = CHAPTERS[ci].id;
 
   return (
-    <div className={`app chapter-${chapterId}${started ? ' is-started' : ''}${webgl ? '' : ' no-webgl'}${waiting ? ' is-waiting' : ''}${ended ? ' is-ended' : ''}`}>
+    <div className={`app chapter-${chapterId}${started ? ' is-started' : ''}${webgl ? '' : ' no-webgl'}${ended ? ' is-ended' : ''}`}>
       <canvas ref={canvas} className="stage" aria-hidden="true" />
       <div ref={labels} className="stage-labels" aria-hidden="true" />
 
@@ -172,7 +159,6 @@ export function App() {
           <ScaleNavigator />
           {!ended && <Meter onSource={openSource} />}
           <main className="story">
-            {chapterId === 'eyes' && <BlindSpot />}
             <Aside />
             <Narrative onSource={openSource} />
             {showLab && (
@@ -189,16 +175,6 @@ export function App() {
               <div className="instrument instrument-protein">
                 <ProteinPanel />
               </div>
-            )}
-            {chapterId === 'return' && !ended && (
-              <div className="instrument instrument-lenses">
-                <LensPanel onSource={openSource} />
-              </div>
-            )}
-            {showPicks && (
-              <button type="button" className="btn picks-toggle" aria-pressed={!picks} onClick={() => director.set({ picks: !picks })}>
-                {picks ? 'Hide the machine’s picks' : 'Show the machine’s picks'}
-              </button>
             )}
             {ended && !KIOSK && <Souvenir onSources={() => setPanel({ kind: 'sources', focus: null })} />}
           </main>
@@ -259,7 +235,7 @@ export function App() {
             </p>
           )}
           <p className="intro-note">
-            The ride stops four times for you to try something. Space pauses, arrows or scrolling step, 1–9 jump to a stop.{' '}
+            Sit back: it plays straight through, like a film. Space pauses, arrows or scrolling step, 1–8 jump to a chapter.{' '}
             <button type="button" className="link-btn" onClick={() => setPanel({ kind: 'text' })}>
               Read it as text
             </button>

@@ -1,4 +1,5 @@
-// The last chapter's lenses: the same shore through other eyes. A separate
+// The last chapter's lenses: the same shore through other eyes, one line of
+// the script each, changing by themselves as the narration moves on. A separate
 // full-screen pass over the shore, so the shore's own shader stays one
 // picture. Each lens is a field drawn where the shore shader draws things:
 // the person on the rock, the horizon at 42%, the sun just under it.
@@ -8,7 +9,7 @@
 // the sources say so.
 
 import * as THREE from 'three';
-import { CH } from '../content/chapters';
+import { CH, CHAPTERS, beatIndexAt } from '../content/chapters';
 import type { LensId } from '../content/extras';
 import { PALETTE_GLSL } from '../shaders/palette';
 import type { Frame, Label, StageScene } from './types';
@@ -78,9 +79,9 @@ const fragment = /* glsl */ `
       vec2 q = vec2(dot(p, dir), dot(p, vec2(dir.y, -dir.x)));
       float lane = floor(q.y * 160.0);
       float rnd = hash(vec2(lane, 7.0));
-      float along = fract(q.x * (0.8 + rnd) - t * (1.4 + rnd * 2.0) + rnd * 13.0);
+      float along = fract(q.x * (0.8 + rnd) - t * (0.45 + rnd * 0.6) + rnd * 13.0);
       float thin = 1.0 - smoothstep(0.08, 0.32, abs(fract(q.y * 160.0) - 0.5));
-      float streak = thin * smoothstep(0.0, 0.02, along) * (1.0 - smoothstep(0.02, 0.16, along)) * step(0.55, rnd);
+      float streak = thin * smoothstep(0.0, 0.02, along) * (1.0 - smoothstep(0.02, 0.16, along)) * step(0.72, rnd);
       acc = over(acc, mix(IVORY, TEAL, 0.4), streak * 0.85 * uNu);
     }
 
@@ -141,12 +142,14 @@ export function createLenses(): StageScene {
     // Weighted with the shore, drawn over it.
     id: 'shore',
     render(renderer, f: Frame) {
-      const on = f.chapter === CH.return ? f.state.lens : null;
+      const c = CHAPTERS[CH.return];
+      const on = f.chapter === CH.return ? (c.beats[beatIndexAt(c, f.local)].lens ?? null) : null;
       let any = 0;
       for (const id of ORDER) {
         const u = uniforms[UNIFORM[id]];
         const target = on === id ? 1 : 0;
-        u.value = f.state.reduced ? target : u.value + (target - u.value) * Math.min(1, f.dt * 4);
+        // A slow dissolve from one way of seeing to the next.
+        u.value = f.state.reduced ? target : u.value + (target - u.value) * Math.min(1, f.dt * 1.5);
         any = Math.max(any, u.value);
       }
       if (any < 0.002) return [];
