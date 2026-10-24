@@ -49,22 +49,21 @@ export const shoreFragment = /* glsl */ `
     return d + 0.0035 * (fbm(p * 70.0) - 0.5);
   }
 
-  // Someone seated, knees drawn up, arms around their shins, facing the
-  // last of the light. q is in figure units: 1.0 is a standing height.
+  // Someone seated, knees drawn up high, back nearly upright, one forearm
+  // draped over a knee with the hand hanging loose past it, facing the last
+  // of the light. q is in figure units: 1.0 is a standing height.
   float person(vec2 q) {
-    float d = ellipse(q, vec2(0.0, 0.06), vec2(0.1, 0.07));                          // hips
-    d = smin(d, limb(q, vec2(-0.03, 0.1), vec2(-0.01, 0.28), 0.085, 0.09), 0.04);    // lower back
-    d = smin(d, limb(q, vec2(-0.01, 0.28), vec2(0.06, 0.41), 0.09, 0.08), 0.04);     // shoulders rounded forward
-    d = smin(d, ellipse(q, vec2(0.09, 0.405), vec2(0.07, 0.055)), 0.03);             // shoulder
-    d = smin(d, limb(q, vec2(0.09, 0.41), vec2(0.135, 0.455), 0.052, 0.04), 0.03);    // neck
-    d = smin(d, ellipse(q, vec2(0.162, 0.5), vec2(0.047, 0.056)), 0.02);             // head
-    d = smin(d, ellipse(q, vec2(0.138, 0.518), vec2(0.05, 0.054)), 0.015);           // hair
-    d = smin(d, limb(q, vec2(0.05, 0.07), vec2(0.29, 0.27), 0.075, 0.055), 0.03);    // thigh
-    d = smin(d, limb(q, vec2(0.29, 0.27), vec2(0.33, 0.035), 0.055, 0.034), 0.02);   // shin
-    d = smin(d, limb(q, vec2(0.31, 0.022), vec2(0.41, 0.012), 0.03, 0.02), 0.025);   // foot
-    d = smin(d, limb(q, vec2(0.1, 0.4), vec2(0.2, 0.235), 0.046, 0.038), 0.02);      // upper arm
-    d = smin(d, limb(q, vec2(0.2, 0.235), vec2(0.31, 0.19), 0.036, 0.03), 0.02);     // forearm
-    d = smin(d, ellipse(q, vec2(0.325, 0.198), vec2(0.032, 0.028)), 0.015);          // hands, clasped
+    float d = ellipse(q, vec2(0.02, 0.045), vec2(0.095, 0.06));                      // hips
+    d = smin(d, limb(q, vec2(0.0, 0.07), vec2(0.04, 0.24), 0.085, 0.09), 0.04);      // lower back
+    d = smin(d, limb(q, vec2(0.04, 0.24), vec2(0.085, 0.31), 0.09, 0.075), 0.04);    // shoulders, a little rounded
+    d = smin(d, limb(q, vec2(0.075, 0.32), vec2(0.07, 0.39), 0.045, 0.04), 0.03);    // neck
+    d = smin(d, ellipse(q, vec2(0.062, 0.45), vec2(0.07, 0.074)), 0.03);             // head, hair full
+    d = smin(d, limb(q, vec2(0.04, 0.04), vec2(0.33, 0.275), 0.07, 0.05), 0.03);     // thigh
+    d = smin(d, limb(q, vec2(0.34, 0.275), vec2(0.44, 0.0), 0.05, 0.032), 0.02);     // shin
+    d = smin(d, limb(q, vec2(0.435, -0.01), vec2(0.52, -0.03), 0.032, 0.022), 0.025); // foot
+    d = smin(d, limb(q, vec2(0.1, 0.3), vec2(0.19, 0.245), 0.045, 0.036), 0.02);     // upper arm
+    d = smin(d, limb(q, vec2(0.19, 0.245), vec2(0.385, 0.325), 0.034, 0.028), 0.02);  // forearm, over the knee
+    d = smin(d, limb(q, vec2(0.4, 0.32), vec2(0.425, 0.245), 0.026, 0.018), 0.015);  // hand, hanging
     return d + 0.004 * (noise(q * 38.0) - 0.5);                                      // cloth, not skin
   }
 
