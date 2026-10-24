@@ -14,6 +14,7 @@ export function createShore(): StageScene {
     uLift: { value: 0 },
     uAndromeda: { value: 0 },
     uMotion: { value: 1 },
+    uReveal: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({
     uniforms,
@@ -35,12 +36,15 @@ export function createShore(): StageScene {
       const dusk = opening ? lerp(0.15, 0.62, range(L, 0, 24)) : 0.72;
       const lift = opening ? smoothstep(17, 23.5, L) : 1 - smoothstep(0, 6, L);
       const andromeda = opening ? 0 : smoothstep(10, 13, L);
+      // The seabed is sounded as the horizon is named, and again as the closing names instruments.
+      const reveal = opening ? range(L, 11.5, 17) : range(L, 17, 21.5);
       uniforms.uRes.value.set(f.width * f.pixelRatio, f.height * f.pixelRatio);
       uniforms.uTime.value = f.elapsed;
       uniforms.uOpacity.value = f.weight;
       uniforms.uDusk.value = dusk;
       uniforms.uLift.value = lift;
       uniforms.uAndromeda.value = andromeda;
+      uniforms.uReveal.value = reveal;
       uniforms.uMotion.value = f.state.reduced ? 0 : 1;
       renderer.render(scene, camera);
 

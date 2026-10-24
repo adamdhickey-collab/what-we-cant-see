@@ -1,7 +1,12 @@
 // The shore at dusk, painted in one full-screen pass. Sky, sea and light are
-// fields rather than objects, and the person is negative space: a silhouette
-// cut from the reflected glow, small enough that nothing about them is drawn
+// fields rather than objects. The person is a silhouette on a rock, rim-lit by
+// what is left of the sun, small enough that nothing about them is drawn
 // except that they are there, looking.
+//
+// Two things the eye cannot see are drawn faintly over the scene: the stars,
+// which switch on one pixel at a time as the sky darkens (brightest first, as
+// they do), and the seabed under the water, mapped as depth contours that a
+// sounding sweeps outward from the shore.
 
 import { PALETTE_GLSL } from './palette';
 
@@ -14,8 +19,10 @@ export const shoreFragment = /* glsl */ `
   precision highp float;
   ${PALETTE_GLSL}
   uniform vec2 uRes;
-  uniform float uTime, uOpacity, uDusk, uLift, uAndromeda, uMotion;
+  uniform float uTime, uOpacity, uDusk, uLift, uAndromeda, uMotion, uReveal;
   varying vec2 vUv;
+
+  const float H = 0.42;
 
   float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
   float noise(vec2 p) {
@@ -23,48 +30,107 @@ export const shoreFragment = /* glsl */ `
     return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
   }
   float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
-  float capsule(vec2 p, vec2 a, vec2 b, float r) {
+  float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
+  // A limb: a capsule whose radius tapers from a to b.
+  float limb(vec2 p, vec2 a, vec2 b, float ra, float rb) {
     vec2 pa = p - a, ba = b - a;
-    return length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0)) - r;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h) - mix(ra, rb, h);
   }
+  float ellipse(vec2 p, vec2 c, vec2 r) { return (length((p - c) / r) - 1.0) * min(r.x, r.y); }
+
   float landY(float x) { return 0.115 + 0.11 * smoothstep(0.3, 1.05, x) + 0.006 * sin(x * 23.0) + 0.016 * (noise(vec2(x * 14.0, 1.0)) - 0.5); }
-  // Someone seated, knees up, arms around them. Units are fractions of the frame's height.
-  float person(vec2 p, vec2 b) {
-    float d = length(p - (b + vec2(-0.003, 0.064))) - 0.0092;
-    d = min(d, capsule(p, b + vec2(-0.005, 0.012), b + vec2(-0.002, 0.05), 0.0102));
-    d = min(d, capsule(p, b + vec2(-0.004, 0.01), b + vec2(0.021, 0.025), 0.0071));
-    d = min(d, capsule(p, b + vec2(0.021, 0.025), b + vec2(0.027, 0.001), 0.0061));
-    d = min(d, capsule(p, b + vec2(0.0, 0.045), b + vec2(0.019, 0.027), 0.0044));
-    return d;
+
+  // The rock they sit on: three stones fused, with a weathered edge.
+  float rock(vec2 p, vec2 c) {
+    float d = ellipse(p, c + vec2(0.0, 0.0), vec2(0.058, 0.032));
+    d = smin(d, ellipse(p, c + vec2(0.048, -0.008), vec2(0.036, 0.022)), 0.012);
+    d = smin(d, ellipse(p, c + vec2(-0.05, -0.012), vec2(0.032, 0.02)), 0.012);
+    return d + 0.0035 * (fbm(p * 70.0) - 0.5);
+  }
+
+  // Someone seated, knees drawn up, arms around their shins, facing the
+  // last of the light. q is in figure units: 1.0 is a standing height.
+  float person(vec2 q) {
+    float d = ellipse(q, vec2(0.0, 0.06), vec2(0.1, 0.07));                          // hips
+    d = smin(d, limb(q, vec2(-0.03, 0.1), vec2(-0.01, 0.28), 0.085, 0.09), 0.04);    // lower back
+    d = smin(d, limb(q, vec2(-0.01, 0.28), vec2(0.06, 0.41), 0.09, 0.08), 0.04);     // shoulders rounded forward
+    d = smin(d, ellipse(q, vec2(0.09, 0.405), vec2(0.07, 0.055)), 0.03);             // shoulder
+    d = smin(d, limb(q, vec2(0.09, 0.41), vec2(0.135, 0.455), 0.052, 0.04), 0.03);    // neck
+    d = smin(d, ellipse(q, vec2(0.162, 0.5), vec2(0.047, 0.056)), 0.02);             // head
+    d = smin(d, ellipse(q, vec2(0.138, 0.518), vec2(0.05, 0.054)), 0.015);           // hair
+    d = smin(d, limb(q, vec2(0.05, 0.07), vec2(0.29, 0.27), 0.075, 0.055), 0.03);    // thigh
+    d = smin(d, limb(q, vec2(0.29, 0.27), vec2(0.33, 0.035), 0.055, 0.034), 0.02);   // shin
+    d = smin(d, limb(q, vec2(0.31, 0.022), vec2(0.41, 0.012), 0.03, 0.02), 0.025);   // foot
+    d = smin(d, limb(q, vec2(0.1, 0.4), vec2(0.2, 0.235), 0.046, 0.038), 0.02);      // upper arm
+    d = smin(d, limb(q, vec2(0.2, 0.235), vec2(0.31, 0.19), 0.036, 0.03), 0.02);     // forearm
+    d = smin(d, ellipse(q, vec2(0.325, 0.198), vec2(0.032, 0.028)), 0.015);          // hands, clasped
+    return d + 0.004 * (noise(q * 38.0) - 0.5);                                      // cloth, not skin
+  }
+
+  vec3 skyColor(float h, vec2 p, vec2 sun) {
+    vec3 zen = mix(SLATE, INK, 0.35 + 0.65 * uDusk);
+    vec3 mid = mix(VIOLET * 0.6, SLATE * 0.9, uDusk);
+    vec3 low = mix(COPPER * 0.9, COPPER * 0.5 + VIOLET * 0.12, uDusk);
+    vec3 col = mix(low, mid, smoothstep(0.0, 0.3, h));
+    col = mix(col, zen, smoothstep(0.2, 0.95, h));
+    float d = length((p - sun) * vec2(0.55, 1.0));
+    return col + COPPER * 0.32 * exp(-d * 4.5) * (1.0 - uDusk * 0.55);
+  }
+
+  // One layer of stars on a coarse pixel grid. Each cell may hold one star at
+  // one pixel; it is born when the sky is dark enough for its brightness,
+  // flashes once, then twinkles in steps rather than smoothly.
+  vec3 starLayer(vec2 px, float G, float density, float seed, float avail, float t, bool cross) {
+    vec2 gc = floor(px / G);
+    float r = hash(gc + seed);
+    if (r > density) return vec3(0.0);
+    vec2 sp = gc * G + floor(vec2(hash(gc + seed + 1.7), hash(gc + seed + 9.2)) * (G - 2.0)) + 1.0;
+    vec2 o = px - sp;
+    float mag = hash(gc + seed + 4.4);                  // 0 faint .. 1 bright
+    float birth = 1.0 - mag;                            // bright stars come out first
+    float age = avail - birth;
+    if (age < 0.0) return vec3(0.0);
+    float on = (o.x == 0.0 && o.y == 0.0) ? 1.0 : 0.0;
+    if (cross && mag > 0.8) on += (abs(o.x) + abs(o.y) == 1.0 ? 0.35 : 0.0);
+    if (on == 0.0) return vec3(0.0);
+    float flash = 1.0 + 1.6 * exp(-age * 30.0);
+    float tw = floor((0.72 + 0.28 * sin(t * (1.1 + 2.0 * r) + r * 90.0)) * 4.0) / 4.0;
+    vec3 tint = hash(gc + seed + 2.1) < 0.2 ? mix(IVORY, VIOLET, 0.6) : (hash(gc + seed + 3.3) < 0.12 ? mix(IVORY, COPPER, 0.5) : IVORY);
+    return tint * on * (0.25 + 0.75 * mag * mag) * tw * flash * smoothstep(0.0, 0.08, age);
   }
 
   void main() {
     vec2 uv = vUv;
     float aspect = uRes.x / uRes.y;
     vec2 p = vec2((uv.x - 0.5) * aspect, uv.y);
-    float H = 0.42;
     float t = uTime * uMotion;
     vec2 sun = vec2(0.18 * aspect, H - 0.05);
     vec3 col;
 
+    // Where the person sits, in screen and in sea coordinates.
+    float rockX = 0.1 * aspect;
+    vec2 rockC = vec2(rockX, landY(0.6) + 0.004);
+    vec2 seat = rockC + vec2(-0.012, 0.027);
+
     if (uv.y >= H) {
       float h = (uv.y - H) / (1.0 - H);
-      vec3 zen = mix(SLATE, INK, 0.35 + 0.65 * uDusk);
-      vec3 mid = mix(VIOLET * 0.6, SLATE * 0.9, uDusk);
-      vec3 low = mix(COPPER * 0.9, COPPER * 0.5 + VIOLET * 0.12, uDusk);
-      col = mix(low, mid, smoothstep(0.0, 0.3, h));
-      col = mix(col, zen, smoothstep(0.2, 0.95, h));
-      float d = length((p - sun) * vec2(0.55, 1.0));
-      col += COPPER * 0.32 * exp(-d * 4.5) * (1.0 - uDusk * 0.55);
+      col = skyColor(h, p, sun);
 
-      // Stars come out as the sky darkens.
-      vec2 g = vec2(p.x, uv.y) * 120.0;
-      vec2 id = floor(g);
-      float r = hash(id);
-      vec2 f = fract(g) - 0.5 - (vec2(hash(id + 1.3), hash(id + 7.1)) - 0.5) * 0.6;
-      float star = step(0.9965, r) * (1.0 - smoothstep(0.0, 0.11, length(f)));
-      float tw = 0.75 + 0.25 * sin(t * 1.7 + r * 80.0);
-      col += IVORY * star * tw * smoothstep(0.1, 0.7, h) * smoothstep(0.25, 0.75, uDusk) * (0.35 + 0.65 * hash(id + 3.0));
+      // A faint river of the galaxy, which only a dark sky lets you see.
+      vec2 bq = mat2(0.94, 0.34, -0.34, 0.94) * (p - vec2(-0.1 * aspect, 0.8));
+      float band = exp(-bq.y * bq.y * 38.0);
+      float dark = smoothstep(0.45, 0.72, uDusk) * smoothstep(0.08, 0.5, h);
+      col += mix(VIOLET, IVORY, 0.3) * 0.045 * band * (0.4 + fbm(bq * vec2(5.0, 14.0))) * dark;
+
+      // Stars on a pixel grid a few device pixels square.
+      float PX = max(2.0, floor(uRes.y / 420.0));
+      vec2 px = floor(gl_FragCoord.xy / PX);
+      float avail = smoothstep(0.24, 0.66, uDusk) * 1.08;
+      vec3 stars = starLayer(px, 7.0, 0.16 + 0.5 * band, 0.0, avail * 0.9, t, false) * 0.55;
+      stars += starLayer(px, 23.0, 0.55, 31.0, avail, t, true);
+      float extinction = smoothstep(0.02, 0.35, h) * (1.0 - 0.8 * exp(-length((p - sun) * vec2(0.5, 1.0)) * 3.0));
+      col += stars * extinction;
 
       // Andromeda: a faint, tilted smudge, as an eye sees it from a dark shore.
       vec2 q = p - vec2(-0.3 * aspect, 0.76);
@@ -76,31 +142,83 @@ export const shoreFragment = /* glsl */ `
       float persp = 1.0 / (depth + 0.02);
       vec2 wp = vec2(p.x * persp * 0.6, persp);
       float rip = fbm(vec2(wp.x * 1.5, wp.y * 2.0 - t * 0.25)) * 0.6 + fbm(vec2(wp.x * 4.0, wp.y * 5.0 + t * 0.4)) * 0.4;
-      vec3 sea = mix(mix(VIOLET * 0.45, SLATE * 0.8, uDusk), INK * 0.9, smoothstep(0.0, 0.9, depth));
+
+      // The surface mirrors the sky, broken by the swell, and darkens toward the shore.
+      float mh = clamp(depth * 0.55 + (rip - 0.5) * 0.12 * (1.0 - depth * 0.5), 0.0, 1.0);
+      vec3 mirror = skyColor(mh, vec2(p.x, H + mh * (1.0 - H)), sun);
+      vec3 deep = mix(mix(VIOLET * 0.4, SLATE * 0.75, uDusk), INK * 0.85, smoothstep(0.0, 0.9, depth));
+      float fres = 0.55 * exp(-depth * 3.5) + 0.12;
+      vec3 sea = mix(deep, mirror, fres);
       float dx = p.x - sun.x;
       float column = exp(-dx * dx / (0.01 + depth * 0.09));
       float glints = smoothstep(0.52, 0.72, rip) * smoothstep(0.0, 0.08, depth);
       col = sea + COPPER * column * (0.16 + 0.5 * glints) * (1.0 - depth * 0.6) * (1.0 - uDusk * 0.45);
-      col += mix(COPPER, VIOLET, 0.4) * 0.22 * exp(-depth * 18.0) * (1.0 - uDusk * 0.4);
+      col += mix(COPPER, VIOLET, 0.4) * 0.18 * exp(-depth * 18.0) * (1.0 - uDusk * 0.4);
+
+      // The seabed nobody here can see: depth contours, a map laid under the
+      // water. Lines wobble with the surface they are seen through, and fade
+      // where perspective packs them closer than a few pixels.
+      vec2 wf = vec2(rockX * 1.5 * 0.6, 1.5);
+      float F = wp.y * 0.3 + 10.0 * fbm(wp * vec2(0.24, 0.15) + 7.0) + (rip - 0.5) * 0.3;
+      float w = fwidth(F);
+      float gl = abs(fract(F - 0.5) - 0.5) / max(w, 1e-4);
+      float major = 1.0 - step(0.5, mod(floor(F + 0.5), 5.0));
+      float iso = (1.0 - smoothstep(0.0, 1.0 + major * 0.6, gl)) * (1.0 - smoothstep(0.12, 0.45, w));
+      float r = length((wp - wf) * vec2(1.0, 0.8));
+      float front = uReveal * 62.0;
+      float shown = 1.0 - smoothstep(front - 6.0, front, r);
+      float edge = exp(-pow((r - front) * 0.22, 2.0)) * uReveal * (1.0 - uReveal);
+      // After the sounding, a slow ping keeps going out, every eleven seconds.
+      float ping = fract(t / 11.0) * 70.0;
+      float pulse = exp(-pow((r - ping) * 0.3, 2.0)) * uMotion * uReveal;
+      vec3 ink = mix(TEAL, VIOLET, 0.3);
+      col += ink * iso * (0.13 + 0.17 * major) * shown * (1.0 + 2.0 * pulse);
+      col += ink * iso * 1.2 * edge;
+      col += TEAL * 0.05 * edge * smoothstep(0.0, 0.5, depth);
     }
 
-    // The horizon: a hairline that resolves into a row of points.
+    // The horizon is only where sky meets sea; at the end its edge resolves
+    // into a row of points, which become the stars of the next chapter.
     float py = (uv.y - H) * uRes.y;
-    float line = exp(-py * py * 0.35) * 0.5;
+    col += mix(COPPER, IVORY, 0.4) * 0.05 * exp(-abs(py) * 0.05) * (1.0 - uDusk * 0.6);
     float S = 9.0 * max(1.0, uRes.y / 900.0);
     vec2 c = vec2(mod(gl_FragCoord.x, S) - S * 0.5, py);
     float dotm = 1.0 - smoothstep(0.6, 1.6, length(c));
     float bright = 0.5 + 0.5 * hash(vec2(floor(gl_FragCoord.x / S), 3.0));
-    col += IVORY * (line * (1.0 - uLift) + dotm * uLift * (0.5 + 0.5 * bright)) * (1.0 - 0.35 * uDusk);
+    col += IVORY * dotm * uLift * (0.5 + 0.5 * bright) * (1.0 - 0.35 * uDusk);
 
-    // The shore and the person on it.
+    // The shore, the rock, and the person on it.
     float ly = landY(uv.x);
-    float land = 1.0 - smoothstep(ly - 0.0015, ly + 0.0015, uv.y);
-    vec2 base = vec2(0.1 * aspect, landY(0.6));
-    float fig = 1.0 - smoothstep(-0.0012, 0.0012, person(p, base));
+    float px1 = 1.5 / uRes.y;
+    float land = 1.0 - smoothstep(ly - px1, ly + px1, uv.y);
+    float dr = rock(p, rockC);
+    float stone = 1.0 - smoothstep(-px1, px1, dr);
+    float s = 0.15;
+    vec2 fq = (p - seat) / s;
+    float dp = 1e3;
+    float rim = 0.0;
+    if (abs(fq.x - 0.15) < 0.5 && fq.y > -0.2 && fq.y < 0.8) {
+      dp = person(fq) * s;
+      vec2 e = vec2(0.004, 0.0);
+      vec2 n = normalize(vec2(person(fq + e.xy) - person(fq - e.xy), person(fq + e.yx) - person(fq - e.yx)) + 1e-6);
+      vec2 toSun = normalize(sun - p);
+      rim = smoothstep(-3.0 * px1, -0.6 * px1, dp) * (1.0 - smoothstep(-0.6 * px1, px1, dp)) * smoothstep(-0.1, 0.8, dot(n, toSun));
+    }
+    float fig = 1.0 - smoothstep(-px1, px1, dp);
     vec3 ground = INK * 0.55 + COPPER * 0.04 * fbm(p * 40.0);
-    col = mix(col, ground, max(land, fig));
-    col += COPPER * 0.08 * exp(-abs(uv.y - ly) * uRes.y * 0.6) * smoothstep(0.35, 0.9, uv.x) * (1.0 - uDusk * 0.5);
+    vec3 stoneCol = INK * 0.62 + mix(SLATE, COPPER, 0.25) * 0.08 * fbm(p * 90.0 + 3.0);
+    vec3 body = INK * 0.42;
+    col = mix(col, ground, land);
+    col = mix(col, stoneCol, stone);
+    // The top of the rock catches the sky.
+    col += mix(COPPER, VIOLET, 0.35) * 0.18 * stone * smoothstep(-0.006, 0.0, dr) * smoothstep(rockC.y - 0.01, rockC.y + 0.03, p.y) * (1.0 - uDusk * 0.5);
+    col = mix(col, body, fig);
+    col += mix(COPPER, IVORY, 0.25) * 0.6 * rim * (1.0 - uDusk * 0.5);
+    // Wet sand where the water reaches, and a thin lapping edge.
+    float wet = exp(-abs(uv.y - ly) * uRes.y * 0.6) * smoothstep(0.35, 0.9, uv.x);
+    float lap = 0.5 + 0.5 * sin(uv.x * 140.0 - t * 0.9 + noise(vec2(uv.x * 30.0, t * 0.3)) * 4.0);
+    col += COPPER * 0.08 * wet * (1.0 - uDusk * 0.5);
+    col += IVORY * 0.03 * lap * exp(-abs(uv.y - ly - 0.004) * uRes.y * 0.35) * (1.0 - land);
 
     col += (hash(gl_FragCoord.xy + fract(t) * 91.0) - 0.5) * 0.028;
     col *= 0.82 + 0.18 * smoothstep(1.1, 0.2, length((uv - 0.5) * vec2(aspect * 0.7, 1.0)));

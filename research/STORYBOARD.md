@@ -24,10 +24,12 @@ The brief asked for at least three connected visual moments. All seven
 chapters run, and these three carry the most work:
 
 1. **Shoreline opening** (Chapter 1). A full-screen shader: twilight sky
-   with stars that appear as it darkens, a sea whose reflected glow is
-   broken by two octaves of moving noise, a shore, and a seated figure cut
-   as negative space. The horizon hairline resolves into points, and those
-   points are where Chapter 2's stars rise from.
+   with pixel stars that switch on as it darkens, brightest first; a sea
+   that mirrors the sky through two octaves of moving noise; a seated
+   figure on a rock, rim-lit by the last light. As the horizon is named, a
+   sounding sweeps out from the shore and maps the unseen seabed as depth
+   contours. The horizon's edge resolves into points, and those points are
+   where Chapter 2's stars rise from.
 2. **Expansion into the cosmic structure** (Chapters 2 and 3). One
    continuous pull-back from Earth to the galaxy whose camera distance is
    computed from the scale value, then 180,000 galaxies along procedural
