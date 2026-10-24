@@ -1,0 +1,71 @@
+/* The tokens, once. Shaders read the same six colors from src/shaders/palette.ts. */
+:root {
+  --ink: #0a1423;
+  --slate: #17273b;
+  --ivory: #f3f1ea;
+  --copper: #cfa67a;
+  --teal: #81c8c6;
+  --violet: #7c8eba;
+
+  /* Meaning, not hue: what each color says on this page. */
+  --c-human: var(--ivory);
+  --c-observed: var(--copper);
+  --c-model: var(--teal);
+  --c-unresolved: var(--violet);
+
+  --text: var(--ivory);
+  --text-dim: rgb(243 241 234 / 0.72);
+  --text-faint: rgb(243 241 234 / 0.5);
+  --hairline: rgb(243 241 234 / 0.18);
+  --hairline-strong: rgb(243 241 234 / 0.36);
+  --surface: rgb(10 20 35 / 0.72);
+  --surface-solid: #0e1a2c;
+  --focus: var(--teal);
+
+  /* Archivo, wide and light for titles, normal width for reading: instrument
+     lettering rather than space-opera lettering. */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --stretch-title: 125%;
+  --stretch-read: 100%;
+  --weight-display: 300;
+  --track-title: 0.01em;
+  --font-text: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-data: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Type: fluid from a phone to a wall. */
+  --t-hero: clamp(2.25rem, 1rem + 5vw, 6rem);
+  --t-title: clamp(1.75rem, 1.1rem + 2.8vw, 4rem);
+  --t-beat: clamp(1.25rem, 1rem + 1.1vw, 2.125rem);
+  --t-question: clamp(1.625rem, 1.1rem + 2.2vw, 3.25rem);
+  --t-body: 1rem;
+  --t-small: 0.875rem;
+  --t-data: 0.75rem;
+  --track-kicker: 0.14em;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 72px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --measure: 34rem;
+  --radius: 2px;
+  --tap: 44px;
+
+  --dur-fast: 160ms;
+  --dur-text: 900ms;
+  --dur-slow: 1600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Opacity still fades; nothing travels. */
+    --dur-text: 400ms;
+    --dur-slow: 600ms;
+  }
+}

@@ -1,0 +1,262 @@
+// The source ledger. Every figure the experience shows points at an entry
+// here by id, and the Sources drawer and the transcript render from it.
+// research/SCIENTIFIC-SOURCES.md is the reading copy, with the reasoning.
+
+export type Kind = 'measured' | 'inferred' | 'simulated' | 'illustrative' | 'speculative';
+
+export const KIND_LABEL: Record<Kind, string> = {
+  measured: 'Measured',
+  inferred: 'Inferred from a model',
+  simulated: 'Simulated',
+  illustrative: 'Illustrative',
+  speculative: 'Open question',
+};
+
+export interface Source {
+  id: string;
+  claim: string;
+  value: string;
+  kind: Kind;
+  source: string;
+  url?: string;
+  published?: string;
+  note?: string;
+}
+
+export const RETRIEVED = '2026-10-24';
+
+export const SOURCES: Source[] = [
+  {
+    id: 'horizon',
+    claim: 'Distance to the sea horizon for an eye 1.7 m above the water',
+    value: 'about 4.7 km',
+    kind: 'inferred',
+    source: 'Geometry: d = √(2Rh), with Earth’s mean radius R = 6,371 km',
+    note: 'Atmospheric refraction adds a few percent.',
+  },
+  {
+    id: 'earth',
+    claim: 'Earth’s mean diameter',
+    value: '12,742 km (mean radius 6,371.0 km)',
+    kind: 'measured',
+    source: 'NASA Goddard, Earth Fact Sheet',
+    url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html',
+  },
+  {
+    id: 'au',
+    claim: 'The astronomical unit, Earth–Sun mean distance',
+    value: '149,597,870,700 m, exact by definition',
+    kind: 'measured',
+    source: 'International Astronomical Union, Resolution B2 (2012)',
+    url: 'https://www.iau.org/static/resolutions/IAU2012_English.pdf',
+    published: '2012-08-31',
+  },
+  {
+    id: 'light-minutes',
+    claim: 'Time for sunlight to reach Earth',
+    value: 'about 499 seconds (8 min 19 s)',
+    kind: 'inferred',
+    source: 'One astronomical unit divided by the speed of light, 299,792,458 m/s (exact)',
+  },
+  {
+    id: 'neptune',
+    claim: 'Neptune’s mean distance from the Sun',
+    value: '30.07 AU',
+    kind: 'measured',
+    source: 'NASA Goddard, Neptune Fact Sheet',
+    url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html',
+  },
+  {
+    id: 'proxima',
+    claim: 'Distance to Proxima Centauri, the nearest star beyond the Sun',
+    value: 'about 4.24 light-years',
+    kind: 'measured',
+    source: 'NASA Science, Proxima Centauri',
+    url: 'https://science.nasa.gov/',
+    note: 'Measured by parallax.',
+  },
+  {
+    id: 'milky-way',
+    claim: 'Diameter of the Milky Way’s disk',
+    value: 'about 100,000 light-years',
+    kind: 'inferred',
+    source: 'NASA, “How Big Is Space? We Asked a NASA Expert” (episode 61)',
+    url: 'https://www.nasa.gov/science-research/astrophysics/how-big-is-space-we-asked-a-nasa-expert-episode-61/',
+    note: 'The edge of a galaxy is not sharp; estimates vary widely.',
+  },
+  {
+    id: 'andromeda',
+    claim: 'Distance to the Andromeda Galaxy',
+    value: 'about 2.5 million light-years',
+    kind: 'measured',
+    source: 'NASA Science, Andromeda Galaxy',
+    url: 'https://science.nasa.gov/',
+    note: 'The farthest object most people can see without a telescope, from a dark site.',
+  },
+  {
+    id: 'web',
+    claim: 'Galaxies are arranged in filaments, walls and clusters around vast voids',
+    value: 'structures up to hundreds of millions of light-years across',
+    kind: 'inferred',
+    source: 'Redshift surveys (2dFGRS, SDSS) and cosmological simulations; ESA Euclid science goals',
+    url: 'https://www.esa.int/Science_Exploration/Space_Science/Euclid',
+    note: 'The structure is mapped from galaxy positions and distances estimated from redshift. No one sees it directly.',
+  },
+  {
+    id: 'web-points',
+    claim: 'The cosmic web drawn in Chapter 3',
+    value: 'procedural filaments, not a map of a real region',
+    kind: 'illustrative',
+    source: 'Generated in the browser to resemble survey and simulation morphology',
+  },
+  {
+    id: 'homogeneity',
+    claim: 'On the largest scales, matter is spread nearly evenly',
+    value: 'above roughly a few hundred million light-years',
+    kind: 'inferred',
+    source: 'Large-scale homogeneity measured in galaxy surveys (e.g. Scrimgeour et al. 2012, MNRAS 425, 116)',
+  },
+  {
+    id: 'euclid-q1',
+    claim: 'ESA Euclid’s first quick data release',
+    value: '26 million galaxies from one week of observing, over 63.1 square degrees',
+    kind: 'measured',
+    source: 'ESA, “Euclid opens data treasure trove, offers glimpse of deep fields”',
+    url: 'https://www.esa.int/Science_Exploration/Space_Science/Euclid/Euclid_opens_data_treasure_trove_offers_glimpse_of_deep_fields',
+    published: '2025-03-19',
+    note: 'The farthest galaxies are about 10.5 billion light-years away.',
+  },
+  {
+    id: 'zoobot',
+    claim: 'Galaxies classified by shape by the Zoobot model in that release',
+    value: 'more than 380,000, after 9,976 Galaxy Zoo volunteers helped train it',
+    kind: 'measured',
+    source: 'ESA, as above',
+    url: 'https://www.esa.int/Science_Exploration/Space_Science/Euclid/Euclid_opens_data_treasure_trove_offers_glimpse_of_deep_fields',
+    published: '2025-03-19',
+    note: '380,000 of 26 million is about 1.5%. The release also lists 500 strong gravitational lens candidates, found with AI, citizen science and expert vetting.',
+  },
+  {
+    id: 'observable',
+    claim: 'Diameter of the observable universe',
+    value: 'about 92 billion light-years',
+    kind: 'inferred',
+    source: 'NASA, “How Big Is Space? We Asked a NASA Expert” (episode 61)',
+    url: 'https://www.nasa.gov/science-research/astrophysics/how-big-is-space-we-asked-a-nasa-expert-episode-61/',
+    note: 'A limit on what light has had time to bring us, given cosmic expansion. The universe is probably larger, and whether it is finite is unknown.',
+  },
+  {
+    id: 'age',
+    claim: 'Age of the universe',
+    value: '13.787 ± 0.020 billion years',
+    kind: 'inferred',
+    source: 'Planck Collaboration 2020, “Planck 2018 results VI”, A&A 641, A6',
+    url: 'https://doi.org/10.1051/0004-6361/201833910',
+  },
+  {
+    id: 'transit-depth',
+    claim: 'How much an Earth-size planet dims a Sun-like star as it crosses',
+    value: 'about 84 parts per million (0.0084%)',
+    kind: 'inferred',
+    source: '(Earth radius ÷ Sun radius)², with the IAU nominal solar radius 695,700 km',
+  },
+  {
+    id: 'transit-sim',
+    claim: 'The light curve in Chapter 4',
+    value: '90 days at 30-minute cadence; 84 ppm transit lasting 3.9 h every 9.7 days; 70 ppm noise per measurement',
+    kind: 'simulated',
+    source: 'Generated in the browser (src/data/transit.ts). The period search, box least squares, is real and runs on it live',
+    note: 'Real stars also vary on their own, which a pipeline removes first. That step is left out here.',
+  },
+  {
+    id: 'exominer',
+    claim: 'Kepler planets validated by NASA’s ExoMiner neural network',
+    value: '301',
+    kind: 'measured',
+    source: 'Valizadegan et al. 2022, ApJ 926, 120; NASA Ames announcement',
+    url: 'https://doi.org/10.3847/1538-4357/ac4399',
+    published: '2021-11-22',
+    note: '“Validated” is statistical: very probably a planet, not independently confirmed. At 99% precision it recovered 93.6% of known planets in its test set.',
+  },
+  {
+    id: 'exominer-pp',
+    claim: 'TESS exoplanet candidates flagged by ExoMiner++ on its first run',
+    value: 'about 7,000',
+    kind: 'measured',
+    source: 'NASA Science, “Deep learning exoplanets TESS”',
+    url: 'https://science.nasa.gov/open-science/deep-learning-exoplanets-tess/',
+    published: '2026-01-22',
+    note: 'Candidates each need follow-up observations from other telescopes.',
+  },
+  {
+    id: 'cells',
+    claim: 'Cells in a reference adult human body',
+    value: 'about 30 trillion (3.0 × 10¹³)',
+    kind: 'inferred',
+    source: 'Sender, Fuchs & Milo 2016, PLoS Biology 14(8): e1002533',
+    url: 'https://doi.org/10.1371/journal.pbio.1002533',
+  },
+  {
+    id: 'cell-points',
+    claim: 'The cell drawn in Chapter 5',
+    value: 'a schematic of membrane, nucleus and contents',
+    kind: 'illustrative',
+    source: 'Generated in the browser',
+  },
+  {
+    id: 'p53',
+    claim: 'The protein drawn in Chapters 5 and 6: human p53',
+    value: 'AlphaFold prediction AF-P04637-F1, model v6, 393 residues',
+    kind: 'inferred',
+    source: 'AlphaFold Protein Structure Database (EMBL-EBI and Google DeepMind), CC BY 4.0',
+    url: 'https://alphafold.ebi.ac.uk/entry/P04637',
+    note: 'Each point is the alpha-carbon of one amino acid, as predicted.',
+  },
+  {
+    id: 'experimental',
+    claim: 'Protein structures determined by experiment before AlphaFold',
+    value: 'over 190,000, over about 60 years',
+    kind: 'measured',
+    source: 'EMBL-EBI, “AlphaFold wins Nobel Prize in Chemistry 2024”',
+    url: 'https://www.ebi.ac.uk/about/news/alphafold-wins-nobel-prize-chemistry-2024/',
+    published: '2024-10-09',
+    note: 'By X-ray crystallography, NMR and cryo-electron microscopy. They are also what AlphaFold learned from.',
+  },
+  {
+    id: 'alphafold-db',
+    claim: 'Predicted structures in the AlphaFold database',
+    value: 'about 200 million, from over a million organisms',
+    kind: 'measured',
+    source: 'EMBL-EBI, as above',
+    url: 'https://www.ebi.ac.uk/about/news/alphafold-wins-nobel-prize-chemistry-2024/',
+    published: '2024-10-09',
+    note: 'Demis Hassabis and John Jumper shared half the 2024 Nobel Prize in Chemistry for it; David Baker the other half, for protein design.',
+  },
+  {
+    id: 'plddt',
+    claim: 'What AlphaFold’s per-residue confidence (pLDDT) means',
+    value: 'above 90 very high; 70–90 confident; 50–70 low; below 50 very low',
+    kind: 'measured',
+    source: 'Jumper et al. 2021, “Highly accurate protein structure prediction with AlphaFold”, Nature 596, 583',
+    url: 'https://doi.org/10.1038/s41586-021-03819-2',
+    note: 'Very low often marks a region that is genuinely disordered, and sometimes a region the model simply gets wrong. Experiments tell the two apart.',
+  },
+  {
+    id: 'hydrogen',
+    claim: 'Where hydrogen’s electron is likely to be found, in its ground state',
+    value: 'peaks at the Bohr radius, 5.29 × 10⁻¹¹ m',
+    kind: 'inferred',
+    source: 'Quantum mechanics (the 1s probability density); Bohr radius from CODATA 2018',
+    url: 'https://physics.nist.gov/cuu/Constants/',
+    note: 'The points are samples from that probability, not a picture of an electron.',
+  },
+  {
+    id: 'consciousness',
+    claim: 'Whether a machine could be conscious',
+    value: 'unresolved',
+    kind: 'speculative',
+    source: 'There is no scientific consensus on how to define or test for consciousness in any system',
+  },
+];
+
+export const sourceById = (id: string) => SOURCES.find((s) => s.id === id);
