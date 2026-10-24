@@ -7,6 +7,7 @@
 
 import * as THREE from 'three';
 import { lerp, range, rng, smoothstep } from '../animation/ease';
+import { beatStart } from '../content/chapters';
 import { rgb } from '../shaders/palette';
 import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points';
 import { galaxyPoints } from './galaxy';
@@ -18,6 +19,10 @@ import { compose, distanceFor, labelAt, orbit, present } from './util';
 const AU = 149_597_870_700;
 const AU_PER_LY = 63_241.077;
 const EARTH_R = 6_371_000 / AU;
+// Moments in the chapter, keyed to its lines.
+const FAST = beatStart('far', 'fast');
+const HALO = beatStart('far', 'halo');
+
 const PLANETS: [string, number][] = [
   ['Mercury', 0.387], ['Venus', 0.723], ['Earth', 1], ['Mars', 1.524],
   ['Jupiter', 5.203], ['Saturn', 9.537], ['Uranus', 19.19], ['Neptune', 30.07],
@@ -72,7 +77,7 @@ export function createCosmos(mobile: boolean): StageScene {
   bodies.set([sun.x, sun.y, sun.z], 0);
   bCol.set(rgb('ivory').map((v, k) => v * 0.8 + rgb('copper')[k] * 0.4), 0);
   bSize[0] = 14;
-  const orbitMat = lineMaterial(rgb('ivory'), 0.3);
+  const orbitMat = lineMaterial(rgb('ivory'), 0.6);
   const orbits = new THREE.Group();
   PLANETS.forEach(([name, a], i) => {
     const ang = name === 'Earth' ? 0 : r.next() * Math.PI * 2;
@@ -80,7 +85,7 @@ export function createCosmos(mobile: boolean): StageScene {
     planetPos.push(p);
     bodies.set([p.x, p.y, p.z], (i + 1) * 3);
     bCol.set(rgb('ivory').map((v) => v * 0.7), (i + 1) * 3);
-    bSize[i + 1] = 2.2;
+    bSize[i + 1] = 3;
     const pts: THREE.Vector3[] = [];
     for (let k = 0; k <= 256; k++) {
       const q = (k / 256) * Math.PI * 2;
@@ -100,22 +105,40 @@ export function createCosmos(mobile: boolean): StageScene {
   const pxPts = new THREE.Points(pointsGeometry(new Float32Array([proxima.x, proxima.y, proxima.z]), new Float32Array(rgb('ivory')), new Float32Array([5])), pxMat);
   scene.add(pxPts);
 
-  // The galaxy, in AU, with the Sun 26,000 light-years from its core.
+  // The galaxy, in AU, with the Sun 26,000 light-years from its core. Its
+  // points are placed around the core so it can turn about it.
   const g = galaxyPoints(mobile ? 50_000 : 120_000);
   const KLY = 1000 * AU_PER_LY;
   const center = new THREE.Vector3(sun.x - 26 * KLY, 0, sun.z);
-  for (let i = 0; i < g.pos.length; i += 3) {
-    g.pos[i] = g.pos[i] * KLY + center.x;
-    g.pos[i + 1] *= KLY;
-    g.pos[i + 2] = g.pos[i + 2] * KLY + center.z;
-  }
+  for (let i = 0; i < g.pos.length; i++) g.pos[i] *= KLY;
   const galMat = pointsMaterial();
   galMat.uniforms.uSize.value = 1.1;
   const galaxy = new THREE.Points(pointsGeometry(g.pos, g.col, g.size), galMat);
+  galaxy.position.copy(center);
   scene.add(galaxy);
+  const outerStar = new THREE.Vector3(44 * KLY, 0, 8 * KLY);
+
+  // The dark matter halo: a rough sphere several times wider than the disk.
+  // Its extent follows the models; its look is illustrative, and kept thin at
+  // the center so the disk still reads through it.
+  const hN = mobile ? 14000 : 36000;
+  const hPos = new Float32Array(hN * 3), hCol = new Float32Array(hN * 3), hSize = new Float32Array(hN);
+  const violet = rgb('violet');
+  for (let i = 0; i < hN; i++) {
+    const rad = (40 + 170 * Math.pow(r.next(), 0.6)) * KLY;
+    const u = r.next() * 2 - 1, th = r.next() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
+    hPos.set([rad * sq * Math.cos(th) + center.x, rad * u * 0.85, rad * sq * Math.sin(th) + center.z], i * 3);
+    hCol.set(violet.map((v) => v * (0.3 + 0.35 * r.next())), i * 3);
+    hSize[i] = 1.5 + r.next() * 1.2;
+  }
+  const haloMat = pointsMaterial();
+  const halo = new THREE.Points(pointsGeometry(hPos, hCol, hSize), haloMat);
+  scene.add(halo);
+  const haloMark = new THREE.Vector3(center.x + 150 * KLY, 60 * KLY, center.z);
   scene.traverse((o) => (o.frustumCulled = false));
 
   const target = new THREE.Vector3();
+  const Y = new THREE.Vector3(0, 1, 0);
   const tmp = new THREE.Vector3();
 
   return {
@@ -151,7 +174,12 @@ export function createCosmos(mobile: boolean): StageScene {
       const pxA = smoothstep(15.6, 16.4, s) * (1 - smoothstep(17.6, 18.4, s));
       pxMat.uniforms.uOpacity.value = w * pxA;
       galMat.uniforms.uOpacity.value = w * smoothstep(16.8, 19.2, s);
-      for (const m of [earthMat, bodyMat, pxMat, galMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
+      // Its outer stars turn too fast, and something unseen holds them.
+      const turning = f.state.reduced ? 0 : Math.max(0, f.local - FAST);
+      galaxy.rotation.y = -0.06 * turning * Math.min(1, turning / 4);
+      const haloA = smoothstep(HALO, HALO + 3, f.local);
+      haloMat.uniforms.uOpacity.value = w * haloA;
+      for (const m of [earthMat, bodyMat, pxMat, galMat, haloMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
       renderer.render(scene, camera);
 
       const L = (text: string, at: THREE.Vector3, a: number, side?: Label['side']) => labelAt(text, at, camera, f, a, side);
@@ -162,7 +190,9 @@ export function createCosmos(mobile: boolean): StageScene {
         L('Jupiter', planetPos[4], sysA * smoothstep(11.6, 12, s) * (1 - smoothstep(13.6, 14, s))),
         L('Neptune · 30 AU', planetPos[7], sysA * smoothstep(12.3, 12.7, s) * (1 - smoothstep(14.6, 15, s))),
         L('Proxima Centauri · 4.24 light-years', proxima, pxA),
-        L('The Sun is here', sun, smoothstep(19.4, 20, s) * w, 'left'),
+        L('The Sun is here', sun, smoothstep(19.4, 20, s) * w * (1 - smoothstep(FAST - 1, FAST, f.local)), 'left'),
+        L('Outer stars · too fast for what we can see', tmp.copy(outerStar).applyAxisAngle(Y, galaxy.rotation.y).add(center), smoothstep(FAST, FAST + 1, f.local) * (1 - smoothstep(HALO - 0.5, HALO + 0.5, f.local))),
+        L('Dark matter halo · illustrative', haloMark, haloA * (1 - smoothstep(HALO + 7, HALO + 9, f.local))),
       ].filter(present);
     },
     dispose() {
@@ -170,7 +200,7 @@ export function createCosmos(mobile: boolean): StageScene {
       scene.traverse((o) => {
         if (o instanceof THREE.Points || o instanceof THREE.Line) o.geometry.dispose();
       });
-      [earthMat, bodyMat, pxMat, galMat, orbitMat].forEach((m) => m.dispose());
+      [earthMat, bodyMat, pxMat, galMat, haloMat, orbitMat].forEach((m) => m.dispose());
     },
   };
 }

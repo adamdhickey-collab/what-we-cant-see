@@ -187,8 +187,10 @@ a {
   left: var(--gutter);
   right: var(--gutter);
   top: 50%;
-  transform: translateY(-64%);
+  transform: translateY(-50%);
   max-width: 44rem;
+  max-height: calc(100dvh - 72px);
+  padding-top: 40px;
   z-index: 2;
 }
 
@@ -1059,7 +1061,8 @@ input[type='range']::-moz-range-thumb {
   .beat-question {
     font-size: 1.625rem;
   }
-  .chapter-4 .beat:not(.beat-title) {
+  .chapter-faint .beat:not(.beat-title),
+  .chapter-time .beat:not(.beat-title) {
     font-size: 1.0625rem;
   }
   .instrument-lab {
@@ -1114,12 +1117,875 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* While the lab is up on a wide screen, the narrative narrows to the left column. */
+/* While the lab is up on a wide screen, the narrative narrows to the left column.
+   On the shore it stops short of the person on the rock. */
 @media (min-width: 768px) {
-  .chapter-4 .narrative {
+  .chapter-shore .narrative,
+  .chapter-return .narrative {
+    max-width: min(var(--measure), calc(56vw - var(--nav-w) - var(--gutter) - 40px));
+  }
+  .chapter-faint .narrative,
+  .chapter-time .narrative {
     max-width: min(var(--measure), calc(100vw - var(--lab-w) - var(--nav-w) - var(--gutter) * 2 - 88px));
   }
-  .chapter-4 .beat:not(.beat-title) {
+  .chapter-faint .beat:not(.beat-title),
+  .chapter-time .beat:not(.beat-title) {
     font-size: clamp(1.125rem, 0.9rem + 0.7vw, 1.625rem);
+  }
+}
+
+/* ---------- The ride: captions, tools, stops ---------- */
+
+.kicker-tagline {
+  color: var(--text-faint);
+}
+
+.beat-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  margin-top: var(--s-3);
+  animation: beat-in var(--dur-text) var(--ease-out) 200ms both;
+}
+
+.beat-tools .claim {
+  margin-top: 0;
+}
+
+.tool {
+  min-height: 32px;
+  font-family: var(--font-data);
+  font-size: var(--t-data);
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 4px;
+}
+
+.tool:hover {
+  color: var(--text);
+}
+
+.tool-fact {
+  color: var(--c-unresolved);
+}
+
+.beat-more,
+.fact-card {
+  max-width: var(--measure);
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--text-dim);
+  background: var(--surface);
+  border-left: 1px solid var(--hairline-strong);
+  backdrop-filter: blur(6px);
+}
+
+.fact-card {
+  border-left-color: var(--c-unresolved);
+}
+
+.fact-card p {
+  margin: 0 0 var(--s-2);
+  color: var(--text);
+}
+
+.fact-actions {
+  display: flex;
+  gap: var(--s-4);
+}
+
+.hold-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  margin-top: var(--s-4);
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--ivory);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: var(--t-small);
+  animation: fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+.hold-prompt .tool {
+  color: var(--text);
+}
+
+.timeline-stop {
+  position: absolute;
+  top: 7px;
+  left: var(--p);
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ivory);
+  background: var(--ink);
+  transform: translateX(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.btn-quiet {
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+.btn-quiet[aria-pressed='true'] {
+  color: var(--text);
+  border-color: var(--hairline-strong);
+}
+
+.intro-map {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) 0;
+  margin: 0 0 var(--s-6);
+  padding: 0;
+  max-width: var(--measure);
+  font-family: var(--font-data);
+  font-size: var(--t-data);
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.intro-map li + li::before {
+  content: '→';
+  margin: 0 var(--s-2);
+  color: var(--text-faint);
+}
+
+.show-narrow {
+  display: none;
+}
+
+/* ---------- Options ---------- */
+
+.options {
+  position: relative;
+}
+
+.options-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--s-1));
+  width: min(320px, calc(100vw - var(--gutter) * 2));
+  padding: var(--s-2);
+  display: grid;
+  gap: var(--s-1);
+  background: var(--surface-solid);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  z-index: 4;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--s-3);
+  padding: var(--s-2);
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.option:hover {
+  background: var(--slate);
+}
+
+.option input {
+  grid-row: span 2;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--ivory);
+}
+
+.option-name {
+  font-size: var(--t-small);
+}
+
+.option-says {
+  font-size: var(--t-data);
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+
+/* ---------- The blind spot ---------- */
+
+.blindspot {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 18vh;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-5);
+  text-align: center;
+  animation: fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+.blindspot-field {
+  --gap: min(52vw, 440px);
+  position: relative;
+  width: calc(var(--gap) + 40px);
+  height: 40px;
+}
+
+.blindspot-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--text-dim);
+}
+
+.blindspot-cross {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 40px;
+  transform: translateY(-52%);
+  font-family: var(--font-data);
+  font-size: 2rem;
+  line-height: 1;
+  background: var(--ink);
+  color: var(--ivory);
+}
+
+.blindspot-dot {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--copper);
+  transform: translateY(-50%);
+}
+
+.blindspot-hint {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.blindspot-actions,
+.guess-options,
+.souvenir-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+/* ---------- Asides ---------- */
+
+.aside {
+  position: fixed;
+  right: var(--gutter);
+  top: 26vh;
+  width: min(600px, 52vw);
+  margin: 0;
+  z-index: 2;
+  animation: fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+.spectrum-bar {
+  position: relative;
+  height: 64px;
+  border-bottom: 1px solid var(--hairline-strong);
+}
+
+.spectrum-band {
+  position: absolute;
+  bottom: 0;
+  height: 14px;
+  border-left: 1px solid var(--hairline-strong);
+}
+
+.spectrum-name {
+  position: absolute;
+  left: 4px;
+  bottom: 18px;
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.spectrum-band.is-high .spectrum-name {
+  bottom: 32px;
+}
+
+.spectrum-visible {
+  position: absolute;
+  bottom: 0;
+  min-width: 3px;
+  height: 40px;
+  background: var(--ivory);
+  box-shadow: 0 0 16px var(--ivory);
+}
+
+.spectrum-callout {
+  position: absolute;
+  top: -30px;
+  transform: translateX(-50%);
+  font-family: var(--font-data);
+  font-size: var(--t-data);
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.aside-caption {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--s-2) 0 0;
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.composition-bar {
+  display: flex;
+  height: 14px;
+  gap: 2px;
+}
+
+.composition-part.is-seen {
+  background: var(--ivory);
+}
+
+.composition-part.is-dark {
+  background: var(--violet);
+}
+
+.composition-part.is-energy {
+  background: color-mix(in srgb, var(--violet) 35%, transparent);
+}
+
+.composition-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin-top: var(--s-3);
+  font-size: var(--t-small);
+  color: var(--text-dim);
+}
+
+.composition-label strong {
+  font-family: var(--font-data);
+  font-weight: 400;
+  color: var(--text);
+}
+
+.composition-label.is-seen strong {
+  color: var(--ivory);
+}
+
+.composition-label.is-dark strong,
+.composition-label.is-energy strong {
+  color: var(--violet);
+}
+
+/* ---------- Instruments: the lab's guess, time, the protein's guess, lenses ---------- */
+
+.lab-canvas.is-asking {
+  cursor: crosshair;
+}
+
+.time-lab {
+  justify-content: center;
+  gap: var(--s-6);
+}
+
+.time-demos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-5);
+}
+
+.time-demo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+}
+
+.time-demo svg {
+  width: min(140px, 100%);
+  height: auto;
+}
+
+.time-demo figcaption {
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.time-demo strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.wing-blur {
+  stroke: var(--ivory);
+  stroke-opacity: 0.14;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.wing-body,
+.clock-hour,
+.clock-minute {
+  fill: var(--ivory);
+  stroke: var(--ivory);
+  stroke-linecap: round;
+}
+
+.clock-hour {
+  stroke-width: 4;
+}
+
+.clock-minute {
+  stroke-width: 2;
+}
+
+.clock-face {
+  fill: none;
+  stroke: var(--hairline-strong);
+}
+
+.clock-tick {
+  stroke: var(--text-dim);
+}
+
+.time-ruler {
+  position: relative;
+  height: 130px;
+  margin-top: var(--s-4);
+}
+
+.time-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 70px;
+  height: 1px;
+  background: var(--hairline-strong);
+}
+
+.time-window {
+  position: absolute;
+  top: 58px;
+  height: 25px;
+  background: color-mix(in srgb, var(--ivory) 10%, transparent);
+  border: 1px solid var(--hairline-strong);
+  transition: background var(--dur-slow) var(--ease-out), border-color var(--dur-slow);
+}
+
+.time-window.is-on {
+  background: color-mix(in srgb, var(--ivory) 24%, transparent);
+  border-color: var(--ivory);
+}
+
+.time-window-name {
+  position: absolute;
+  left: 0;
+  top: -58px;
+  font-family: var(--font-data);
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+.time-tick {
+  position: absolute;
+  top: 92px;
+  transform: translateX(-50%);
+  font-family: var(--font-data);
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--text-faint);
+}
+
+.time-tick:first-child {
+  transform: none;
+}
+
+.time-mark {
+  position: absolute;
+  top: 64px;
+  width: 1px;
+  height: 13px;
+  background: var(--text-dim);
+}
+
+.time-mark-name {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 140px;
+  text-align: center;
+  font-size: var(--t-data);
+  line-height: 1.3;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.time-mark.is-on {
+  background: var(--ivory);
+  height: 21px;
+  top: 60px;
+}
+
+.time-mark.is-on .time-mark-name {
+  opacity: 1;
+}
+
+.guess {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.guess-options {
+  justify-content: flex-start;
+}
+
+.bands {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.bands.is-hidden {
+  opacity: 0.25;
+}
+
+.instrument-lenses {
+  right: var(--gutter);
+  top: 20vh;
+  width: 380px;
+}
+
+.lenses {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  backdrop-filter: blur(6px);
+}
+
+.lens-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.lens-row button {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+}
+
+.lens-row button.is-on {
+  background: var(--ivory);
+  border-color: var(--ivory);
+  color: var(--ink);
+}
+
+.lens-text {
+  margin: 0;
+  min-height: 4.5em;
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.lens-who {
+  display: block;
+  font-family: var(--font-data);
+  font-size: var(--t-data);
+  letter-spacing: var(--track-kicker);
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: var(--s-1);
+}
+
+.picks-toggle {
+  position: fixed;
+  right: var(--gutter);
+  top: 72px;
+  z-index: 2;
+  animation: fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+/* ---------- The meter of hidden systems ---------- */
+
+.meter {
+  position: fixed;
+  right: var(--gutter);
+  bottom: 168px;
+  width: 270px;
+  z-index: 2;
+  font-family: var(--font-data);
+  font-size: var(--t-data);
+}
+
+.meter-head {
+  min-height: 28px;
+  font-size: 10px;
+  letter-spacing: var(--track-kicker);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.meter-head::after {
+  content: ' −';
+}
+
+.meter.is-closed .meter-head::after {
+  content: ' +';
+}
+
+.meter-list {
+  margin: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.meter-row dt {
+  margin: 0;
+}
+
+.meter-row dd {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter-label {
+  font-size: 11px;
+  text-align: left;
+  color: var(--text-faint);
+}
+
+.meter-label:hover {
+  color: var(--text-dim);
+}
+
+/* The instruments and diagrams take the right of the frame; the meter steps aside. */
+.app:has(.aside) .meter,
+.app:has(.picks-toggle) .meter,
+.chapter-eyes .meter,
+.chapter-faint .meter,
+.chapter-time .meter,
+.chapter-unsure .meter,
+.chapter-return .meter {
+  display: none;
+}
+
+/* ---------- The souvenir ---------- */
+
+.is-ended .narrative,
+.is-ended .picks-toggle {
+  display: none;
+}
+
+.souvenir {
+  position: fixed;
+  left: calc(var(--gutter) + var(--nav-w) + 40px);
+  bottom: 168px;
+  max-width: 36rem;
+  z-index: 2;
+  animation: fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+.souvenir-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--t-beat);
+  margin: 0 0 var(--s-4);
+  text-shadow: 0 0 28px var(--ink);
+}
+
+.souvenir-list {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-5);
+}
+
+.souvenir-row {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: var(--s-4);
+  align-items: baseline;
+}
+
+.souvenir-row dt {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: var(--t-small);
+  color: var(--text-dim);
+}
+
+.souvenir-row dd {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.souvenir-question {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+  line-height: 1.3;
+  margin: 0 0 var(--s-5);
+  text-shadow: 0 0 28px var(--ink);
+}
+
+.souvenir-actions {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.souvenir-note {
+  font-size: var(--t-small);
+  color: var(--text-dim);
+}
+
+/* ---------- Scale readout, plain words ---------- */
+
+.scale-label {
+  font-size: 10px;
+  letter-spacing: var(--track-kicker);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.scale-like {
+  font-family: var(--font-text);
+  font-size: var(--t-data);
+  color: var(--text-dim);
+}
+
+.scale-readout .scale-words {
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+.scale.is-full .scale-power {
+  font-size: var(--t-data);
+  color: var(--text-faint);
+}
+
+.transcript-more,
+.transcript-fact {
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin: calc(var(--s-2) * -1) 0 var(--s-4);
+}
+
+.transcript-fact {
+  margin-top: 0;
+  color: var(--c-unresolved);
+}
+
+@media (max-width: 1100px) {
+  .meter {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .show-narrow {
+    display: inline;
+  }
+  .blindspot {
+    top: 110px;
+  }
+  .blindspot-field {
+    --gap: 70vw;
+  }
+  .aside {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 132px;
+    width: auto;
+  }
+  .scale-label,
+  .scale.is-full .scale-power {
+    display: none;
+  }
+  .scale-readout {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .scale-like {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .scale-track {
+    min-width: 48px;
+  }
+  .spectrum-name {
+    display: none;
+  }
+  .time-demos {
+    gap: var(--s-3);
+  }
+  .time-demo svg {
+    width: 84px;
+  }
+  .time-lab {
+    gap: var(--s-4);
+  }
+  .instrument-lenses {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 90px;
+    width: auto;
+  }
+  .lenses {
+    padding: var(--s-3);
+  }
+  .picks-toggle {
+    top: 90px;
+  }
+  .souvenir {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: 132px;
+  }
+  .souvenir-row {
+    grid-template-columns: 7rem 1fr;
+  }
+  .intro-map {
+    margin-bottom: var(--s-5);
+  }
+  .narrative {
+    max-height: calc(100dvh - 330px);
+    overflow-y: auto;
   }
 }

@@ -1,336 +1,509 @@
-// The storyboard as data. Every chapter declares what it says, what it shows,
-// how long it lasts and which scale it sits at, and the director, the stage,
-// the narrative and the scale navigator all read from this one list. The
-// prose companion is research/STORYBOARD.md.
+// The storyboard as data. Every chapter is one reason we can't see something,
+// and declares what it says, what it shows and which scale it sits at; the
+// director, the stage, the narrative and the scale navigator all read from
+// this one list. The prose companion is research/STORYBOARD.md.
+//
+// Nobody writes a line's timing by hand. Each line stays on screen for as long
+// as an unhurried reader needs (READ_LEAD plus READ_WPS words a second), so
+// the guided ride can never outrun the person reading it, and everything that
+// moves with the story is keyed to a line's id rather than to a second.
+// scripts/check-script.mjs holds the line length and the sources to account.
 
 import type { Kind } from './sources';
 
-export type SceneId = 'shore' | 'cosmos' | 'web' | 'star' | 'within';
+export type SceneId = 'none' | 'shore' | 'cosmos' | 'web' | 'star' | 'within';
 
-export interface Beat {
-  /** Seconds from the chapter's start. */
-  at: number;
+/** A moment where the ride stops and waits for the viewer to try something. */
+export type HoldId = 'blindspot' | 'transit' | 'confidence' | 'lenses';
+
+/** Something drawn in the page over the stage while a line is up. */
+export type AsideId = 'spectrum' | 'composition';
+
+export interface BeatDef {
+  /** A name other code can key a moment to. */
+  id?: string;
   text: string;
   sources?: string[];
-  /** The kind of claim the line makes, shown beside it. */
+  /** The kind of claim the line makes, shown with the evidence. */
   kind?: Kind;
-  /** The chapter's one question, set larger. */
+  /** A question, set larger. */
   question?: boolean;
+  /** The detail a curious reader can open: names, dates, the exact numbers. */
+  more?: string;
+  /** At the end of this line, the ride waits for the viewer. */
+  hold?: HoldId;
+  aside?: AsideId;
+  /** Seconds beyond reading time, for a picture that needs to land. */
+  extra?: number;
 }
 
-/** A scale keyframe: log10 of the width in view, in meters. */
+export interface Beat extends BeatDef {
+  /** Seconds from the chapter's start. */
+  at: number;
+  dur: number;
+}
+
+/** A scale keyframe, at a line's start (by id), plus an offset in seconds. */
+export interface ScaleKeyDef {
+  at: number | string;
+  shift?: number;
+  /** log10 of the width in view, in meters. */
+  log10m: number;
+}
+
 export interface ScaleKey {
   at: number;
   log10m: number;
 }
 
-export interface Chapter {
-  id: string;
-  title: string;
-  duration: number;
-  scene: SceneId;
-  beats: Beat[];
-  scale: ScaleKey[];
-  /** Production notes, read by the storyboard doc and by people. */
-  camera: string;
-  controls: string;
-  reducedMotion: string;
+export interface Fact {
+  text: string;
   sources: string[];
 }
 
-export const CHAPTERS: Chapter[] = [
+interface ChapterDef {
+  id: string;
+  /** The reason we can't see it: the chapter's name on the ride map. */
+  title: string;
+  /** One line under the title. */
+  tagline: string;
+  scene: SceneId;
+  beats: BeatDef[];
+  scale: ScaleKeyDef[];
+  /** Side doors: optional facts a viewer can open along the way. */
+  facts?: Fact[];
+  /** What is on screen, for the text version and for people. */
+  camera: string;
+  reducedMotion: string;
+}
+
+export interface Chapter extends Omit<ChapterDef, 'beats' | 'scale'> {
+  beats: Beat[];
+  scale: ScaleKey[];
+  duration: number;
+  sources: string[];
+}
+
+export const READ_WPS = 3;
+export const READ_LEAD = 1.5;
+export const MAX_WORDS = 18;
+export const words = (text: string) => text.split(/\s+/).filter(Boolean).length;
+/** Seconds an unhurried reader needs for a line, rounded up to a half second. */
+export const readTime = (text: string) => Math.ceil((READ_LEAD + words(text) / READ_WPS) * 2) / 2;
+
+const DEFS: ChapterDef[] = [
   {
-    id: 'moment',
-    title: 'One human moment',
-    duration: 24,
-    scene: 'shore',
+    id: 'eyes',
+    title: 'Your eyes',
+    tagline: 'Your brain edits what you see',
+    scene: 'none',
     beats: [
-      { at: 0, text: 'What we can’t see' },
-      { at: 5, text: 'Someone is sitting at the edge of the water. The sun went down a few minutes ago.' },
+      { text: 'Your eyes' },
+      { text: 'Before we go anywhere, a quick test.' },
+      { id: 'test', text: 'Close your left eye and stare at the cross. Lean slowly in, or back.', hold: 'blindspot' },
       {
-        at: 11,
-        text: 'Everything they can see of the sea ends about 4.7 kilometers away, where the Earth curves out of sight.',
-        sources: ['horizon'],
-        kind: 'inferred',
-      },
-      { at: 17, text: 'How much is out there that no eye was made to see?', question: true },
-    ],
-    scale: [
-      { at: 0, log10m: 0.23 },
-      { at: 9, log10m: 0.6 },
-      { at: 16, log10m: 3.67 },
-      { at: 24, log10m: 3.9 },
-    ],
-    camera: 'Locked off, eye height, horizon at 42% of the frame. In the last six seconds the horizon line becomes a row of points.',
-    controls: 'Play, pause, chapter rail, scale navigator.',
-    reducedMotion: 'Water and stars hold still; the horizon resolves to points without travelling.',
-    sources: ['horizon'],
-  },
-  {
-    id: 'horizon',
-    title: 'Beyond the horizon',
-    duration: 34,
-    scene: 'cosmos',
-    beats: [
-      { at: 0, text: 'Beyond the horizon' },
-      { at: 4, text: 'Rise until the horizon closes into a planet, 12,742 kilometers across.', sources: ['earth'], kind: 'measured' },
-      {
-        at: 11,
-        text: 'Its light comes from a star 150 million kilometers away. Sunlight takes eight minutes and nineteen seconds to make the trip.',
-        sources: ['au', 'light-minutes'],
+        id: 'reveal',
+        text: 'That’s your blind spot, where the nerve leaves the eye. Nothing there can sense light.',
+        sources: ['blind-spot'],
         kind: 'measured',
+        more: 'Where the optic nerve and blood vessels leave the retina there are no rods or cones: a gap about 15 degrees to the outer side of where you look.',
       },
-      {
-        at: 18,
-        text: 'These rings are the planets’ orbits, drawn to true scale. Neptune’s is thirty times wider than ours. The planets themselves are too small to see.',
-        sources: ['neptune'],
-        kind: 'measured',
-      },
-      {
-        at: 23,
-        text: 'The nearest other star is 4.24 light-years away. Between here and there is almost nothing at all.',
-        sources: ['proxima'],
-        kind: 'measured',
-      },
-      {
-        at: 29,
-        text: 'Our galaxy is about 100,000 light-years across, a few hundred billion stars. Seen from inside, it is the faint band in a dark sky.',
-        sources: ['milky-way'],
-        kind: 'inferred',
-      },
+      { id: 'paint', text: 'You have one in each eye, right now. Your brain paints over both with whatever is nearby.', sources: ['blind-spot'], kind: 'measured' },
+      { text: 'It edits a lot more than that. Let’s go find what it leaves out.', question: true },
     ],
-    scale: [
-      { at: 0, log10m: 3.9 },
-      { at: 3, log10m: 5.6 },
-      { at: 5.5, log10m: 7.42 },
-      // Hold on the whole planet while its line is read, drifting out only a little.
-      { at: 10.5, log10m: 7.68 },
-      { at: 13, log10m: 9.2 },
-      { at: 16, log10m: 11.6 },
-      { at: 21, log10m: 12.95 },
-      { at: 25, log10m: 16.7 },
-      { at: 28, log10m: 17.0 },
-      { at: 34, log10m: 21.1 },
+    scale: [{ at: 0, log10m: 0.23 }],
+    facts: [
+      { text: 'Your sharp vision covers about 2 degrees, roughly your thumbnail at arm’s length. The rest is your eyes darting about.', sources: ['fovea'] },
+      { text: 'Your eyes jump about three times a second. Your brain hides the blur of every jump from you.', sources: ['saccades'] },
     ],
-    camera: 'One continuous pull-back whose distance is the scale value itself, so the navigator and the picture cannot disagree. The view tilts from the ecliptic to above the galaxy.',
-    controls: 'Scrubbing moves the camera; landmarks on the scale navigator jump to their moment.',
-    reducedMotion: 'Each line of text holds a still view at its scale; changes are cuts, not travel.',
-    sources: ['earth', 'au', 'light-minutes', 'neptune', 'proxima', 'milky-way'],
-  },
-  {
-    id: 'structure',
-    title: 'The great structure',
-    duration: 40,
-    scene: 'web',
-    beats: [
-      { at: 0, text: 'The great structure' },
-      {
-        at: 5,
-        text: 'Pull back far enough and every point is a galaxy. They are not scattered evenly. They gather into walls and filaments around enormous voids.',
-        sources: ['web', 'web-points'],
-        kind: 'illustrative',
-      },
-      {
-        at: 12,
-        text: 'No one has ever seen this. It is a map, built from the light of millions of galaxies, each placed by how much its light has stretched on the way to us.',
-        sources: ['web'],
-        kind: 'inferred',
-      },
-      {
-        at: 20,
-        text: 'In March 2025, ESA’s Euclid telescope released 26 million galaxies from one week of observing. A model called Zoobot, trained with the help of 9,976 volunteers, sorted 380,000 of them by shape: about one in seventy, marked here in teal.',
-        sources: ['euclid-q1', 'zoobot'],
-        kind: 'measured',
-      },
-      {
-        at: 30,
-        text: 'Farther out still, the web evens into a nearly uniform haze.',
-        sources: ['homogeneity'],
-        kind: 'inferred',
-      },
-      {
-        at: 35,
-        text: 'The observable universe is about 92 billion light-years across. That is how far light has had time to reach us, not the edge of everything.',
-        sources: ['observable', 'age'],
-        kind: 'inferred',
-      },
-    ],
-    scale: [
-      { at: 0, log10m: 21.1 },
-      { at: 6, log10m: 22.6 },
-      { at: 14, log10m: 23.9 },
-      { at: 24, log10m: 24.7 },
-      { at: 30, log10m: 25.0 },
-      { at: 36, log10m: 26.94 },
-      { at: 40, log10m: 26.94 },
-    ],
-    camera: 'Starts inside one galaxy, pulls out through the filaments while orbiting slowly, then out past the box until a sphere marks the observable limit.',
-    controls: 'Drag to turn the structure while paused.',
-    reducedMotion: 'No orbit; one composition per line of text.',
-    sources: ['web', 'web-points', 'euclid-q1', 'zoobot', 'homogeneity', 'observable', 'age'],
-  },
-  {
-    id: 'patterns',
-    title: 'The patterns we miss',
-    duration: 40,
-    scene: 'star',
-    beats: [
-      { at: 0, text: 'The patterns we miss' },
-      { at: 4, text: 'Collecting light and understanding it are different jobs.' },
-      {
-        at: 9,
-        text: 'This is a real star, a little cooler than the Sun and 2,800 light-years away. NASA’s Kepler telescope measured its brightness every thirty minutes for ninety days. It looks like noise.',
-        sources: ['kepler-1772', 'kepler-1772-star'],
-        kind: 'measured',
-      },
-      {
-        at: 15,
-        text: 'Hidden in it, a planet a few times wider than Earth crosses in front of the star every few days, dimming it by about 150 parts per million.',
-        sources: ['kepler-1772b', 'transit-depth'],
-        kind: 'measured',
-      },
-      {
-        at: 20,
-        text: 'So try every possible orbit. For each one, stack the measurements as if that were the planet’s period, and look for a dip.',
-        sources: ['bls'],
-        kind: 'inferred',
-      },
-      {
-        at: 31,
-        text: 'At 3.21 days, the measurements line up and the planet appears. No single point showed it.',
-        sources: ['bls', 'kepler-1772b'],
-        kind: 'inferred',
-      },
-      {
-        at: 35,
-        text: 'Searches find thousands of dips like this, and most are not planets. This one is Kepler-1772 b, among the 301 that NASA’s ExoMiner, a neural network trained to tell planets from look-alikes, validated in 2021: very probably real, never seen.',
-        sources: ['exominer', 'kepler-1772b', 'exominer-pp'],
-        kind: 'measured',
-      },
-    ],
-    scale: [
-      { at: 0, log10m: 9.14 },
-      { at: 40, log10m: 9.14 },
-    ],
-    camera: 'Still. A single star, dim, behind the instrument: 90 days of real Kepler measurements of Kepler-1772, folded at trial periods until the planet’s 3.21-day orbit appears.',
-    controls: 'Fold period slider, a Search button that runs the period search, and a text summary of the result.',
-    reducedMotion: 'The period search jumps to its result instead of sweeping.',
-    sources: ['kepler-1772', 'kepler-1772-star', 'kepler-1772b', 'transit-depth', 'bls', 'exominer', 'exominer-pp'],
-  },
-  {
-    id: 'within',
-    title: 'The universe within',
-    duration: 25,
-    scene: 'within',
-    beats: [
-      { at: 0, text: 'The universe within' },
-      { at: 4, text: 'Now turn inward. The person on the shore is made of about 30 trillion cells.', sources: ['cells', 'cell-points'], kind: 'inferred' },
-      {
-        at: 9,
-        text: 'Inside each, proteins: chains of amino acids that fold into shapes, and the shape is the job.',
-      },
-      {
-        at: 13,
-        text: 'This is p53, which helps stop damaged cells from dividing. Each point is one of its 393 amino acids, where a model predicts it sits.',
-        sources: ['p53'],
-        kind: 'inferred',
-      },
-      {
-        at: 20,
-        text: 'Below that, atoms. Hydrogen’s electron is not a dot but a likelihood, densest a twenty-billionth of a meter from the center.',
-        sources: ['hydrogen'],
-        kind: 'inferred',
-      },
-    ],
-    scale: [
-      { at: 0, log10m: 0.23 },
-      { at: 6, log10m: -4.55 },
-      { at: 9.5, log10m: -4.75 },
-      { at: 13, log10m: -7.9 },
-      { at: 18.5, log10m: -7.95 },
-      { at: 21.5, log10m: -9.65 },
-      { at: 25, log10m: -9.8 },
-    ],
-    camera: 'Fixed. Each scale arrives as its own object growing past the frame, a cut in structure rather than a pretend camera move through a body.',
-    controls: 'Drag to turn the protein while paused.',
-    reducedMotion: 'Cuts between the cell, the protein and the atom.',
-    sources: ['cells', 'cell-points', 'p53', 'hydrogen'],
-  },
-  {
-    id: 'instrument',
-    title: 'A new instrument',
-    duration: 32,
-    scene: 'within',
-    beats: [
-      { at: 0, text: 'A new instrument' },
-      {
-        at: 3,
-        text: 'For sixty years, finding a protein’s shape meant months of experiment. About 190,000 were solved that way, and they taught the machine.',
-        sources: ['experimental'],
-        kind: 'measured',
-      },
-      {
-        at: 9,
-        text: 'AlphaFold predicts a shape from the sequence alone. Its database now holds about 200 million predictions.',
-        sources: ['alphafold-db'],
-        kind: 'measured',
-      },
-      {
-        at: 15,
-        text: 'It also says where it is unsure. For p53, 117 of the 393 amino acids score below 50 out of 100.',
-        sources: ['plddt', 'p53'],
-        kind: 'measured',
-      },
-      {
-        at: 21,
-        text: 'Some of that is a protein that is genuinely loose. Some is the model not knowing. Only an experiment can say which.',
-        sources: ['plddt'],
-        kind: 'inferred',
-      },
-      {
-        at: 27,
-        text: 'Finding a pattern is not understanding it, and understanding is not consciousness. Whether a machine could ever be conscious is an open question.',
-        sources: ['consciousness'],
-        kind: 'speculative',
-      },
-    ],
-    scale: [
-      { at: 0, log10m: -7.9 },
-      { at: 32, log10m: -7.9 },
-    ],
-    camera: 'The protein, turning slowly, recolored by what the instrument claims.',
-    controls: 'Prediction, Confidence and Needs checking views; drag to turn.',
-    reducedMotion: 'No turning; the views change on each line of text.',
-    sources: ['experimental', 'alphafold-db', 'plddt', 'p53', 'consciousness'],
+    camera: 'A dark field. A cross and a dot on a line, set apart so the dot falls in the viewer’s blind spot at a comfortable distance; the line looks unbroken when the dot vanishes.',
+    reducedMotion: 'Nothing moves; the test is still.',
   },
   {
     id: 'shore',
-    title: 'Back to the shore',
-    duration: 25,
+    title: 'The shore',
+    tagline: 'The edges of your senses',
     scene: 'shore',
     beats: [
-      { at: 0, text: 'Back to the shore' },
-      { at: 4, text: 'The same shore. The same dusk. Nothing in front of them has changed.' },
+      { text: 'What we can’t see', extra: 1 },
+      { text: 'You’re sitting at the edge of the water. The sun went down a few minutes ago.' },
       {
-        at: 10,
-        text: 'That faint smudge above the water is the Andromeda Galaxy, 2.5 million light-years away: the farthest thing a human eye can see unaided. The light arriving tonight left before there were people.',
-        sources: ['andromeda'],
+        id: 'horizon',
+        text: 'Everything you can see of the sea ends 4.7 kilometers away, where the Earth curves out of sight.',
+        sources: ['horizon'],
+        kind: 'inferred',
+        more: 'For an eye 1.7 meters above the water: distance = √(2 × Earth’s radius × height). Air bends light a little, adding a few percent.',
+      },
+      {
+        id: 'spectrum',
+        text: 'The light your eyes catch is one thin band of a spectrum far wider than color.',
+        sources: ['spectrum'],
+        kind: 'measured',
+        aside: 'spectrum',
+        extra: 2,
+        more: 'Visible light runs from about 380 to 750 nanometers: less than one doubling of wavelength. Radio waves can be kilometers long; gamma rays are smaller than an atom.',
+      },
+      {
+        id: 'spin',
+        text: 'It feels still. It isn’t. The ground under you spins with the planet, faster than a jet flies.',
+        sources: ['earth-rotation'],
+        kind: 'inferred',
+        more: 'Earth turns once a day: about 1,670 km/h at the equator and 1,280 km/h at 40 degrees latitude. Airliners cruise near 900 km/h.',
+      },
+      { id: 'lift', text: 'So what else is out there that your eyes were never built to see?', question: true, extra: 2 },
+    ],
+    scale: [
+      { at: 0, log10m: 0.23 },
+      { at: 'horizon', log10m: 0.6 },
+      { at: 'horizon', shift: 6, log10m: 3.67 },
+      { at: 'end', log10m: 3.9 },
+    ],
+    facts: [
+      { text: 'Bees see ultraviolet. Many flowers carry ultraviolet patterns, invisible to you, that guide bees to their nectar.', sources: ['bee-uv'] },
+      { text: 'Pit vipers sense the warmth of bodies in the dark, through pits that detect infrared.', sources: ['pit-viper'] },
+    ],
+    camera: 'Locked off, eye height, horizon at 42% of the frame: a person on a rock at dusk. The seabed is sounded as the horizon is named; a spectrum bar shows how narrow visible light is; in the last seconds the horizon becomes a row of points.',
+    reducedMotion: 'Water and stars hold still; the horizon resolves to points without travelling.',
+  },
+  {
+    id: 'far',
+    title: 'Too far',
+    tagline: 'Distance hides things',
+    scene: 'cosmos',
+    beats: [
+      { text: 'Too far' },
+      { id: 'earth', text: 'Rise above the shore and the horizon closes into a planet, 12,742 kilometers across.', sources: ['earth'], kind: 'measured' },
+      {
+        id: 'sun',
+        text: 'Its light comes from the Sun. The Sun you see is the Sun of eight minutes ago.',
+        sources: ['light-minutes', 'au'],
+        kind: 'inferred',
+        more: 'Sunlight takes about 8 minutes 19 seconds to cross 150 million kilometers. The Moon you see is about 1.3 seconds old.',
+      },
+      {
+        id: 'grapefruit',
+        text: 'Shrink the Sun to a grapefruit, and Earth is a grain of sand 14 meters away.',
+        sources: ['grapefruit'],
+        kind: 'inferred',
+        more: 'At that scale, about 1 to 10 billion, Earth is 1.2 millimeters across and its orbit 14 meters in radius.',
+      },
+      { id: 'orbits', text: 'These rings are the planets’ orbits, at true scale. The planets themselves are too small to see.', sources: ['neptune'], kind: 'measured' },
+      {
+        id: 'proxima',
+        text: 'On that scale, the nearest other star would be another grapefruit, a continent away.',
+        sources: ['proxima', 'grapefruit'],
+        kind: 'inferred',
+        more: 'Proxima Centauri is 4.24 light-years away: about 3,700 km at grapefruit scale, roughly New York to Los Angeles.',
+      },
+      { id: 'galaxy', text: 'Pull back further: our galaxy, a few hundred billion stars, 100,000 light-years across.', sources: ['milky-way'], kind: 'inferred' },
+      {
+        id: 'fast',
+        text: 'But its outer stars circle too fast. By everything we can see, it should fly apart.',
+        sources: ['dark-matter'],
+        kind: 'inferred',
+        more: 'Stars far from a galaxy’s center orbit about as fast as those near it. Visible matter alone can’t hold them; Vera Rubin’s measurements in the 1970s made the case.',
+      },
+      { id: 'halo', text: 'Something invisible holds it together. We call it dark matter. No one knows what it is.', sources: ['dark-matter'], kind: 'inferred' },
+      {
+        id: 'five',
+        text: 'Every star, planet and person ever seen adds up to about 5% of what’s out there.',
+        sources: ['composition'],
+        kind: 'inferred',
+        aside: 'composition',
+        extra: 1,
+        more: 'From the Planck satellite: ordinary matter about 5%, dark matter about 27%, dark energy about 68% of the universe’s contents.',
+      },
+      { text: 'Distance hides things. So does sheer number.' },
+    ],
+    scale: [
+      { at: 0, log10m: 3.9 },
+      { at: 'earth', log10m: 5.6 },
+      { at: 'earth', shift: 2.5, log10m: 7.42 },
+      // Hold on the whole planet while its line is read, drifting out only a little.
+      { at: 'sun', log10m: 7.68 },
+      { at: 'sun', shift: 5, log10m: 11.4 },
+      { at: 'orbits', log10m: 11.6 },
+      { at: 'orbits', shift: 5, log10m: 12.95 },
+      { at: 'proxima', shift: 1, log10m: 15.4 },
+      { at: 'proxima', shift: 4.5, log10m: 16.4 },
+      { at: 'galaxy', log10m: 17.2 },
+      { at: 'galaxy', shift: 5, log10m: 21.0 },
+      { at: 'halo', log10m: 21.05 },
+      { at: 'halo', shift: 5, log10m: 21.5 },
+      { at: 'end', log10m: 21.6 },
+    ],
+    facts: [{ text: 'A little of the static on an old analog TV was the afterglow of the Big Bang.', sources: ['cmb-static'] }],
+    camera: 'One continuous pull-back whose distance is the scale value itself: Earth, the Sun, the orbits at true scale, Proxima, then the galaxy from above. The galaxy turns, and a halo of dark matter is drawn in violet around it (illustrative).',
+    reducedMotion: 'Each line holds a still view at its scale; changes are cuts, not travel.',
+  },
+  {
+    id: 'many',
+    title: 'Too many',
+    tagline: 'More than anyone can look at',
+    scene: 'web',
+    beats: [
+      { text: 'Too many' },
+      {
+        id: 'web',
+        text: 'Pull back far enough and every point is a galaxy: real ones, mapped by a telescope survey.',
+        sources: ['sdss'],
+        kind: 'measured',
+        extra: 1,
+        more: '113,741 galaxies in a thin slice along the celestial equator, from the Sloan Digital Sky Survey. We sit at the point of the wedge.',
+      },
+      { id: 'threads', text: 'They aren’t scattered evenly. They gather into threads and walls around vast empty voids.', sources: ['web', 'great-wall'], kind: 'inferred' },
+      {
+        id: 'map',
+        text: 'No one has seen this directly. Each galaxy is placed by how much its light has stretched.',
+        sources: ['web', 'sdss'],
+        kind: 'inferred',
+        more: 'Redshift: the universe’s expansion stretches light on its way to us, more for farther galaxies. The distance follows from a model of that expansion.',
+      },
+      { id: 'euclid', text: 'In 2025 the Euclid telescope sent back 26 million galaxies from one week of looking.', sources: ['euclid-q1'], kind: 'measured' },
+      { id: 'tenmonths', text: 'Look at one a second, without sleeping, and you’d finish in about ten months.', sources: ['euclid-time'], kind: 'inferred' },
+      {
+        id: 'zoobot',
+        text: 'So people trained a machine to help. A model called Zoobot sorted 380,000 of them by shape.',
+        sources: ['zoobot'],
+        kind: 'measured',
+        more: 'Here the teal points mark the same share, about 1 in 70, of the survey’s galaxies. Which ones is illustrative.',
+      },
+      { id: 'looks', text: 'It learned from nearly 10,000 volunteers. It doesn’t see farther than we do. It looks at more.', sources: ['zoobot'], kind: 'measured' },
+      { id: 'haze', text: 'Farther still, the threads blur into an even haze.', sources: ['homogeneity'], kind: 'inferred' },
+      {
+        id: 'limit',
+        text: 'Light has had time to reach us from 46 billion light-years away. That’s not the edge of everything.',
+        sources: ['observable', 'age'],
+        kind: 'inferred',
+        more: 'The observable universe is about 92 billion light-years across. The universe is probably larger, and whether it is finite is unknown.',
+      },
+      { text: 'Sometimes what you’re looking for isn’t far away at all. It’s buried in noise.' },
+    ],
+    scale: [
+      { at: 0, log10m: 21.6 },
+      { at: 'web', log10m: 22.6 },
+      { at: 'web', shift: 5, log10m: 25.0 },
+      { at: 'threads', shift: 2, log10m: 25.2 },
+      { at: 'map', shift: 3, log10m: 25.45 },
+      { at: 'euclid', shift: 3, log10m: 25.75 },
+      { at: 'haze', log10m: 25.8 },
+      { at: 'haze', shift: 4, log10m: 26.2 },
+      // Far enough back to see the whole sphere of what light has reached us from.
+      { at: 'limit', shift: 4, log10m: 27.15 },
+      { at: 'end', log10m: 27.15 },
+    ],
+    facts: [{ text: 'Your conscious mind handles roughly 10 bits of information a second, while your senses take in vastly more.', sources: ['bits'] }],
+    camera: 'Out of our galaxy into a real slice of the universe: SDSS galaxies placed by redshift, with us at the point of the wedge. Zoobot’s share is marked in teal; then a haze, and a shell of light marking the observable limit.',
+    reducedMotion: 'No orbit; one composition per line.',
+  },
+  {
+    id: 'faint',
+    title: 'Too faint',
+    tagline: 'Hidden in plain sight',
+    scene: 'star',
+    beats: [
+      { text: 'Too faint' },
+      { text: 'This is a real star, a little cooler than the Sun, 2,800 light-years away.', sources: ['kepler-1772-star'], kind: 'inferred' },
+      {
+        id: 'dots',
+        text: 'A NASA telescope measured its brightness every half hour for 90 days. Each dot is one measurement.',
+        sources: ['kepler-1772'],
+        kind: 'measured',
+        more: 'NASA’s Kepler telescope, December 2009 to March 2010: 3,803 measurements of the star Kepler-1772.',
+      },
+      {
+        id: 'planet',
+        text: 'A planet circles this star, and dims it slightly every time it passes in front.',
+        sources: ['kepler-1772b', 'transit-depth'],
+        kind: 'measured',
+        more: 'By about 150 parts per million, or 0.015%. An Earth-size planet would dim a Sun-like star by about 84 parts per million.',
+      },
+      { id: 'guess', text: 'Can you spot it? Tap the chart where you think the planet is passing.', hold: 'transit' },
+      { id: 'nobody', text: 'Almost nobody can. Each dip is smaller than the star’s ordinary flicker.' },
+      { id: 'sweep', text: 'So a computer tries every possible orbit, stacking the measurements to see if a dip lines up.', sources: ['bls'], kind: 'inferred', extra: 2 },
+      { id: 'searching', text: 'Thousands of guesses give only noise. Until one lines up.', extra: 1 },
+      { id: 'lock', text: 'At 3.21 days, the dip appears. No single measurement showed it.', sources: ['bls', 'kepler-1772b'], kind: 'inferred', extra: 1 },
+      { text: 'Searches find thousands of dips like this. Most turn out to be something else.' },
+      {
+        id: 'exominer',
+        text: 'A neural network called ExoMiner checked this one: very probably a planet. Measured, never seen.',
+        sources: ['exominer', 'kepler-1772b'],
+        kind: 'measured',
+        more: 'Kepler-1772 b is one of 301 planets ExoMiner validated in 2021. “Validated” is statistical: very probably real, not independently confirmed.',
+      },
+      { text: 'Some things hide in time instead: too fast, or too slow, for you to notice.' },
+    ],
+    scale: [{ at: 0, log10m: 9.14 }],
+    facts: [
+      { text: 'In a famous study, about half the people counting basketball passes missed a person in a gorilla suit walking through.', sources: ['gorilla'] },
+      { text: 'People routinely miss big changes between two pictures if there’s a blink between them.', sources: ['change-blindness'] },
+    ],
+    camera: 'Still. A single star, dim, behind the instrument: 90 days of real Kepler measurements of Kepler-1772. The viewer guesses where the planet is; then a period search sweeps until the 3.21-day orbit appears.',
+    reducedMotion: 'The period search jumps to its result instead of sweeping.',
+  },
+  {
+    id: 'time',
+    title: 'Too fast, too slow',
+    tagline: 'Hidden in time',
+    scene: 'none',
+    beats: [
+      { text: 'Too fast, too slow' },
+      { id: 'wing', text: 'A hummingbird’s wings beat dozens of times a second. You see only a blur.', sources: ['hummingbird'], kind: 'measured' },
+      { id: 'clock', text: 'A clock’s hour hand moves all day. You never actually see it move.' },
+      {
+        id: 'drift',
+        text: 'The ground under you drifts a few centimeters a year, about as fast as your fingernails grow.',
+        sources: ['plate-drift', 'fingernails'],
         kind: 'measured',
       },
-      { at: 17, text: 'Every instrument we build shows us a little more of what was always there.' },
-      { at: 21, text: 'What is in front of us that we have not learned to see yet?', question: true },
+      {
+        id: 'now',
+        text: 'Even “now” arrives late. Your brain takes about a tenth of a second to build each moment.',
+        sources: ['perception-lag'],
+        kind: 'inferred',
+        more: 'Signals take tens of milliseconds to travel from eye to brain, and processing adds more. The brain predicts ahead to cover the gap.',
+      },
+      { id: 'window', text: 'You see change only in a narrow window. Fast cameras, time-lapse and long surveys open the rest.', extra: 1 },
+      { text: 'We’ve been looking outward. The strangest place might be in here.' },
+    ],
+    scale: [{ at: 0, log10m: 0.23 }],
+    facts: [{ text: 'GPS only works because it corrects for relativity: satellite clocks gain about 38 microseconds a day on ours.', sources: ['gps'] }],
+    camera: 'A ruler of time from a thousandth of a second to billions of years, with the narrow band a person can watch happen. Above it, a wing too fast to see and a clock too slow to see, with a control to speed time up.',
+    reducedMotion: 'The wing is drawn as a still blur; the clock moves only when sped up.',
+  },
+  {
+    id: 'small',
+    title: 'Too small',
+    tagline: 'The universe inside you',
+    scene: 'within',
+    beats: [
+      { text: 'Too small' },
+      { id: 'finger', text: 'Back to you. Look closely at a fingertip.', sources: ['fingertip'], kind: 'illustrative' },
+      { id: 'cells', text: 'You’re made of about 30 trillion cells, each far too small to see.', sources: ['cells', 'cell-points'], kind: 'inferred' },
+      {
+        id: 'microbes',
+        text: 'And you’re not alone in there. About as many bacteria live in and on you.',
+        sources: ['microbiome'],
+        kind: 'inferred',
+        more: 'About 38 trillion bacteria to 30 trillion human cells, mostly in the gut. They are much smaller than your cells, so they add only a fraction of a kilogram.',
+      },
+      { id: 'turnover', text: 'Every second, your body quietly replaces about four million of its own cells.', sources: ['turnover'], kind: 'inferred' },
+      { id: 'proteins', text: 'Inside each cell, proteins: chains that fold into shapes. The shape is the job.' },
+      { id: 'p53', text: 'This one is p53. It helps stop damaged cells from dividing.', sources: ['p53'], kind: 'inferred' },
+      { id: 'points', text: 'Each point is one of its 393 building blocks, placed where a computer predicts.', sources: ['p53'], kind: 'inferred' },
+      {
+        id: 'atom',
+        text: 'Smaller still, an atom. Its electron isn’t a dot. It’s a cloud of maybes.',
+        sources: ['hydrogen'],
+        kind: 'inferred',
+        more: 'Hydrogen’s electron is most likely found 0.053 nanometers from the nucleus. The points are samples of that probability, not a picture of an electron.',
+      },
+      { text: 'Down here, nobody can look directly. So we’ve started asking machines to guess.' },
+    ],
+    scale: [
+      { at: 0, log10m: 0.23 },
+      { at: 'finger', log10m: -1.4 },
+      { at: 'finger', shift: 3, log10m: -1.75 },
+      { at: 'cells', log10m: -2.1 },
+      { at: 'cells', shift: 4, log10m: -4.55 },
+      { at: 'microbes', log10m: -4.6 },
+      { at: 'proteins', log10m: -4.75 },
+      { at: 'p53', shift: 1, log10m: -7.9 },
+      { at: 'atom', log10m: -7.95 },
+      { at: 'atom', shift: 3, log10m: -9.65 },
+      { at: 'end', log10m: -9.8 },
+    ],
+    facts: [
+      {
+        text: 'Popular stories of a “wood wide web,” with trees talking through fungi, went further than the evidence. Hidden systems need checking too.',
+        sources: ['wood-wide-web'],
+      },
+    ],
+    camera: 'Fixed. Each scale arrives as its own object growing past the frame: a fingertip’s ridges, a cell with bacteria around it, p53 (real AlphaFold coordinates), hydrogen’s electron cloud.',
+    reducedMotion: 'Cuts between the fingertip, the cell, the protein and the atom.',
+  },
+  {
+    id: 'unsure',
+    title: 'Too unsure',
+    tagline: 'Machines have blind spots too',
+    scene: 'within',
+    beats: [
+      { text: 'Too unsure' },
+      { text: 'For sixty years, finding a protein’s shape took months of lab work. About 190,000 were solved.', sources: ['experimental'], kind: 'measured' },
+      {
+        id: 'alphafold',
+        text: 'AlphaFold learned from them. Now it predicts shapes from the recipe alone: 200 million so far.',
+        sources: ['alphafold-db'],
+        kind: 'measured',
+        more: 'The recipe is the protein’s sequence of amino acids. Demis Hassabis and John Jumper shared the 2024 Nobel Prize in Chemistry for AlphaFold.',
+      },
+      { id: 'guess', text: 'It also marks where it’s unsure. Where would you guess: the folded middle, or the loose ends?', hold: 'confidence' },
+      { id: 'reveal', text: 'The loose ends. Violet marks guesses: 117 of its 393 building blocks score below 50 out of 100.', sources: ['plddt', 'p53'], kind: 'measured' },
+      { id: 'floppy', text: 'Some of that is a protein that’s genuinely floppy. Some is the model not knowing.', sources: ['plddt'], kind: 'inferred' },
+      { id: 'check', text: 'Only an experiment can tell which. A machine’s blind spot, like yours, needs checking.' },
+      { id: 'pattern', text: 'A model can find a pattern without understanding it.' },
+      { id: 'notice', text: 'You can look at something without noticing it.' },
+      {
+        id: 'aware',
+        text: 'Neither is the same as being aware. Whether a machine ever could be is an open question.',
+        sources: ['consciousness'],
+        kind: 'speculative',
+        extra: 2,
+      },
+      { text: 'Which brings us back to the one instrument you carry everywhere.' },
+    ],
+    scale: [{ at: 0, log10m: -7.9 }],
+    facts: [
+      { text: 'Mantis shrimp have about 12 kinds of color receptor to your 3, yet tests show they tell colors apart worse than you do.', sources: ['mantis'] },
+    ],
+    camera: 'The protein, turning slowly, recolored by what the instrument claims: its prediction, its confidence, and what needs checking.',
+    reducedMotion: 'No turning; the views change on each line.',
+  },
+  {
+    id: 'return',
+    title: 'New eyes',
+    tagline: 'The same shore, seen again',
+    scene: 'shore',
+    beats: [
+      { text: 'New eyes' },
+      { text: 'The same shore. The same dusk. Nothing in front of you has changed.' },
+      { id: 'andromeda', text: 'That faint smudge is the Andromeda Galaxy, the farthest thing your eyes can see unaided.', sources: ['andromeda'], kind: 'measured' },
+      { text: 'Its light left 2.5 million years ago, before there were any people.', sources: ['andromeda'], kind: 'inferred' },
+      { id: 'lenses', text: 'Now try on other eyes. Each one shows something that is here all along.', hold: 'lenses' },
+      { id: 'always', text: 'Every instrument we build shows us a little more of what was always there.' },
+      { id: 'last', text: 'So what’s in front of you right now that you haven’t learned to see?', question: true, extra: 3 },
     ],
     scale: [
       { at: 0, log10m: -2 },
-      { at: 3, log10m: 0.23 },
-      { at: 25, log10m: 0.23 },
+      { at: 0, shift: 3, log10m: 0.23 },
     ],
-    camera: 'The opening frame, exactly. Points along the horizon settle back into a line.',
-    controls: 'Replay, or open the sources.',
-    reducedMotion: 'Holds the opening composition.',
-    sources: ['andromeda'],
+    facts: [{ text: 'Many migrating birds sense Earth’s magnetic field and use it to find their way.', sources: ['bird-magnet'] }],
+    camera: 'The opening frame, exactly, with Andromeda named. Then lenses over the same frame: infrared, radio, neutrinos, the magnetic field, dark matter.',
+    reducedMotion: 'Holds the opening composition; lenses change without motion.',
   },
 ];
+
+function build(def: ChapterDef): Chapter {
+  let at = 0;
+  const beats: Beat[] = def.beats.map((b, i) => {
+    const dur = (i === 0 ? 3.5 : readTime(b.text)) + (b.question ? 1.5 : 0) + (b.extra ?? 0);
+    const beat = { ...b, at, dur };
+    at += dur;
+    return beat;
+  });
+  const duration = at;
+  const when = (k: ScaleKeyDef) => {
+    const base = typeof k.at === 'number' ? k.at : k.at === 'end' ? duration : beats.find((b) => b.id === k.at)?.at;
+    if (base === undefined) throw new Error(`No line "${k.at}" in chapter ${def.id}`);
+    return Math.min(duration, base + (k.shift ?? 0));
+  };
+  const scale = def.scale.map((k) => ({ at: when(k), log10m: k.log10m }));
+  if (scale[scale.length - 1].at < duration) scale.push({ at: duration, log10m: scale[scale.length - 1].log10m });
+  const sources = [...new Set([...beats.flatMap((b) => b.sources ?? []), ...(def.facts ?? []).flatMap((f) => f.sources)])];
+  return { ...def, beats, scale, duration, sources };
+}
+
+export const CHAPTERS: Chapter[] = DEFS.map(build);
 
 export const STARTS = CHAPTERS.reduce<number[]>((acc, _c, i) => {
   acc.push(i === 0 ? 0 : acc[i - 1] + CHAPTERS[i - 1].duration);
@@ -338,6 +511,21 @@ export const STARTS = CHAPTERS.reduce<number[]>((acc, _c, i) => {
 }, []);
 
 export const TOTAL = STARTS[STARTS.length - 1] + CHAPTERS[CHAPTERS.length - 1].duration;
+
+/** A chapter's index by id. */
+export const CH = Object.fromEntries(CHAPTERS.map((c, i) => [c.id, i])) as Record<string, number>;
+
+/** Seconds into its chapter at which a named line starts. */
+export function beatStart(chapterId: string, beatId: string): number {
+  const b = CHAPTERS[CH[chapterId]].beats.find((x) => x.id === beatId);
+  if (!b) throw new Error(`No line "${beatId}" in chapter ${chapterId}`);
+  return b.at;
+}
+
+/** The id of the line on screen at a moment of a chapter, if it has one. */
+export function beatIdAt(chapter: Chapter, local: number): string | undefined {
+  return chapter.beats[beatIndexAt(chapter, local)].id;
+}
 
 export function chapterIndexAt(t: number): number {
   for (let i = CHAPTERS.length - 1; i >= 0; i--) if (t >= STARTS[i]) return i;
@@ -352,6 +540,11 @@ export function beatIndexAt(chapter: Chapter, local: number): number {
   return b;
 }
 
+/** Every hold on the timeline, at the moment the ride stops: the end of its line. */
+export const HOLDS = CHAPTERS.flatMap((c, i) =>
+  c.beats.filter((b) => b.hold).map((b) => ({ id: b.hold as HoldId, t: STARTS[i] + b.at + b.dur - 0.05 })),
+);
+
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 /** log10 of the width in view, in meters, at time t. */
@@ -364,6 +557,7 @@ export function scaleAt(t: number): number {
     if (local <= keys[k].at) {
       const a = keys[k - 1];
       const b = keys[k];
+      if (b.at <= a.at) return b.log10m;
       return a.log10m + (b.log10m - a.log10m) * easeInOut((local - a.at) / (b.at - a.at));
     }
   }

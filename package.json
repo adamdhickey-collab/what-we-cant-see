@@ -7,9 +7,11 @@
   "author": "Adam Hickey",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && node scripts/check-script.mjs && vite build",
+    "check:script": "node scripts/check-script.mjs",
     "preview": "vite preview",
-    "data:protein": "node scripts/fetch-protein.mjs"
+    "data:protein": "node scripts/fetch-protein.mjs",
+    "data:galaxies": "node scripts/fetch-galaxies.mjs"
   },
   "dependencies": {
     "d3-scale": "^4.0.2",

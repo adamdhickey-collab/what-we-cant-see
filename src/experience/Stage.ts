@@ -5,9 +5,10 @@
 import * as THREE from 'three';
 import { director } from '../animation/director';
 import { smoothstep } from '../animation/ease';
-import { CHAPTERS, STARTS, TOTAL, heldTime, scaleAt, type SceneId } from '../content/chapters';
+import { CH, CHAPTERS, STARTS, TOTAL, heldTime, scaleAt, type SceneId } from '../content/chapters';
 import { INK_HEX } from '../shaders/palette';
 import { createCosmos } from '../scenes/cosmos';
+import { createLenses } from '../scenes/lenses';
 import { createShore } from '../scenes/shore';
 import { createStar } from '../scenes/star';
 import type { Frame, Label, StageScene } from '../scenes/types';
@@ -15,6 +16,7 @@ import { createWeb } from '../scenes/web';
 import { createWithin } from '../scenes/within';
 
 const FADE = 1.6;
+// 'none' draws nothing: the page's own instruments carry those chapters.
 const ORDER: SceneId[] = ['shore', 'cosmos', 'web', 'star', 'within'];
 
 export class Stage {
@@ -43,7 +45,7 @@ export class Stage {
     this.mobile = matchMedia('(max-width: 767px)').matches || (navigator.hardwareConcurrency ?? 8) <= 4;
     renderer.autoClear = false;
     renderer.setClearColor(INK_HEX, 1);
-    this.scenes = [createShore(), createCosmos(this.mobile), createWeb(this.mobile), createStar(this.mobile), createWithin(this.mobile)];
+    this.scenes = [createShore(), createLenses(), createCosmos(this.mobile), createWeb(this.mobile), createStar(this.mobile), createWithin(this.mobile)];
     this.windows = Object.fromEntries(ORDER.map((id) => [id, CHAPTERS.flatMap((c, i) => (c.scene === id ? [i] : []))])) as Record<SceneId, number[]>;
     this.resize();
     window.addEventListener('resize', this.resize);
@@ -79,6 +81,12 @@ export class Stage {
 
   /** Presence of a scene, and which of its chapters it is drawing. */
   private weigh(id: SceneId, t: number) {
+    // The intro sits over the opening shore, which gives way to the dark pre-show once the ride begins.
+    if (id === 'shore' && t < STARTS[CH.eyes] + CHAPTERS[CH.eyes].duration - FADE) {
+      const s = director.get();
+      const weight = s.started ? 1 - smoothstep(0, 2.5, t - STARTS[CH.eyes]) : 1;
+      if (weight > 0) return { weight, chapter: CH.shore, opening: true };
+    }
     let best = { weight: 0, chapter: 0 };
     for (const i of this.windows[id]) {
       const start = STARTS[i], end = start + CHAPTERS[i].duration;
@@ -87,7 +95,7 @@ export class Stage {
       const weight = fadeIn * fadeOut;
       if (weight > best.weight) best = { weight, chapter: i };
     }
-    return best;
+    return { ...best, opening: false };
   }
 
   private loop = (now: number) => {
@@ -108,7 +116,7 @@ export class Stage {
     this.renderer.clear();
     const labels: Label[] = [];
     for (const scene of this.scenes) {
-      const { weight, chapter } = this.weigh(scene.id, t);
+      const { weight, chapter, opening } = this.weigh(scene.id, t);
       if (weight < 0.002) continue;
       const frame: Frame = {
         t,
@@ -116,9 +124,9 @@ export class Stage {
         elapsed: this.elapsed,
         weight,
         chapter,
-        local: t - STARTS[chapter],
+        local: opening ? 0 : t - STARTS[chapter],
         // Across a crossfade, each scene keeps the scale of its own chapter.
-        scale: scaleAt(Math.max(STARTS[chapter], Math.min(STARTS[chapter] + CHAPTERS[chapter].duration - 1e-3, t))),
+        scale: opening ? scaleAt(STARTS[chapter]) : scaleAt(Math.max(STARTS[chapter], Math.min(STARTS[chapter] + CHAPTERS[chapter].duration - 1e-3, t))),
         width: w,
         height: h,
         aspect: w / h,
