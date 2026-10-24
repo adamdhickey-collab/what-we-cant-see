@@ -3,3 +3,5 @@ dist
 .DS_Store
 *.log
 .claude/
+# Private media for local screenings, never committed or deployed.
+local/

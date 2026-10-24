@@ -24,9 +24,23 @@ export interface DirectorState {
 
 type Listener = () => void;
 
+/**
+ * Something other than the frame clock that says where the story is, such
+ * as a soundtrack. While playing, the director reads it instead of adding dt,
+ * and the transport shows its time rather than the story's.
+ */
+export interface ClockSource {
+  /** Story time now. */
+  read(): number;
+  /** The source's own time for a story time, and its full length, for display. */
+  display(t: number): number;
+  total: number;
+}
+
 class Director {
   private s: DirectorState;
   private listeners = new Set<Listener>();
+  source: ClockSource | null = null;
 
   constructor() {
     const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -60,7 +74,7 @@ class Director {
 
   tick(dt: number) {
     if (!this.s.playing) return;
-    const t = this.s.t + dt;
+    const t = this.source ? this.source.read() : this.s.t + dt;
     if (t >= TOTAL) this.set({ t: TOTAL, playing: false, ended: true });
     else this.set({ t });
   }

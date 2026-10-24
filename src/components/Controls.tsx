@@ -31,7 +31,8 @@ export function Controls() {
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5 10 8l-4.5 4.5" /></svg>
         </button>
         <span className="time" aria-hidden="true">
-          {clock(t)} <span className="time-total">/ {clock(TOTAL)}</span>
+          {clock(director.source ? director.source.display(t) : t)}{' '}
+          <span className="time-total">/ {clock(director.source ? director.source.total : TOTAL)}</span>
         </span>
         <div className="mode" role="radiogroup" aria-label="Mode">
           <button type="button" role="radio" aria-checked={mode === 'guided'} className={mode === 'guided' ? 'is-on' : undefined} onClick={() => director.play()}>

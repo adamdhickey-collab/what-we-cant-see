@@ -31,6 +31,13 @@ npm run preview    # serve the build
 `?kiosk` plays from the first frame and loops after a ten-second rest, for a
 wall display.
 
+`?soundtrack` (development only) plays `local/soundtrack.mp3`, or
+`?soundtrack=name.m4a` for another file in `local/`, and lets the music drive
+the clock: the 3:40 story stretches along a 6:11 piece through the cue map in
+`src/content/soundtrack.ts`. `local/` is ignored by git and the public build
+contains neither the code nor the file. Press M while it plays to log a moment
+of the music for tuning the cues.
+
 ## What is here
 
 | | |
