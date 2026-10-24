@@ -131,7 +131,7 @@ class Sound {
   private mix() {
     const ctx = this.ctx!;
     const s = director.get();
-    const on = s.sound && s.started;
+    const on = s.sound && s.started && !s.music;
     if (on !== this.on) {
       this.on = on;
       this.master.gain.cancelScheduledValues(ctx.currentTime);

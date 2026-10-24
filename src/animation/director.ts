@@ -37,6 +37,8 @@ export interface DirectorState extends Prefs {
   /** Zoobot's teal picks, which the viewer can hide to compare. */
   picks: boolean;
   lens: LensId | null;
+  /** Music is playing alongside (development only), so the built-in sound stays quiet. */
+  music: boolean;
   /** Wall-clock milliseconds when the ride began, and when it ended, for the meter. */
   beganAt: number;
   endedAt: number | null;
@@ -90,6 +92,7 @@ class Director {
       answers: {},
       picks: true,
       lens: null,
+      music: false,
       beganAt: 0,
       endedAt: null,
       ...loadPrefs(),

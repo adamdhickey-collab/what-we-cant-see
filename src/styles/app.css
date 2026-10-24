@@ -1989,3 +1989,20 @@ input[type='range']::-moz-range-thumb {
     overflow-y: auto;
   }
 }
+
+/* Development only: YouTube's player for ?music, small but visible, as its terms require. */
+.music-player {
+  position: fixed;
+  right: var(--gutter);
+  top: 64px;
+  z-index: 5;
+  width: 200px;
+  height: 200px;
+  opacity: 0.35;
+  border: 1px solid var(--hairline);
+  transition: opacity var(--dur-fast);
+}
+
+.music-player:hover {
+  opacity: 1;
+}
