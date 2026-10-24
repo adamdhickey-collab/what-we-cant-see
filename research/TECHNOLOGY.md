@@ -72,10 +72,9 @@ shaders to TSL.
   when it arrives; phones draw every other galaxy.
 - Sound effects are synthesized with the Web Audio API: no files, and
   nothing at all until the viewer turns them on.
-- The music streams from YouTube's IFrame Player API, loaded only once a
-  viewer chooses it, from the no-cookie domain. The story's clock stays the
-  director's; the player is seeked to match whenever they drift by more than
-  0.6 s.
+- The music is a 9 MB MP3 played by a plain audio element, loaded only once
+  a viewer chooses it. The story's clock stays the director's; the audio is
+  moved to match whenever the two drift by more than 0.4 s.
 
 ## Fallbacks
 

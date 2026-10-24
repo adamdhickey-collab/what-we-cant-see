@@ -7,7 +7,7 @@ import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
 
 const ITEMS: { key: keyof Prefs; name: string; says: string }[] = [
-  { key: 'music', name: 'Music', says: `${MUSIC.artist}, “${MUSIC.title},” played from YouTube alongside the ride.` },
+  { key: 'music', name: 'Music', says: `${MUSIC.artist}, “${MUSIC.title},” alongside the ride.` },
   { key: 'sound', name: 'Sound effects', says: 'A quiet bed for each place, and a bell at each reveal. Quiet while the music plays.' },
   { key: 'voice', name: 'Read aloud', says: 'Your device’s voice reads each line.' },
   { key: 'evidence', name: 'Show the evidence', says: 'Each line’s kind of claim (measured, inferred…) and its source.' },

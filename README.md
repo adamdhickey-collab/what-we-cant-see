@@ -89,9 +89,9 @@ scripts/
 - A real AlphaFold structure (human p53) in three views.
 - A time instrument, a fingertip, bacteria, a spectrum bar, a composition
   bar, a hidden-systems meter and an end-of-ride souvenir card.
-- Music, off until chosen: Max Richter's "On the Nature of Daylight" from
-  its official YouTube upload, following the ride's clock and landing its
-  last note on the closing question. Synthesized sound effects and a
+- Music, off until chosen: Max Richter's "On the Nature of Daylight",
+  served with the site, following the ride's clock and landing its last note
+  on the closing question. Synthesized sound effects and a
   read-aloud voice are options too.
 - Every claim tagged measured, inferred, illustrative or open question,
   behind an evidence option, with More on each line, side facts, a Sources
@@ -125,8 +125,7 @@ portfolio.
 
 Protein structure: AlphaFold DB (EMBL-EBI and Google DeepMind), CC BY 4.0.
 Light curve: NASA Kepler mission, via MAST.
-Music: Max Richter, "On the Nature of Daylight" (Fatcat Records), played
-through YouTube's embedded player from the label's official upload.
+Music: Max Richter, "On the Nature of Daylight", used with permission.
 Galaxies: Sloan Digital Sky Survey DR17, funded by the Alfred P. Sloan
 Foundation, the U.S. Department of Energy Office of Science and the
 participating institutions.

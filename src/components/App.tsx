@@ -255,7 +255,7 @@ export function App() {
           </div>
           {musicOn && (
             <p className="intro-note">
-              Music: {MUSIC.artist}, “{MUSIC.title}” ({MUSIC.label}), played from YouTube.
+              Music: {MUSIC.artist}, “{MUSIC.title}.”
             </p>
           )}
           <p className="intro-note">

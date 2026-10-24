@@ -1,8 +1,6 @@
-// Music, alongside the ride: Max Richter's On the Nature of Daylight, from
-// its official upload, through YouTube's own embedded player. Nothing is
-// downloaded or re-hosted. The player loads only once the viewer chooses
-// music, uses YouTube's no-cookie domain, and stays visible in a corner at
-// the minimum size YouTube's terms allow.
+// Music, alongside the ride: Max Richter's On the Nature of Daylight, served
+// with the site from public/audio. Nothing is fetched until the viewer
+// chooses music, and the choice is remembered like the other options.
 //
 // The music does not drive the clock. The story keeps its own seconds, so
 // every line still gets its full reading time, and the music follows: it
@@ -14,47 +12,22 @@ import { beatStart, CH, STARTS } from '../content/chapters';
 import { director } from './director';
 
 export const MUSIC = {
-  id: 'rVN1B-tUpgs',
+  src: 'audio/on-the-nature-of-daylight.mp3',
   title: 'On the Nature of Daylight',
   artist: 'Max Richter',
-  label: 'Fatcat Records',
 };
-/** The official upload's length, until the player reports its own. */
-const FALLBACK_LENGTH = 375;
+/** The recording's length, until the file reports its own. */
+const FALLBACK_LENGTH = 374.9;
 /** Story time at which the last note should fall: a few seconds into the closing question. */
 const LAND = STARTS[CH.return] + beatStart('return', 'last') + 5;
-
-interface YTPlayer {
-  playVideo(): void;
-  pauseVideo(): void;
-  seekTo(s: number, allowSeekAhead: boolean): void;
-  getCurrentTime(): number;
-  getDuration(): number;
-  mute(): void;
-  unMute(): void;
-}
-type YTNamespace = { Player: new (el: HTMLElement, opts: object) => YTPlayer };
-
-function loadApi(): Promise<YTNamespace> {
-  const w = window as unknown as { YT?: YTNamespace; onYouTubeIframeAPIReady?: () => void };
-  if (w.YT?.Player) return Promise.resolve(w.YT);
-  return new Promise((resolve, reject) => {
-    w.onYouTubeIframeAPIReady = () => resolve(w.YT!);
-    const s = document.createElement('script');
-    s.src = 'https://www.youtube.com/iframe_api';
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
+/** How far the music may drift from the story before it is moved back in step. */
+const DRIFT = 0.4;
 
 class Music {
-  private player: YTPlayer | null = null;
-  private box: HTMLElement | null = null;
-  private loading: Promise<void> | null = null;
-  private ready = false;
-  private playing = false;
+  private audio: HTMLAudioElement | null = null;
   private length = FALLBACK_LENGTH;
   private from: number | null = null;
+  private playing = false;
 
   constructor() {
     const from = new URLSearchParams(location.search).get('from');
@@ -66,66 +39,49 @@ class Music {
     return this.from ?? LAND - this.length;
   }
 
-  /** Load the player, if the viewer wants music. Safe to call often. */
+  /** Start loading the recording, if the viewer wants music. Safe to call often. */
   prepare() {
-    if (!director.get().music || this.loading) return;
-    this.loading = loadApi()
-      .then((YT) => {
-        const box = (this.box = document.createElement('div'));
-        box.className = 'music-player';
-        box.setAttribute('aria-label', `Music: ${MUSIC.title}, ${MUSIC.artist}`);
-        const host = document.createElement('div');
-        box.appendChild(host);
-        document.body.appendChild(box);
-        this.player = new YT.Player(host, {
-          width: 200,
-          height: 200,
-          videoId: MUSIC.id,
-          host: 'https://www.youtube-nocookie.com',
-          playerVars: { controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
-          events: {
-            onReady: () => {
-              this.ready = true;
-              this.length = this.player!.getDuration() || FALLBACK_LENGTH;
-              this.sync();
-            },
-          },
-        });
-        if (import.meta.env.DEV) (window as unknown as { musicPlayer: YTPlayer }).musicPlayer = this.player;
-      })
-      .catch(() => {
-        // YouTube unreachable or blocked: the ride goes on without it.
-        this.loading = null;
-      });
+    if (!director.get().music || this.audio) return;
+    const a = (this.audio = new Audio(`${import.meta.env.BASE_URL}${MUSIC.src}`));
+    a.preload = 'auto';
+    a.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(a.duration)) this.length = a.duration;
+      this.sync();
+    });
+    if (import.meta.env.DEV) (window as unknown as { musicAudio: HTMLAudioElement }).musicAudio = a;
   }
 
   /**
-   * Call from a click. Browsers start sound only on a gesture, so a ready
-   * player is woken here, muted for a moment, and can then come in on cue.
+   * Call from a click. Some browsers let an audio element start only from a
+   * gesture the first time, so it is started silently here and can then come
+   * in on cue without one.
    */
   wake() {
     this.prepare();
-    const p = this.player;
-    if (!this.ready || !p || this.playing) return;
-    p.mute();
-    p.playVideo();
-    setTimeout(() => {
-      if (!this.playing) p.pauseVideo();
-      p.unMute();
-    }, 400);
+    const a = this.audio;
+    if (!a || this.playing) return;
+    a.muted = true;
+    a.play()
+      .then(() => {
+        if (!this.playing) a.pause();
+      })
+      .catch(() => {})
+      .finally(() => {
+        a.muted = false;
+        this.sync();
+      });
   }
 
   private sync = () => {
+    const a = this.audio;
+    if (!a) return;
     const s = director.get();
-    if (this.box) this.box.hidden = !s.music || !s.started;
-    const p = this.player;
-    if (!this.ready || !p) return;
     const at = s.t - this.offset();
     const inside = at >= 0 && at < this.length;
     const should = s.music && s.playing && inside;
-    if (inside && Math.abs(p.getCurrentTime() - at) > 0.6) p.seekTo(at, true);
-    if (should && !this.playing) p.playVideo();
-    if (!should && this.playing) p.pauseVideo();
+    if (inside && Math.abs(a.currentTime - at) > DRIFT) a.currentTime = at;
+    if (should && !this.playing) void a.play().catch(() => {});
+    if (!should && this.playing) a.pause();
     this.playing = should;
   };
 }

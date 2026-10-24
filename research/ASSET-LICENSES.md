@@ -8,12 +8,10 @@
 | SDSS DR17 galaxy positions, equatorial slice | `public/data/galaxies-sdss.json`, from SkyServer | SDSS data are public; credit requested | In Chapter 4's More and the Sources drawer; README credits |
 | Galaxy, halo, starfield, shoreline, fingertip, bacteria, lenses | Generated procedurally in shaders and code | Original | Labelled "illustrative" or "schematic" on screen |
 | Sound effects | Synthesized in the browser (`src/audio/sound.ts`) | Original | Not required |
-| Music: Max Richter, "On the Nature of Daylight" | Not in the repository. Played from Fatcat Records' official YouTube upload (`rVN1B-tUpgs`) through YouTube's embedded player (`src/animation/music.ts`) | © the rights holders; embedded under YouTube's Terms of Service, which the uploader allows | On the intro and in Options when music is on; README credits |
+| Music: Max Richter, "On the Nature of Daylight" (MP3, 192 kbps, 6:15) | `public/audio/on-the-nature-of-daylight.mp3`, played by `src/animation/music.ts` | © the rights holders; used with permission held by Adam Hickey | On the intro and in Options when music is on; README credits |
 
-No images, video or recorded audio ship in the build. The music is never
-downloaded or re-hosted: it streams from YouTube only after a viewer turns it
-on, through the no-cookie player, which stays visible at YouTube's minimum
-size of 200 × 200 px as its policies require. Any NASA or ESA imagery added later:
+No images or video ship in the build. The one recording, the music, is
+fetched only after a viewer turns music on. Any NASA or ESA imagery added later:
 NASA media is generally not copyrighted but its guidelines ask for credit and
 forbid implied endorsement; ESA imagery is mostly CC BY-SA 3.0 IGO and must
 be credited per image. Record each one here before it is committed.
