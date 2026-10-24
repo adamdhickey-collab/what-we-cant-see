@@ -19,7 +19,7 @@ export const shoreFragment = /* glsl */ `
   precision highp float;
   ${PALETTE_GLSL}
   uniform vec2 uRes;
-  uniform float uTime, uOpacity, uDusk, uLift, uAndromeda, uMotion, uReveal;
+  uniform float uTime, uOpacity, uDusk, uLift, uAndromeda, uMotion, uReveal, uStipple;
   uniform sampler2D uFigure;
   varying vec2 vUv;
 
@@ -33,6 +33,12 @@ export const shoreFragment = /* glsl */ `
   float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
   float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
   float ellipse(vec2 p, vec2 c, vec2 r) { return (length((p - c) / r) - 1.0) * min(r.x, r.y); }
+
+  // The centre of a grid cell, in scene coordinates.
+  vec2 cellCentre(vec2 cell, float size, float aspect) {
+    vec2 f = (cell + 0.5) * size / uRes;
+    return vec2((f.x - 0.5) * aspect, f.y);
+  }
 
   float landY(float x) { return 0.115 + 0.11 * smoothstep(0.3, 1.05, x) + 0.006 * sin(x * 23.0) + 0.016 * (noise(vec2(x * 14.0, 1.0)) - 0.5); }
 
@@ -93,6 +99,9 @@ export const shoreFragment = /* glsl */ `
     float t = uTime * uMotion;
     vec2 sun = vec2(0.18 * aspect, H - 0.05);
     vec3 col;
+    // Stars and stipple share one pixel grid a few device pixels square.
+    float PX = max(2.0, floor(uRes.y / 420.0));
+    vec2 px = floor(gl_FragCoord.xy / PX);
 
     // Where the person sits, in screen and in sea coordinates.
     float rockX = 0.1 * aspect;
@@ -109,9 +118,6 @@ export const shoreFragment = /* glsl */ `
       float dark = smoothstep(0.45, 0.72, uDusk) * smoothstep(0.08, 0.5, h);
       col += mix(VIOLET, IVORY, 0.3) * 0.045 * band * (0.4 + fbm(bq * vec2(5.0, 14.0))) * dark;
 
-      // Stars on a pixel grid a few device pixels square.
-      float PX = max(2.0, floor(uRes.y / 420.0));
-      vec2 px = floor(gl_FragCoord.xy / PX);
       float avail = smoothstep(0.24, 0.66, uDusk) * 1.08;
       vec3 stars = starLayer(px, 7.0, 0.16 + 0.5 * band, 0.0, avail * 0.9, t, false) * 0.55;
       stars += starLayer(px, 23.0, 0.55, 31.0, avail, t, true);
@@ -187,19 +193,53 @@ export const shoreFragment = /* glsl */ `
     vec3 ground = INK * 0.55 + COPPER * 0.04 * fbm(p * 40.0);
     vec3 stoneCol = INK * 0.62 + mix(SLATE, COPPER, 0.25) * 0.08 * fbm(p * 90.0 + 3.0);
     vec3 body = INK * 0.42;
+
+    // Stipple: as the light fails, what is near is seen as counted points, the
+    // way a dark-adapted eye sees. Each grid cell holds one fixed threshold;
+    // a point shows where the light at the cell's centre beats it, so points
+    // stay where they are and only come and go as the light changes. Light
+    // gathers where the forms face the sun and the sky. The grid is half the
+    // stars', fine enough to model a figure a few dozen pixels tall.
+    float seen = mix(1.0, 0.4, smoothstep(0.15, 0.75, uDusk));
+    vec2 toSun = normalize(sun - p);
+    float SP = max(1.0, floor(PX * 0.5));
+    vec2 fc = floor(gl_FragCoord.xy / SP);
+    vec2 pc = cellCentre(fc, SP, aspect);
+    float grain = hash(fc + 17.0);
+    float shoreLy = landY(pc.x / aspect + 0.5);
+    float landLit = (0.01 + 0.26 * exp(-(shoreLy - pc.y) * 16.0) * (0.45 + 0.8 * exp(-abs(pc.x - sun.x) * 2.5))) * (0.5 + fbm(pc * 40.0));
+    vec2 e = vec2(2.0 * SP / uRes.y, 0.0);
+    float drc = rock(pc, rockC);
+    vec2 rn = normalize(vec2(rock(pc + e.xy, rockC), rock(pc + e.yx, rockC)) - drc + 1e-6);
+    float rockLit = (0.12 + 0.6 * smoothstep(-0.02, 0.0, drc)) * (0.08 + 0.45 * max(rn.y, 0.0) + 0.5 * max(dot(rn, toSun), 0.0)) * (0.6 + 0.8 * fbm(pc * 90.0 + 3.0));
+    vec2 fqc = (pc - seat) / s;
+    float fpx = SP / (uRes.y * s);
+    float figLit = 0.03;
+    figLit += 0.5 * (1.0 - person(fqc + toSun * 1.0 * fpx));
+    figLit += 0.3 * (1.0 - person(fqc + toSun * 3.0 * fpx));
+    figLit += 0.15 * (1.0 - person(fqc + toSun * 7.0 * fpx));
+    figLit += 0.18 * (1.0 - person(fqc + vec2(0.0, 2.0) * fpx));
+    vec3 groundPts = INK * 0.4 + mix(COPPER, VIOLET, 0.45) * 0.45 * step(grain, landLit * seen);
+    vec3 stonePts = INK * 0.38 + mix(COPPER, VIOLET, 0.3) * 0.5 * step(grain, rockLit * 0.8 * seen);
+    vec3 bodyPts = INK * 0.22 + mix(COPPER, IVORY, 0.3) * 0.7 * step(hash(fc + 29.0), figLit * seen);
+    ground = mix(ground, groundPts, uStipple);
+    stoneCol = mix(stoneCol, stonePts, uStipple);
+    body = mix(body, bodyPts, uStipple);
+
     col = mix(col, ground, land);
     col = mix(col, stoneCol, stone);
     // The top of the rock catches the sky.
-    col += mix(COPPER, VIOLET, 0.35) * 0.18 * stone * smoothstep(-0.006, 0.0, dr) * smoothstep(rockC.y - 0.01, rockC.y + 0.03, p.y) * (1.0 - uDusk * 0.5);
+    col += mix(COPPER, VIOLET, 0.35) * 0.18 * stone * smoothstep(-0.006, 0.0, dr) * smoothstep(rockC.y - 0.01, rockC.y + 0.03, p.y) * (1.0 - uDusk * 0.5) * (1.0 - uStipple);
     col = mix(col, body, fig);
-    col += mix(COPPER, IVORY, 0.25) * 0.6 * rim * (1.0 - uDusk * 0.5);
+    col += mix(COPPER, IVORY, 0.25) * 0.6 * rim * (1.0 - uDusk * 0.5) * (1.0 - uStipple);
     // Wet sand where the water reaches, and a thin lapping edge.
     float wet = exp(-abs(uv.y - ly) * uRes.y * 0.6) * smoothstep(0.35, 0.9, uv.x);
     float lap = 0.5 + 0.5 * sin(uv.x * 140.0 - t * 0.9 + noise(vec2(uv.x * 30.0, t * 0.3)) * 4.0);
     col += COPPER * 0.08 * wet * (1.0 - uDusk * 0.5);
     col += IVORY * 0.03 * lap * exp(-abs(uv.y - ly - 0.004) * uRes.y * 0.35) * (1.0 - land);
 
-    col += (hash(gl_FragCoord.xy + fract(t) * 91.0) - 0.5) * 0.028;
+    // Film grain, held off what is drawn in points so the points stay still.
+    col += (hash(gl_FragCoord.xy + fract(t) * 91.0) - 0.5) * 0.028 * (1.0 - uStipple * max(land, max(stone, fig)));
     col *= 0.82 + 0.18 * smoothstep(1.1, 0.2, length((uv - 0.5) * vec2(aspect * 0.7, 1.0)));
     gl_FragColor = vec4(col, uOpacity);
   }

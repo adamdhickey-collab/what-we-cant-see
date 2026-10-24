@@ -17,6 +17,11 @@ function figureTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(canvas);
 }
 
+// A prototype to compare: at dusk the land, the rock and the person are drawn
+// as counted points of light rather than smooth shade. ?stipple=0 starts with
+// it off; D flips it.
+let stipple = new URLSearchParams(location.search).get('stipple') === '0' ? 0 : 1;
+
 export function createShore(): StageScene {
   const figure = figureTexture();
   const scene = new THREE.Scene();
@@ -31,7 +36,14 @@ export function createShore(): StageScene {
     uMotion: { value: 1 },
     uReveal: { value: 0 },
     uFigure: { value: figure },
+    uStipple: { value: stipple },
   };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== 'd' || e.metaKey || e.ctrlKey || e.altKey) return;
+    stipple = 1 - stipple;
+    console.info(`Shore stipple ${stipple ? 'on' : 'off'}`);
+  };
+  addEventListener('keydown', onKey);
   const material = new THREE.ShaderMaterial({
     uniforms,
     vertexShader: shoreVertex,
@@ -62,6 +74,7 @@ export function createShore(): StageScene {
       uniforms.uAndromeda.value = andromeda;
       uniforms.uReveal.value = reveal;
       uniforms.uMotion.value = f.state.reduced ? 0 : 1;
+      uniforms.uStipple.value = stipple;
       renderer.render(scene, camera);
 
       // Labels sit where the shader draws things, in the same coordinates.
@@ -76,6 +89,7 @@ export function createShore(): StageScene {
       return labels;
     },
     dispose() {
+      removeEventListener('keydown', onKey);
       material.dispose();
       mesh.geometry.dispose();
       figure.dispose();
