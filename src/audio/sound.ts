@@ -2,8 +2,7 @@
 // browser, so no recording ships: a bed per kind of scene (the sea, space,
 // the instrument, the body, a quiet room), crossfading with the chapters on
 // the same clock as the picture, a soft bell at each reveal, and a clock's
-// tick through the chapter about time. The voice option reads each line with
-// the device's own speech voice.
+// chord as the hidden planet appears.
 
 import { director, type DirectorState } from '../animation/director';
 import { music } from '../animation/music';
@@ -23,7 +22,6 @@ class Sound {
   private raf = 0;
   private lastKey = -1;
   private lastT = 0;
-  private lastTick = 0;
   private prev: DirectorState | null = null;
   /** Whether the master is up, as last set; null forces the next frame to set it. */
   private on: boolean | null = null;
@@ -147,30 +145,9 @@ class Sound {
     });
     for (const l of Object.keys(target) as Layer[]) this.layers[l].gain.setTargetAtTime(Math.min(1, target[l]) * LEVEL[l], ctx.currentTime, 0.4);
 
-    // A clock's tick, once a second of story, through the chapter about time.
-    const ci = chapterIndexAt(s.t);
-    if (ci === CH.time && s.playing && Math.floor(s.t) !== this.lastTick) {
-      this.lastTick = Math.floor(s.t);
-      this.click();
-    }
     // A chord as the planet's dip appears.
     if (this.lastT < LOCK && s.t >= LOCK && s.playing) this.bell([523.25, 659.25, 783.99], 0.12);
     this.lastT = s.t;
-  }
-
-  private click() {
-    const ctx = this.ctx!;
-    const src = ctx.createBufferSource();
-    src.buffer = this.noise;
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 2400;
-    bp.Q.value = 6;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.5, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    src.connect(bp).connect(g).connect(this.master);
-    src.start(ctx.currentTime, Math.random(), 0.06);
   }
 
   private bell(freqs: number[], level = 0.1) {
@@ -190,20 +167,11 @@ class Sound {
     });
   }
 
-  private speak(text: string) {
-    if (typeof speechSynthesis === 'undefined') return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/·/g, ','));
-    u.rate = 1.02;
-    speechSynthesis.speak(u);
-  }
-
   private onChange = () => {
     const s = director.get();
     const p = this.prev;
     this.prev = s;
     if (p && (p.sound !== s.sound || p.started !== s.started)) this.apply();
-    if (p && p.voice && !s.voice && typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
 
     const ci = chapterIndexAt(s.t);
     const bi = beatIndexAt(CHAPTERS[ci], s.t - STARTS[ci]);
@@ -213,11 +181,9 @@ class Sound {
       if (s.playing || s.mode === 'explore') {
         if (bi === 0) this.bell([392], 0.06);
         else if (beat.question) this.bell([493.88, 659.25], 0.07);
-        if (s.voice && s.started) this.speak(beat.text);
       }
       this.lastKey = key;
     }
-    if (p && p.playing && !s.playing && typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
   };
 
   dispose() {

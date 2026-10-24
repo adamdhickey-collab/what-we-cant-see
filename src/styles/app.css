@@ -448,74 +448,6 @@ a {
   line-height: 1;
 }
 
-.beat-inner {
-  font-family: var(--font-inner);
-  font-style: italic;
-  font-weight: var(--weight-inner);
-  font-size: var(--t-inner);
-  line-height: 1.2;
-  text-align: center;
-  text-wrap: balance;
-  text-shadow: 0 0 1.875rem var(--ink), 0 0 3.75rem var(--ink);
-  animation: inner-in var(--dur-inner) var(--ease-out) both;
-}
-
-/* The inner voice arises in the open middle of the frame, over a soft
-   darkening, while the chapter label steps back. Where an instrument holds
-   the right of the frame, it stays in the caption's place. */
-.narrative:has(.beat-inner) {
-  left: 50%;
-  bottom: 34vh;
-  max-width: min(30rem, 84vw);
-  transform: translateX(-50%);
-}
-
-.narrative:has(.beat-inner) .kicker {
-  visibility: hidden;
-}
-
-.app:has(.beat-inner)::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(ellipse 60% 40% at 50% 62%, rgb(10 20 35 / 0.55), transparent 70%);
-  animation: fade-in var(--dur-inner) var(--ease-out) both;
-}
-
-.chapter-faint .narrative:has(.beat-inner),
-.chapter-time .narrative:has(.beat-inner) {
-  left: calc(var(--gutter) + var(--nav-w) + 2.5rem);
-  bottom: 10.5rem;
-  transform: none;
-}
-
-.chapter-faint .beat-inner,
-.chapter-time .beat-inner {
-  text-align: left;
-}
-
-.app.chapter-faint:has(.beat-inner)::after,
-.app.chapter-time:has(.beat-inner)::after {
-  display: none;
-}
-
-@keyframes inner-in {
-  from {
-    opacity: 0;
-    filter: blur(0.375rem);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  @keyframes inner-in {
-    from {
-      opacity: 0;
-    }
-  }
-}
-
 .beat-question {
   font-size: var(--t-question);
   font-stretch: 112%;
@@ -588,13 +520,6 @@ a {
 }
 .kind.kind-speculative {
   color: var(--c-unresolved);
-}
-/* A contemplative teaching (the Naropa edition) is a person's way of knowing: ivory. */
-.kind-contemplative .claim-dot {
-  background: var(--c-human);
-}
-.kind.kind-contemplative {
-  color: var(--c-human);
 }
 
 .kind {
@@ -1068,13 +993,6 @@ input[type='range']::-moz-range-thumb {
   margin: 0 0 var(--s-4);
 }
 
-.transcript-line.is-inner {
-  font-family: var(--font-inner);
-  font-style: italic;
-  font-weight: var(--weight-inner);
-  font-size: 1.375rem;
-}
-
 .transcript-line.is-question {
   font-size: 1.5rem;
 }
@@ -1107,13 +1025,6 @@ input[type='range']::-moz-range-thumb {
 
 .app.is-idle {
   cursor: none;
-}
-
-/* While the inner voice speaks, the data steps back, the stage's labels too. */
-.app:has(.beat-inner) .scale,
-.app:has(.beat-inner) .meter,
-.app:has(.beat-inner) .stage-labels {
-  opacity: 0.15;
 }
 
 /* ?tv: the picture and its words, nothing that needs reading up close. */
@@ -1203,8 +1114,7 @@ html.is-tv .meter {
   .beat-question {
     font-size: 1.625rem;
   }
-  .chapter-faint .beat:not(.beat-title),
-  .chapter-time .beat:not(.beat-title) {
+  .chapter-faint .beat:not(.beat-title) {
     font-size: 1.0625rem;
   }
   .instrument-lab {
@@ -1266,12 +1176,10 @@ html.is-tv .meter {
   .chapter-return .narrative {
     max-width: min(var(--measure), calc(56vw - var(--nav-w) - var(--gutter) - 2.5rem));
   }
-  .chapter-faint .narrative,
-  .chapter-time .narrative {
+  .chapter-faint .narrative {
     max-width: min(var(--measure), calc(100vw - var(--lab-w) - var(--nav-w) - var(--gutter) * 2 - 5.5rem));
   }
-  .chapter-faint .beat:not(.beat-title),
-  .chapter-time .beat:not(.beat-title) {
+  .chapter-faint .beat:not(.beat-title) {
     font-size: clamp(1.125rem, 0.9rem + 0.7vw, 1.625rem);
   }
 }
@@ -1489,160 +1397,7 @@ html.is-tv .meter {
   color: var(--violet);
 }
 
-/* ---------- Instruments: time and the protein bands ---------- */
-
-.time-lab {
-  justify-content: center;
-  gap: var(--s-6);
-}
-
-.time-demos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-5);
-}
-
-.time-demo {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s-3);
-}
-
-.time-demo svg {
-  width: min(8.75rem, 100%);
-  height: auto;
-}
-
-.time-demo figcaption {
-  font-size: var(--t-small);
-  line-height: 1.5;
-  color: var(--text-dim);
-}
-
-.time-demo strong {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.wing-blur {
-  stroke: var(--ivory);
-  stroke-opacity: 0.14;
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.wing-body,
-.clock-hour,
-.clock-minute {
-  fill: var(--ivory);
-  stroke: var(--ivory);
-  stroke-linecap: round;
-}
-
-.clock-hour {
-  stroke-width: 4;
-}
-
-.clock-minute {
-  stroke-width: 2;
-}
-
-.clock-face {
-  fill: none;
-  stroke: var(--hairline-strong);
-}
-
-.clock-tick {
-  stroke: var(--text-dim);
-}
-
-.time-ruler {
-  position: relative;
-  height: 8.125rem;
-  margin-top: var(--s-4);
-}
-
-.time-axis {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 4.375rem;
-  height: 1px;
-  background: var(--hairline-strong);
-}
-
-.time-window {
-  position: absolute;
-  top: 3.625rem;
-  height: 1.5625rem;
-  background: color-mix(in srgb, var(--ivory) 10%, transparent);
-  border: 1px solid var(--hairline-strong);
-  transition: background var(--dur-slow) var(--ease-out), border-color var(--dur-slow);
-}
-
-.time-window.is-on {
-  background: color-mix(in srgb, var(--ivory) 24%, transparent);
-  border-color: var(--ivory);
-}
-
-.time-window-name {
-  position: absolute;
-  left: 0;
-  top: -58px;
-  font-family: var(--font-data);
-  font-size: 0.625rem;
-  white-space: nowrap;
-  color: var(--text-dim);
-}
-
-.time-tick {
-  position: absolute;
-  top: 5.75rem;
-  transform: translateX(-50%);
-  font-family: var(--font-data);
-  font-size: 0.625rem;
-  white-space: nowrap;
-  color: var(--text-faint);
-}
-
-.time-tick:first-child {
-  transform: none;
-}
-
-.time-mark {
-  position: absolute;
-  top: 4rem;
-  width: 1px;
-  height: 0.8125rem;
-  background: var(--text-dim);
-}
-
-.time-mark-name {
-  position: absolute;
-  bottom: 1.25rem;
-  left: 0;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 8.75rem;
-  text-align: center;
-  font-size: var(--t-data);
-  line-height: 1.3;
-  color: var(--text);
-  opacity: 0;
-  transition: opacity var(--dur-fast);
-}
-
-.time-mark.is-on {
-  background: var(--ivory);
-  height: 1.3125rem;
-  top: 3.75rem;
-}
-
-.time-mark.is-on .time-mark-name {
-  opacity: 1;
-}
+/* ---------- Instruments: the protein bands ---------- */
 
 .bands {
   transition: opacity var(--dur-slow) var(--ease-out);
@@ -1710,8 +1465,8 @@ html.is-tv .meter {
 /* The instruments and diagrams take the right of the frame; the meter steps aside. */
 .app:has(.aside) .meter,
 .chapter-shore .meter,
+.chapter-far .meter,
 .chapter-faint .meter,
-.chapter-time .meter,
 .chapter-unsure .meter,
 .chapter-return .meter {
   display: none;
@@ -1863,15 +1618,6 @@ html.is-tv .meter {
   }
   .spectrum-name {
     display: none;
-  }
-  .time-demos {
-    gap: var(--s-3);
-  }
-  .time-demo svg {
-    width: 5.25rem;
-  }
-  .time-lab {
-    gap: var(--s-4);
   }
   .souvenir {
     left: var(--gutter);

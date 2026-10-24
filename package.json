@@ -11,7 +11,8 @@
     "check:script": "node scripts/check-script.mjs",
     "preview": "vite preview",
     "data:protein": "node scripts/fetch-protein.mjs",
-    "data:galaxies": "node scripts/fetch-galaxies.mjs"
+    "data:galaxies": "node scripts/fetch-galaxies.mjs",
+    "data:earth": "node scripts/fetch-earth.mjs"
   },
   "dependencies": {
     "d3-scale": "^4.0.2",

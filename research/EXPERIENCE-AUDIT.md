@@ -28,6 +28,11 @@
 > on the shore as the first stars come out, the Kepler guess to a scan line,
 > the AlphaFold guess to a narrated reveal, the lenses to one narrated line
 > each. The ride plays straight through in 9 minutes.
+>
+> **Later still:** a Naropa edition with a contemplative inner voice was
+> tried and retired. The ride is science only, cut to its music (6:15) at a
+> slower reading pace, without *Too fast, too slow*; its Earth is drawn from
+> real coastlines and shows Minneapolis and Tunja with their live clocks.
 
 An audit of the working seven-chapter build, walked through at 1280×800 and
 375×812, against one goal: make it feel like a ride. A general audience

@@ -12,8 +12,6 @@ export interface Prefs {
   /** Show each line's kind of claim and its source. */
   evidence: boolean;
   sound: boolean;
-  /** Read the lines aloud with the device's voice. */
-  voice: boolean;
   /** Play On the Nature of Daylight alongside the ride; the built-in sound then stays quiet. */
   music: boolean;
 }
@@ -52,7 +50,7 @@ type Listener = () => void;
 
 const PREFS_KEY = 'wwcs-prefs';
 function loadPrefs(): Prefs {
-  const fallback: Prefs = { evidence: false, sound: false, voice: false, music: false };
+  const fallback: Prefs = { evidence: false, sound: false, music: false };
   // ?music turns the music on for this visit, for a wall or a link that wants it.
   const asked = typeof location !== 'undefined' && new URLSearchParams(location.search).has('music') ? { music: true } : {};
   try {
@@ -102,9 +100,9 @@ class Director {
 
   setPref(patch: Partial<Prefs>) {
     this.set(patch);
-    const { evidence, sound, voice, music } = this.s;
+    const { evidence, sound, music } = this.s;
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ evidence, sound, voice, music }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ evidence, sound, music }));
     } catch {
       /* A private window: the choice lasts this visit only. */
     }

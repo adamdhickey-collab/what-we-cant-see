@@ -12,7 +12,7 @@ import { boxSearch, fold, loadLightCurve, periodogram, P_MAX, P_MIN, STAR, type 
 
 const CHAPTER = CH.faint;
 const LOOK = beatStart('faint', 'look');
-const NOBODY = beatStart('faint', 'nobody');
+
 const SWEEP_START = beatStart('faint', 'sweep');
 const LOCK = beatStart('faint', 'lock');
 const SWEEP_END = LOCK - 1.5;
@@ -49,7 +49,7 @@ function LabView({ lc, pg }: Search) {
   const reduced = useDirector((s) => s.reduced);
   const manual = useDirector((s) => s.foldPeriod);
   // While the narration asks you to look, a scan line runs along the measurements, finding nothing.
-  const scan = local >= LOOK && local < NOBODY ? (local - LOOK) / (NOBODY - LOOK) : null;
+  const scan = local >= LOOK && local < SWEEP_START ? (local - LOOK) / (SWEEP_START - LOOK) : null;
   const [searched, setSearched] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const glide = useRef(0);

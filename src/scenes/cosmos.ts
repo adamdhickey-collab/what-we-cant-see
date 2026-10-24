@@ -13,7 +13,6 @@ import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points'
 import { galaxyPoints } from './galaxy';
 import { createSky } from './sky';
 import type { Frame, Label, StageScene } from './types';
-import { fbm3 } from './noise';
 import { compose, distanceFor, labelAt, orbit, present } from './util';
 
 const AU = 149_597_870_700;
@@ -21,7 +20,46 @@ const AU_PER_LY = 63_241.077;
 const EARTH_R = 6_371_000 / AU;
 // Moments in the chapter, keyed to its lines.
 const FAST = beatStart('far', 'fast');
-const HALO = beatStart('far', 'halo');
+// The halo comes in a few seconds into the line about stars circling too fast.
+const HALO = FAST + 4;
+
+/** The two cities the Earth is shown for, and where the camera looks: between them. */
+const CITIES = [
+  { name: 'Minneapolis', lat: 44.9778, lon: -93.265, zone: 'America/Chicago' },
+  { name: 'Tunja, Colombia', lat: 5.5353, lon: -73.3678, zone: 'America/Bogota' },
+];
+const VIEW = { lat: 22, lon: -83 };
+/** The great-circle distance between them, by the haversine formula on a 6,371 km Earth: about 4,790 km. */
+const DISTANCE_KM = (() => {
+  const [a, b] = CITIES.map((c) => ({ p: (c.lat * Math.PI) / 180, l: (c.lon * Math.PI) / 180 }));
+  const h = Math.sin((b.p - a.p) / 2) ** 2 + Math.cos(a.p) * Math.cos(b.p) * Math.sin((b.l - a.l) / 2) ** 2;
+  return Math.round((2 * 6371 * Math.asin(Math.sqrt(h))) / 10) * 10;
+})();
+const CITY_LINE = beatStart('far', 'cities');
+const SUN_LINE = beatStart('far', 'sun');
+
+/** Earth's own frame: x toward 0°E, y toward the north pole, -z toward 90°E. */
+function fromLatLon(lat: number, lon: number, radius: number) {
+  const a = (lat * Math.PI) / 180, o = (lon * Math.PI) / 180;
+  return new THREE.Vector3(Math.cos(a) * Math.cos(o), Math.sin(a), -Math.cos(a) * Math.sin(o)).multiplyScalar(radius);
+}
+function toLatLon(n: THREE.Vector3) {
+  return { lat: (Math.asin(n.y) * 180) / Math.PI, lon: (Math.atan2(-n.z, n.x) * 180) / Math.PI };
+}
+
+/**
+ * Where the Sun is overhead right now: its declination for the day of the
+ * year and its longitude for the hour. Good to about a degree, enough to put
+ * the day/night line where it is.
+ */
+function subsolar(now: Date) {
+  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
+  const day = (now.getTime() - start) / 86_400_000;
+  const lat = -23.44 * Math.cos(((2 * Math.PI) / 365.24) * (day + 10));
+  const hours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+  const lon = -15 * (hours - 12);
+  return { lat, lon };
+}
 
 const PLANETS: [string, number][] = [
   ['Mercury', 0.387], ['Venus', 0.723], ['Earth', 1], ['Mars', 1.524],
@@ -35,39 +73,79 @@ export function createCosmos(mobile: boolean): StageScene {
   const sun = new THREE.Vector3(-1, 0, 0);
   const r = rng(3);
 
-  // Earth: continents from noise, lit from the Sun's side with a soft
-  // terminator, and a thin limb of atmosphere. Oceans are sparse and dim, so
-  // land reads by density as much as by brightness.
-  const eN = mobile ? 7000 : 16000;
-  const limbN = mobile ? 1200 : 2600;
-  const ePos = new Float32Array((eN + limbN) * 3), eCol = new Float32Array((eN + limbN) * 3), eSize = new Float32Array(eN + limbN);
-  const ivory = rgb('ivory'), slate = rgb('slate');
-  for (let i = 0; i < eN + limbN; i++) {
-    const u = r.next() * 2 - 1, th = r.next() * Math.PI * 2, s = Math.sqrt(1 - u * u);
-    const n = [s * Math.cos(th), u, s * Math.sin(th)];
-    const lit = smoothstep(-0.12, 0.45, -n[0]);
-    if (i >= eN) {
-      ePos.set(n.map((c) => c * EARTH_R * 1.018), i * 3);
-      eCol.set(ivory.map((v) => v * 0.16 * (0.15 + lit)), i * 3);
-      eSize[i] = 1;
-      continue;
-    }
-    const land = smoothstep(0.5, 0.56, fbm3(n[0] * 1.9 + 4, n[1] * 1.9, n[2] * 1.9 - 2));
-    const ice = smoothstep(0.82, 0.9, Math.abs(n[1]));
-    const surface = Math.max(land, ice);
-    if (surface < 0.5 && r.next() < 0.55) {
-      i--;
-      continue;
-    }
-    ePos.set(n.map((c) => c * EARTH_R), i * 3);
-    const b = surface > 0.5 ? 0.92 : 0.3;
-    eCol.set(ivory.map((v, k) => (v * b * (0.03 + 0.97 * lit)) + slate[k] * 0.25 * (1 - lit)), i * 3);
-    eSize[i] = surface > 0.5 ? 1.1 : 0.9;
-  }
-  const earthMat = pointsMaterial();
-  earthMat.uniforms.uSize.value = 1.3;
-  const earth = new THREE.Points(pointsGeometry(ePos, eCol, eSize), earthMat);
+  // Earth, from real land outlines (scripts/fetch-earth.mjs), turned so its
+  // lit half faces the Sun as it does at this moment, and lit in the shader so
+  // the day/night line is where it really is right now. Oceans are sparse and
+  // dim, so land reads by density as much as by brightness; a thin limb of
+  // air rings it. Tunja and Minneapolis are marked, joined by the shortest
+  // path over the surface.
+  const earth = new THREE.Group();
   scene.add(earth);
+  const ivory = rgb('ivory'), slate = rgb('slate');
+  const litChunk = {
+    decls: 'uniform vec3 uSunDir;',
+    uniforms: { uSunDir: { value: sun.clone() } },
+    // Day side full, night side faint but legible, with a soft terminator.
+    object: 'vec3 nw = normalize(mat3(modelMatrix) * position); float lit = smoothstep(-0.12, 0.35, dot(nw, uSunDir)); col = col * (0.22 + 0.78 * lit) + VIOLET * 0.07 * (1.0 - lit);',
+  };
+  const earthMat = pointsMaterial(litChunk);
+  earthMat.uniforms.uSize.value = 1.3;
+  const cityMat = pointsMaterial(litChunk);
+  const arcMat = lineMaterial(rgb('copper'), 0);
+  fetch(`${import.meta.env.BASE_URL}data/earth-land.json`)
+    .then((res) => res.json() as Promise<{ width: number; height: number; bits: string }>)
+    .then((map) => {
+      const bits = Uint8Array.from(atob(map.bits), (c) => c.charCodeAt(0));
+      const isLand = (lat: number, lon: number) => {
+        const row = Math.min(map.height - 1, Math.floor(((90 - lat) / 180) * map.height));
+        const col = Math.min(map.width - 1, Math.floor(((lon + 180) / 360) * map.width));
+        const i = row * map.width + col;
+        return (bits[i >> 3] >> (i & 7)) & 1;
+      };
+      const eN = mobile ? 16000 : 40000;
+      const limbN = mobile ? 1200 : 2600;
+      const ePos = new Float32Array((eN + limbN) * 3), eCol = new Float32Array((eN + limbN) * 3), eSize = new Float32Array(eN + limbN);
+      for (let i = 0; i < eN + limbN; i++) {
+        const u = r.next() * 2 - 1, th = r.next() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
+        const n = new THREE.Vector3(sq * Math.cos(th), u, sq * Math.sin(th));
+        if (i >= eN) {
+          ePos.set([n.x * EARTH_R * 1.018, n.y * EARTH_R * 1.018, n.z * EARTH_R * 1.018], i * 3);
+          eCol.set(ivory.map((v) => v * 0.16), i * 3);
+          eSize[i] = 1;
+          continue;
+        }
+        const { lat, lon } = toLatLon(n);
+        const land = isLand(lat, lon) || lat > 78;
+        if (!land && r.next() < 0.75) {
+          i--;
+          continue;
+        }
+        ePos.set([n.x * EARTH_R, n.y * EARTH_R, n.z * EARTH_R], i * 3);
+        const b = land ? 0.95 : 0.2;
+        eCol.set(ivory.map((v, k) => v * b + slate[k] * (land ? 0 : 0.25)), i * 3);
+        eSize[i] = land ? 1.25 : 0.85;
+      }
+      const dots = new THREE.Points(pointsGeometry(ePos, eCol, eSize), earthMat);
+      dots.frustumCulled = false;
+      earth.add(dots);
+    })
+    .catch(() => {
+      /* The text still carries the chapter. */
+    });
+
+  // The two cities, and the great-circle arc between them, lifted just off the ground.
+  const cityAt = CITIES.map((c) => fromLatLon(c.lat, c.lon, EARTH_R * 1.004));
+  const cityPts = new THREE.Points(
+    pointsGeometry(new Float32Array(cityAt.flatMap((v) => [v.x, v.y, v.z])), new Float32Array([...rgb('ivory'), ...rgb('ivory')]), new Float32Array([7, 7])),
+    cityMat,
+  );
+  const a0 = cityAt[0].clone().normalize(), a1 = cityAt[1].clone().normalize();
+  const arcPts = Array.from({ length: 65 }, (_, k) => new THREE.Vector3().copy(a0).lerp(a1, k / 64).normalize().multiplyScalar(EARTH_R * (1.006 + 0.03 * Math.sin((Math.PI * k) / 64))));
+  const arc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPts), arcMat);
+  const arcMid = arcPts[32].clone();
+  earth.add(cityPts, arc);
+  const clock = CITIES.map((c) => new Intl.DateTimeFormat('en-US', { timeZone: c.zone, hour: 'numeric', minute: '2-digit', second: '2-digit' }));
+  const viewCenter = fromLatLon(VIEW.lat, VIEW.lon, 1);
 
   // The Sun and the planets as single points; their orbits as fine circles.
   const bodies = new Float32Array((PLANETS.length + 1) * 3);
@@ -139,7 +217,7 @@ export function createCosmos(mobile: boolean): StageScene {
 
   const target = new THREE.Vector3();
   const Y = new THREE.Vector3(0, 1, 0);
-  const tmp = new THREE.Vector3();
+  const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3(), tmp3 = new THREE.Vector3(), tmp4 = new THREE.Vector3();
 
   return {
     id: 'cosmos',
@@ -148,12 +226,30 @@ export function createCosmos(mobile: boolean): StageScene {
       const w = f.weight;
       const D = distanceFor(s, AU, 50, f.aspect);
 
+      // The Earth as it is at this moment: its sunlit half toward the Sun.
+      const now = new Date();
+      const ss = subsolar(now);
+      earth.quaternion.setFromUnitVectors(fromLatLon(ss.lat, ss.lon, 1), sun);
+
       // Where the camera looks: Earth, then the Sun, then most of the way to the core.
       target.set(0, 0, 0).lerp(sun, smoothstep(8.6, 11.4, s));
       target.lerp(tmp.copy(center).multiplyScalar(0.82), smoothstep(17.2, 20.6, s));
       const ambient = f.state.reduced ? 0 : f.elapsed * 0.012;
-      const az = 0.6 + ambient + f.drag.x;
-      const el = lerp(lerp(0.1, 0.42, smoothstep(8.5, 12.5, s)), 1.0, smoothstep(17, 20.5, s)) + f.drag.y * 0.4;
+      // Near the Earth the camera faces the Americas, between the two cities,
+      // leaning toward the day/night line so it crosses the globe whatever the
+      // hour; then it swings back to its wider path as the view opens to the Sun.
+      const facing = tmp2.copy(viewCenter).applyQuaternion(earth.quaternion);
+      const fromNoon = Math.acos(Math.max(-1, Math.min(1, facing.dot(sun))));
+      const lean = Math.max(-0.4, Math.min(0.4, fromNoon - 1.35));
+      const axis = tmp3.copy(facing).cross(sun);
+      if (axis.lengthSq() > 1e-6) facing.applyAxisAngle(axis.normalize(), lean);
+      const near = 1 - smoothstep(7.9, 9.6, s);
+      const baseAz = 0.6 + ambient;
+      const cityAz = Math.atan2(facing.x, facing.z) + ambient * 0.3;
+      const turn = Math.atan2(Math.sin(cityAz - baseAz), Math.cos(cityAz - baseAz));
+      const az = baseAz + turn * near + f.drag.x;
+      const baseEl = lerp(lerp(0.1, 0.42, smoothstep(8.5, 12.5, s)), 1.0, smoothstep(17, 20.5, s));
+      const el = lerp(baseEl, Math.asin(facing.y), near) + f.drag.y * 0.4;
       camera.aspect = f.aspect;
       compose(camera, f);
       orbit(camera, target, D, az, Math.max(-1.4, Math.min(1.45, el)));
@@ -165,9 +261,12 @@ export function createCosmos(mobile: boolean): StageScene {
       sky.material.uniforms.uPixelRatio.value = f.pixelRatio;
       renderer.render(sky.scene, sky.camera);
 
-      const earthA = smoothstep(6.95, 7.35, s) * (1 - smoothstep(9.2, 10.2, s));
+      const earthA = smoothstep(6.6, 7.35, s) * (1 - smoothstep(9.2, 10.2, s));
       earthMat.uniforms.uOpacity.value = w * earthA;
       earthMat.uniforms.uSize.value = f.mobile ? 1.4 : 1.2;
+      const cityA = earthA * smoothstep(CITY_LINE - 0.5, CITY_LINE + 1.5, f.local) * (1 - smoothstep(SUN_LINE + 1, SUN_LINE + 3, f.local));
+      cityMat.uniforms.uOpacity.value = w * cityA;
+      arcMat.uniforms.uOpacity.value = w * cityA * 0.8;
       const sysA = smoothstep(9.6, 11.0, s) * (1 - smoothstep(15.2, 16.6, s));
       orbitMat.uniforms.uOpacity.value = w * sysA * 0.32;
       bodyMat.uniforms.uOpacity.value = w * smoothstep(9.0, 10.5, s) * (1 - smoothstep(17.5, 19.0, s));
@@ -179,12 +278,24 @@ export function createCosmos(mobile: boolean): StageScene {
       galaxy.rotation.y = -0.06 * turning * Math.min(1, turning / 4);
       const haloA = smoothstep(HALO, HALO + 3, f.local);
       haloMat.uniforms.uOpacity.value = w * haloA;
-      for (const m of [earthMat, bodyMat, pxMat, galMat, haloMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
+      for (const m of [earthMat, cityMat, bodyMat, pxMat, galMat, haloMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
       renderer.render(scene, camera);
 
       const L = (text: string, at: THREE.Vector3, a: number, side?: Label['side']) => labelAt(text, at, camera, f, a, side);
+      // A place on the Earth is labelled only while it faces the camera.
+      const onNearSide = (local: THREE.Vector3) => {
+        const p = tmp3.copy(local).applyQuaternion(earth.quaternion);
+        return p.clone().normalize().dot(tmp4.copy(camera.position).sub(p).normalize()) > 0.15 ? p.clone() : null;
+      };
+      const cityLabels = CITIES.map((c, i) => {
+        const p = onNearSide(cityAt[i]);
+        return p ? L(`${c.name} · ${clock[i].format(now)}`, p, cityA, i === 0 ? 'left' : 'right') : null;
+      });
+      const mid = onNearSide(arcMid);
       return [
-        L('Earth', tmp.set(0, EARTH_R * 1.4, 0), earthA * smoothstep(7.3, 7.45, s)),
+        ...cityLabels,
+        mid ? L(`${DISTANCE_KM.toLocaleString('en-US')} km apart`, mid, cityA * 0.9) : null,
+        L('Earth', tmp.set(0, EARTH_R * 1.4, 0), earthA * smoothstep(7.3, 7.45, s) * (1 - cityA)),
         L('Earth', planetPos[2], sysA * (1 - smoothstep(12.2, 12.6, s))),
         L('The Sun · 8 light-minutes', sun, sysA * (1 - smoothstep(12.6, 13, s)) * smoothstep(10.6, 11, s), 'left'),
         L('Jupiter', planetPos[4], sysA * smoothstep(11.6, 12, s) * (1 - smoothstep(13.6, 14, s))),
@@ -200,7 +311,7 @@ export function createCosmos(mobile: boolean): StageScene {
       scene.traverse((o) => {
         if (o instanceof THREE.Points || o instanceof THREE.Line) o.geometry.dispose();
       });
-      [earthMat, bodyMat, pxMat, galMat, haloMat, orbitMat].forEach((m) => m.dispose());
+      [earthMat, cityMat, arcMat, bodyMat, pxMat, galMat, haloMat, orbitMat].forEach((m) => m.dispose());
     },
   };
 }

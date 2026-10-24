@@ -49,12 +49,11 @@ shaders to TSL.
 
 | Chapter | Medium | Why |
 | --- | --- | --- |
-| 5 Too fast, too slow | HTML and SVG | A time ruler, a wing and a clock are page things: exact sizes and text |
-| 1, 8 Shore | Full-screen fragment shader, plus a second full-screen pass for the lenses | Sky, sea and light are fields, not objects. The lenses draw over the shore without touching its shader |
-| 2 Too far | Three.js points + lines | Real orbit ratios as fine lines; a procedural galaxy of up to 120,000 points and a halo around it |
+| 1, 7 Shore | Full-screen fragment shader, plus a second full-screen pass for the lenses | Sky, sea and light are fields, not objects. The lenses draw over the shore without touching its shader |
+| 2 Too far | Three.js points + lines | An Earth of 40,000 points from a real land map, lit in the shader from where the Sun is overhead now; real orbit ratios as fine lines; a procedural galaxy of up to 120,000 points and a halo around it |
 | 3 Too many | Three.js points | 113,741 real SDSS galaxies, decoded from Int16 positions; a haze and a shell of light |
 | 4 Too faint | 2D canvas + D3 scales, over a dimmed starfield | Thousands of measurements and a live search are a chart's job. Canvas, not SVG, because 3,803 points redraw every frame while folding |
-| 6, 7 Too small, Too unsure | Three.js points + a line through a real structure | A fingertip, a cell and bacteria; 393 real residues from AlphaFold DB, colored by confidence |
+| 5, 6 Too small, Too unsure | Three.js points + a line through a real structure | A fingertip, a cell and bacteria; 393 real residues from AlphaFold DB, colored by confidence |
 | All | HTML typography | Text is text: selectable, translatable, read by screen readers |
 
 ## Performance budget

@@ -57,7 +57,7 @@ export function SourcesPanel({ open, focus, onClose }: { open: boolean; focus: s
       <h2 className="panel-title">Sources</h2>
       <p className="panel-lede">
         Every figure in the ride, what kind of claim it is, and where it comes from. Retrieved {RETRIEVED}. Copper marks what was measured; teal, what a
-        model infers or simulates; violet, what is unresolved; ivory, a contemplative teaching, cited to where Naropa University teaches it.
+        model infers or simulates; violet, what is unresolved.
       </p>
       {CHAPTERS.map((c, i) => (
         <section key={c.id} className="panel-section">
@@ -86,10 +86,7 @@ export function TextPanel({ open, onClose, onSource }: { open: boolean; onClose:
   return (
     <Dialog open={open} onClose={onClose} label="Text version">
       <h2 className="panel-title">What we can’t see</h2>
-      <p className="panel-lede">
-        The whole ride as text, with a description of what is on screen in each chapter. The lines in italics are the inner voice, drawn from the
-        contemplative psychology taught at Naropa University. Those that name a teaching say so, and cite where Naropa teaches it.
-      </p>
+      <p className="panel-lede">The whole ride as text, with a description of what is on screen at each stop.</p>
       {CHAPTERS.map((c, i) => (
         <section key={c.id} className="panel-section">
           <h2 className="panel-chapter">
@@ -98,7 +95,7 @@ export function TextPanel({ open, onClose, onSource }: { open: boolean; onClose:
           <p className="transcript-visual">On screen: {c.camera}</p>
           {c.beats.slice(1).map((b) => (
             <div key={b.at}>
-              <p className={b.question ? 'transcript-line is-question' : b.inner ? 'transcript-line is-inner' : 'transcript-line'}>
+              <p className={b.question ? 'transcript-line is-question' : 'transcript-line'}>
                 {b.text}{' '}
                 {b.sources?.map((id) => (
                   <button key={id} type="button" className="transcript-ref" onClick={() => onSource(id)} aria-label={`Source: ${sourceById(id)?.claim}`}>

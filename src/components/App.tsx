@@ -13,7 +13,6 @@ import { SourcesPanel, TextPanel } from './Panels';
 import { ProteinPanel } from './ProteinPanel';
 import { ScaleNavigator } from './ScaleNavigator';
 import { Souvenir } from './Souvenir';
-import { TimeLab } from './TimeLab';
 import { TransitLab, warmTransit } from './TransitLab';
 
 type Panel = null | { kind: 'sources'; focus: string | null } | { kind: 'text' };
@@ -44,7 +43,6 @@ export function App() {
   // The instruments mount a moment before their chapter, so they fade in with it.
   const near = (i: number) => (s: { t: number }) => s.t > STARTS[i] - 0.4 && s.t < STARTS[i] + CHAPTERS[i].duration + 1;
   const showLab = useDirector(near(CH.faint));
-  const showTime = useDirector(near(CH.time));
 
   useEffect(() => {
     // Three.js and the scenes arrive as their own chunk, so the page and its text come up first.
@@ -194,11 +192,6 @@ export function App() {
                 <TransitLab />
               </div>
             )}
-            {showTime && (
-              <div className="instrument instrument-lab instrument-time">
-                <TimeLab />
-              </div>
-            )}
             {chapterId === 'unsure' && (
               <div className="instrument instrument-protein">
                 <ProteinPanel />
@@ -218,7 +211,7 @@ export function App() {
           </h1>
           <p className="intro-lede">
             Your senses edit the world. In about {MINUTES} minutes, go from a quiet shore to the edge of the observable universe and into your own cells,
-            and find out what they leave out. Alongside it runs an inner voice drawn from the contemplative psychology taught at Naropa University.
+            and find out what they leave out.
           </p>
           <ol className="intro-map" aria-label="The ride’s stops">
             {CHAPTERS.map((c) => (

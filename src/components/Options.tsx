@@ -1,4 +1,4 @@
-// The viewer's settings, kept between visits on this device: sound, a voice
+// The viewer's settings, kept between visits on this device: music, sound effects
 // reading the lines, and whether each line shows its kind of claim and source.
 
 import { useEffect, useRef, useState } from 'react';
@@ -10,16 +10,14 @@ import { toggleFullscreen } from './fullscreen';
 const ITEMS: { key: keyof Prefs; name: string; says: string }[] = [
   { key: 'music', name: 'Music', says: `${MUSIC.artist}, “${MUSIC.title},” alongside the ride.` },
   { key: 'sound', name: 'Sound effects', says: 'A quiet bed for each place, and a bell at each reveal. Quiet while the music plays.' },
-  { key: 'voice', name: 'Read aloud', says: 'Your device’s voice reads each line.' },
   { key: 'evidence', name: 'Show the evidence', says: 'Each line’s kind of claim (measured, inferred…) and its source.' },
 ];
 
 export function Options() {
   const evidence = useDirector((s) => s.evidence);
   const soundOn = useDirector((s) => s.sound);
-  const voice = useDirector((s) => s.voice);
   const musicOn = useDirector((s) => s.music);
-  const prefs: Prefs = { evidence, sound: soundOn, voice, music: musicOn };
+  const prefs: Prefs = { evidence, sound: soundOn, music: musicOn };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

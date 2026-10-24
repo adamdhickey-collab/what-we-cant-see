@@ -1,10 +1,8 @@
 // The source ledger. Every figure the experience shows points at an entry
 // here by id, and the Sources drawer and the transcript render from it.
 // research/SCIENTIFIC-SOURCES.md is the reading copy, with the reasoning.
-// The inner voice's teachings are here too, and research/NAROPA-EDITION.md
-// is their reading copy.
 
-export type Kind = 'measured' | 'inferred' | 'simulated' | 'illustrative' | 'speculative' | 'contemplative';
+export type Kind = 'measured' | 'inferred' | 'simulated' | 'illustrative' | 'speculative';
 
 export const KIND_LABEL: Record<Kind, string> = {
   measured: 'Measured',
@@ -12,7 +10,6 @@ export const KIND_LABEL: Record<Kind, string> = {
   simulated: 'Simulated',
   illustrative: 'Illustrative',
   speculative: 'Open question',
-  contemplative: 'Contemplative teaching',
 };
 
 export interface Source {
@@ -280,6 +277,31 @@ export const SOURCES: Source[] = [
     source: 'There is no scientific consensus on how to define or test for consciousness in any system',
   },
 
+  // The Earth and the two cities on it.
+  {
+    id: 'earth-land',
+    claim: 'The continents drawn on the Earth in Chapter 2',
+    value: 'Natural Earth 1:110m land outlines, sampled to a half-degree map',
+    kind: 'measured',
+    source: 'Natural Earth (public domain), via the world-atlas package; scripts/fetch-earth.mjs',
+    url: 'https://www.naturalearthdata.com/',
+  },
+  {
+    id: 'city-distance',
+    claim: 'How far apart Minneapolis and Tunja are',
+    value: 'about 4,790 km along the Earth’s surface (great circle)',
+    kind: 'inferred',
+    source: 'Haversine formula on a 6,371 km sphere, from Minneapolis (44.98°N, 93.27°W) and Tunja (5.54°N, 73.37°W)',
+    note: 'Light covers it in about 16 milliseconds; a nonstop flight would take a little over five hours.',
+  },
+  {
+    id: 'terminator',
+    claim: 'The day/night line and the clocks on the Earth',
+    value: 'drawn from where the Sun is overhead at the moment of viewing; the clocks are each city’s live local time',
+    kind: 'inferred',
+    source: 'The Sun’s declination from the day of the year and its longitude from the hour, good to about a degree; local times from the viewer’s own clock and the IANA time zones America/Chicago and America/Bogota',
+    note: 'The equation of time (up to about 16 minutes) is left out, so the line can sit up to about 4 degrees east or west of exact.',
+  },
   // Perception: what your own senses do and leave out.
   {
     id: 'daylight-stars',
@@ -458,13 +480,7 @@ export const SOURCES: Source[] = [
     kind: 'inferred',
     source: 'Wien’s displacement law: peak wavelength = 2,898 µm·K ÷ temperature',
   },
-  {
-    id: 'radio-air',
-    claim: 'The radio lens at the end',
-    value: 'waves drawn to show that phone, Wi-Fi and broadcast signals fill the air',
-    kind: 'illustrative',
-    source: 'Drawn in the browser; not a measurement of any place',
-  },
+
   {
     id: 'earth-orbit',
     claim: 'Earth’s speed around the Sun',
@@ -546,94 +562,6 @@ export const SOURCES: Source[] = [
     kind: 'inferred',
     source: 'Karst et al. 2023, Nature Ecology & Evolution 7, 501',
     url: 'https://doi.org/10.1038/s41559-023-01986-1',
-  },
-  // The inner voice's teachings. Each is a view from a contemplative
-  // tradition, cited to where Naropa University teaches it, not a finding.
-  {
-    id: 'naropa-psych',
-    claim: 'The founding principle of Naropa’s BA in Psychology',
-    value: '“guided by the principle that psychological health and wellbeing are innate”',
-    kind: 'contemplative',
-    source: 'Naropa University Academic Catalog 2025–26, BA Psychology, Program Vision',
-    url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
-  },
-  {
-    id: 'basic-goodness',
-    claim: 'Basic goodness, in Chögyam Trungpa’s teaching',
-    value: 'the inherent wisdom, clarity and compassion of human nature',
-    kind: 'contemplative',
-    source: 'Naropa University, Tree of Contemplative Education; taught in the core course COR-130, in “Basic Goodness and the Awakened Heart”',
-    url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
-    note: 'Trungpa, a Tibetan Buddhist teacher, founded Naropa in Boulder in 1974. A view from the Shambhala tradition, not a scientific finding.',
-  },
-  {
-    id: 'beginners-mind',
-    claim: 'Beginner’s mind',
-    value: 'meeting experience without preconception, as a beginner would; a Zen teaching made widely known by Shunryu Suzuki',
-    kind: 'contemplative',
-    source: 'Naropa University, Tree of Contemplative Education; COR-130 introduces contemplative practice “through the lens of beginner’s mind”',
-    url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
-  },
-  {
-    id: 'dependent-origination',
-    claim: 'Dependent arising (pratityasamutpada)',
-    value: 'the Buddhist teaching that everything arises from causes and conditions, nothing on its own',
-    kind: 'contemplative',
-    source: 'Naropa University Academic Catalog 2025–26: Buddhist psychology courses study it “as an approach to understanding interdependence and systems thinking”',
-    url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
-    note: 'The cosmic web is shaped by gravity acting on dark and ordinary matter. The likeness is a resemblance, not a law.',
-  },
-  {
-    id: 'mindfulness-awareness',
-    claim: 'Mindfulness-awareness meditation',
-    value: 'shamatha-vipashyana: resting attention on something simple, such as the breath, and noticing when it wanders',
-    kind: 'contemplative',
-    source: 'Naropa catalog, PSYB-314 Psychology of Mindfulness Meditation, required in the BA in Psychology',
-    url: 'https://catalog.naropa.edu/all-course-descriptions/',
-    note: 'Meditation trains where attention goes. Nothing here suggests it raises the pace of conscious thought.',
-  },
-  {
-    id: 'impermanence',
-    claim: 'Impermanence',
-    value: 'that nothing in experience stays fixed; one of the three marks of existence in Buddhist teaching',
-    kind: 'contemplative',
-    source: 'Naropa catalog, REL-160 Meditation Practicum I: Freeing the Mind, on “the discovery of impermanence”',
-    url: 'https://catalog.naropa.edu/all-course-descriptions/',
-    note: 'The brain’s delay in building the present is measured; impermanence is a teaching about experience.',
-  },
-  {
-    id: 'interbeing',
-    claim: 'Interbeing',
-    value: 'the interconnectedness of all life; a word coined by the Vietnamese Zen teacher Thich Nhat Hanh',
-    kind: 'contemplative',
-    source: 'Naropa University, Tree of Contemplative Education, “Social Justice, Interbeing and the Earth”',
-    url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
-    note: 'The bacteria are measured; interbeing is a way of seeing them.',
-  },
-  {
-    id: 'skandhas',
-    claim: 'The five skandhas',
-    value: 'form, feeling, perception, mental formations and consciousness: the parts Buddhist psychology finds a person made of, with no fixed self among them',
-    kind: 'contemplative',
-    source: 'Naropa catalog, CNSC-603 Buddhist Foundations for Counseling I, on “the development of a false sense of self”',
-    url: 'https://catalog.naropa.edu/all-course-descriptions/',
-    note: 'A graduate counseling course at Naropa. The atom on screen says nothing about selves; the line turns from the parts of matter to the parts of a person.',
-  },
-  {
-    id: 'maitri',
-    claim: 'Maitri',
-    value: 'loving-kindness, beginning with an unconditional friendliness toward oneself',
-    kind: 'contemplative',
-    source: 'Naropa catalog, REL-160 (“the cultivation of maitri (loving-kindness)”) and PSYB-415 Maitri: Working With Emotions',
-    url: 'https://catalog.naropa.edu/all-course-descriptions/',
-  },
-  {
-    id: 'contemplative-neuro',
-    claim: 'Contemplative neuroscience',
-    value: 'students use contemplative practice “as laboratory for investigating their own mind and brain,” with phenomenology, experiment and experience sampling',
-    kind: 'contemplative',
-    source: 'Naropa University Academic Catalog 2025–26, PSYB-462 Contemplative Neuroscience',
-    url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
   },
 ];
 
