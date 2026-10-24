@@ -313,7 +313,7 @@ export function createWithin(mobile: boolean): StageScene {
         if (f.chapter === CH.small) labels.push(labelAt('p53 · 393 amino acids', head, camera, f, proteinA * smoothstep(P53 + 1, P53 + 2, f.local) * (1 - smoothstep(ATOM - 1, ATOM, f.local))));
         if (f.chapter === CH.unsure) {
           const u = anchor.copy(residuePos[Math.max(0, unsureIndex + 4)]).applyMatrix4(protein.matrixWorld);
-          labels.push(labelAt('Confidence below 50: loose, or unknown?', u, camera, f, proteinA * viewNow.z));
+          labels.push(labelAt('Confidence below 50: loose, or unknown?', u, camera, f, proteinA * viewNow.z, 'left'));
         }
       }
       return labels.filter(present);

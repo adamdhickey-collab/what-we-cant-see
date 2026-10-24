@@ -85,6 +85,7 @@ a {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  transition: opacity var(--dur-text);
 }
 
 .stage-label {
@@ -1108,9 +1109,10 @@ input[type='range']::-moz-range-thumb {
   cursor: none;
 }
 
-/* While the inner voice speaks, the data steps back. */
+/* While the inner voice speaks, the data steps back, the stage's labels too. */
 .app:has(.beat-inner) .scale,
-.app:has(.beat-inner) .meter {
+.app:has(.beat-inner) .meter,
+.app:has(.beat-inner) .stage-labels {
   opacity: 0.15;
 }
 

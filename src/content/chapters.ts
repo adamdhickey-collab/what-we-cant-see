@@ -243,9 +243,8 @@ const DEFS: ChapterDef[] = [
       { at: 'web', shift: 5, log10m: 25.0 },
       { at: 'threads', shift: 2, log10m: 25.3 },
       { at: 'euclid', shift: 3, log10m: 25.75 },
-      { at: 'zoobot', shift: 5, log10m: 26.2 },
-      // Far enough back to see the whole sphere of what light has reached us from.
-      { at: 'end', log10m: 27.15 },
+      // Drift out slowly, keeping the web in view under the closing line.
+      { at: 'end', log10m: 26.0 },
     ],
     facts: [
       { text: 'Look at one Euclid galaxy a second, without sleeping, and you’d finish in about ten months.', sources: ['euclid-time'] },
@@ -253,7 +252,7 @@ const DEFS: ChapterDef[] = [
       { text: 'Farther still, the threads blur into an even haze.', sources: ['homogeneity'] },
       { text: 'Light has had time to reach us from 46 billion light-years away. That’s not the edge of everything.', sources: ['observable', 'age'] },
     ],
-    camera: 'Out of our galaxy into a real slice of the universe: SDSS galaxies placed by redshift, with us at the point of the wedge. Zoobot’s share is marked in teal; then a haze, and a shell of light marking the observable limit.',
+    camera: 'Out of our galaxy into a real slice of the universe: SDSS galaxies placed by redshift, with us at the point of the wedge. Zoobot’s share is marked in teal, and the web drifts back as the chapter closes.',
     reducedMotion: 'No orbit; one composition per line.',
   },
   {

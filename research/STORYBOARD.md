@@ -50,7 +50,7 @@ the same idea, a person's and a machine's.
 | --- | --- | --- | --- | --- | --- |
 | 1 | The shore | 0:00–0:45 | `shore` shader | 0.2 → 3.9 | The title at dusk. The first stars come out: "They were there all day, hidden by the light." Basic goodness; the horizon; the blind spot your brain paints over |
 | 2 | Too far | 0:45–1:34 | `cosmos` | 3.9 → 21.6 | Earth, the eight-minute-old Sun, the orbits, the galaxy. It turns too fast; a violet halo appears; 5% of everything; beginner's mind |
-| 3 | Too many | 1:34–2:19 | `web`, real SDSS galaxies | 21.6 → 27.2 | 113,741 real galaxies in two wedges meeting at us, gathered into threads: dependent arising. Euclid's 26 million; Zoobot's picks appear in teal; mindfulness. The observable limit as a shell of light |
+| 3 | Too many | 1:34–2:19 | `web`, real SDSS galaxies | 21.6 → 26.0 | 113,741 real galaxies in two wedges meeting at us, gathered into threads: dependent arising. Euclid's 26 million; Zoobot's picks appear in teal; mindfulness |
 | 4 | Too faint | 2:19–3:09 | `star` + transit lab | 9.1 | A scan line runs along 90 days of Kepler data and finds nothing; then the period search sweeps and Kepler-1772 b appears at 3.21 days. Practice, too, shows itself in the stacking |
 | 5 | Too fast, too slow | 3:09–3:52 | page only, time lab | 0.2 | A wing you see as a blur, a clock you never see move until it speeds itself up 3,600×, a "now" built late, impermanence, the narrow band a person can watch |
 | 6 | Too small | 3:52–4:40 | `within` | 0.2 → −9.8 | A fingertip, a cell with bacteria around it (interbeing), p53, hydrogen's cloud of maybes, and no self found among the parts |
