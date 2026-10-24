@@ -218,7 +218,7 @@ export function App() {
           </h1>
           <p className="intro-lede">
             Your senses edit the world. In about {MINUTES} minutes, go from a quiet shore to the edge of the observable universe and into your own cells,
-            and find out what they leave out.
+            and find out what they leave out. Alongside it runs an inner voice drawn from the contemplative psychology taught at Naropa University.
           </p>
           <ol className="intro-map" aria-label="The ride’s stops">
             {CHAPTERS.map((c) => (

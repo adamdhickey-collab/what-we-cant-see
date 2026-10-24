@@ -6,8 +6,11 @@ and reduced-motion behavior, and the director, the stage, the narrative, the
 sound and the scale navigator all read it. This page is the overview; the
 file is the script.
 
-Running time: **about 10 minutes**, straight through. The ride never stops or asks
-anything of the viewer; it plays like a film. Nobody times a line by hand: each stays up for 1.5
+Running time: **6:15**, straight through, the length of its music. The ride
+never stops or asks anything of the viewer; it plays like a film, and the
+script is cut to fit the song, not the song stretched to fit the script.
+Science cut from the ride lives on in each chapter's side facts, in the Text
+version. Nobody times a line by hand: each stays up for 1.5
 seconds plus a second for every three words, and `npm run build` fails if a
 line runs past 18 words or cites a source the ledger lacks
 (`scripts/check-script.mjs`).
@@ -25,13 +28,16 @@ unsure. The arc:
 
 **Two voices.** The outer voice says what instruments have found. After the
 key finding in each chapter, an inner voice (`inner: true`, set in italics,
-given an extra moment) turns it toward the viewer's own awareness: the stars
-hidden by daylight and an awareness hidden by thought; light from the past
-and the only moment that is here; thousands of galaxies and thousands of
-thoughts, and the one who notices them; a signal under noise and stillness;
-trillions of cells, none of them you. It is original writing in the spirit
-of Ram Dass's teachings, and it quotes no one. It makes no factual claims, so
-it carries no sources.
+given an extra moment) turns it toward the viewer's own awareness, in the
+language of the contemplative psychology taught at Naropa University: the
+stars hidden by daylight and basic goodness; dark matter and beginner's mind;
+the cosmic web and dependent arising; a flood of galaxies and mindfulness; a
+signal found only by stacking, and practice; the late-built "now" and
+impermanence; your bacteria and interbeing; the parts of a person and no self
+among them; a model's loose ends and maitri. A line that names a teaching is
+tagged *Contemplative teaching* and cites where Naropa teaches it
+([`NAROPA-EDITION.md`](NAROPA-EDITION.md)); where a teaching and a
+measurement rhyme, the line says which is which.
 
 AI appears where it actually works in science, as an attention machine:
 Zoobot and ExoMiner don't see farther than we do, they look at more. The
@@ -42,24 +48,20 @@ the same idea, a person's and a machine's.
 
 | # | Chapter | Time | Scene | Scale (log₁₀ m) | The moment |
 | --- | --- | --- | --- | --- | --- |
-| 1 | The shore | 0:00–1:00 | `shore` shader | 0.2 → 3.9 | The title at dusk. The first stars come out: "They were there all day, hidden by the light." The horizon, the spectrum bar, the blind spot your brain paints over, the ground spinning faster than a jet |
-| 2 | Too far | 1:00–2:12 | `cosmos` | 3.9 → 21.6 | Earth, the eight-minute-old Sun, grapefruit scale, orbits, Proxima, the galaxy. It turns too fast; a violet halo appears; 5% of everything |
-| 3 | Too many | 2:12–3:23 | `web`, real SDSS galaxies | 21.6 → 27.2 | 113,741 real galaxies in two wedges meeting at us. Euclid's 26 million would take ten months to look at; Zoobot's picks appear in teal. The observable limit as a shell of light |
-| 4 | Too faint | 3:23–4:42 | `star` + transit lab | 9.1 | A scan line runs along 90 days of Kepler data and finds nothing; then the period search sweeps and Kepler-1772 b appears at 3.21 days |
-| 5 | Too fast, too slow | 4:42–5:26 | page only, time lab | 0.2 | A wing you see as a blur, a clock you never see move until it speeds itself up 3,600×, a ruler of time with the narrow band a person can watch |
-| 6 | Too small | 5:26–6:24 | `within` | 0.2 → −9.8 | A fingertip, a cell with bacteria around it, four million cells replaced a second, p53, hydrogen's cloud of maybes |
-| 7 | Too unsure | 6:24–7:35 | `within` + protein panel | −7.9 | AlphaFold marks its own doubt; the loose ends turn violet. Then: pattern, noticing, awareness, an open question |
-| 8 | New eyes | 7:35–9:00 | `shore` + lenses | 0.2 | Andromeda named. The same shore through other eyes, one line each, dissolving into the next: infrared, radio, neutrinos, magnetic field, dark matter. Clear again for the closing question, then the souvenir |
+| 1 | The shore | 0:00–0:45 | `shore` shader | 0.2 → 3.9 | The title at dusk. The first stars come out: "They were there all day, hidden by the light." Basic goodness; the horizon; the blind spot your brain paints over |
+| 2 | Too far | 0:45–1:34 | `cosmos` | 3.9 → 21.6 | Earth, the eight-minute-old Sun, the orbits, the galaxy. It turns too fast; a violet halo appears; 5% of everything; beginner's mind |
+| 3 | Too many | 1:34–2:19 | `web`, real SDSS galaxies | 21.6 → 27.2 | 113,741 real galaxies in two wedges meeting at us, gathered into threads: dependent arising. Euclid's 26 million; Zoobot's picks appear in teal; mindfulness. The observable limit as a shell of light |
+| 4 | Too faint | 2:19–3:09 | `star` + transit lab | 9.1 | A scan line runs along 90 days of Kepler data and finds nothing; then the period search sweeps and Kepler-1772 b appears at 3.21 days. Practice, too, shows itself in the stacking |
+| 5 | Too fast, too slow | 3:09–3:52 | page only, time lab | 0.2 | A wing you see as a blur, a clock you never see move until it speeds itself up 3,600×, a "now" built late, impermanence, the narrow band a person can watch |
+| 6 | Too small | 3:52–4:40 | `within` | 0.2 → −9.8 | A fingertip, a cell with bacteria around it (interbeing), p53, hydrogen's cloud of maybes, and no self found among the parts |
+| 7 | Too unsure | 4:40–5:25 | `within` + protein panel | −7.9 | AlphaFold marks its own doubt; the loose ends turn violet; maitri. Then: pattern, understanding, awareness, an open question |
+| 8 | New eyes | 5:25–6:15 | `shore` + lenses | 0.2 | Andromeda named. The same shore through other eyes: infrared, then neutrinos. "Health and wellbeing are innate." Clear again for the closing question, then the souvenir |
 
 ## Bridges
 
-Every chapter's last line opens the next, so no change of place arrives
-unexplained: "Distance hides things. So does sheer number." / "Sometimes
-what you're looking for isn't far away at all. It's buried in noise." /
-"Some things hide in time instead." / "We've been looking outward. The
-strangest place might be in here." / "Down here, nobody can look directly.
-So we've started asking machines to guess." / "Which brings us back to the
-one instrument you carry everywhere."
+The chapter titles carry each change of place: every title names the next
+reason we can't see something. The spoken bridges between chapters were cut
+to fit the music.
 
 ## Alongside the script
 
@@ -74,10 +76,9 @@ one instrument you carry everywhere."
 - **Music**, off until chosen on the intro or in Options: "On the Nature of
   Daylight" follows the story's own clock, so lines keep their reading time.
   It starts the moment the ride does, pauses only if the viewer pauses,
-  follows a scrub, and, being 6:15 against a 9-minute ride, ends during
-  *Too small*.
+  follows a scrub, and, being as long as the ride, ends with it.
 - **Options**: music, sound effects (synthesized; quiet while the music
-  plays, back for the stretch after it), the device's voice reading each line, and the evidence tags.
+  plays), the device's voice reading each line, and the evidence tags.
 
 ## Transitions
 

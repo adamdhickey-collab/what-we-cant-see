@@ -1,11 +1,11 @@
 // Holds the script to account before a build: every line short enough for a
 // general audience, every claim pointing at a real source, every figure in
 // the ledger used. Timing needs no check, since chapters.ts derives each
-// line's time from its length.
+// line's time from its length, and the whole ride is held to its music's.
 //
 //   node scripts/check-script.mjs
 
-import { CHAPTERS, MAX_WORDS, words, readTime } from '../src/content/chapters.ts';
+import { CHAPTERS, MAX_WORDS, MUSIC_SECONDS, TOTAL, words, readTime } from '../src/content/chapters.ts';
 import { SOURCES } from '../src/content/sources.ts';
 import { METERS } from '../src/content/extras.ts';
 
@@ -31,6 +31,8 @@ for (const x of METERS)
     used.add(id);
     if (!ids.has(id)) problems.push(`${x.id}: unknown source “${id}”`);
   }
+// The ride ends with its music: never more than a second apart.
+if (Math.abs(TOTAL - MUSIC_SECONDS) > 1) problems.push(`the ride runs ${TOTAL}s against ${MUSIC_SECONDS}s of music; cut or add to match`);
 for (const id of ids) if (!used.has(id)) problems.push(`source “${id}” is in the ledger but nothing uses it`);
 
 if (problems.length) {
