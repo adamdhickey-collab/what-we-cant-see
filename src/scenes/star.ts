@@ -6,7 +6,10 @@ import * as THREE from 'three';
 import { range, smoothstep } from '../animation/ease';
 import { rgb } from '../shaders/palette';
 import { pointsGeometry, pointsMaterial } from '../shaders/points';
+import { beatStart } from '../content/chapters';
 import { createSky } from './sky';
+
+const LOCK = beatStart('faint', 'lock');
 import type { Frame, StageScene } from './types';
 
 export function createStar(mobile: boolean): StageScene {
@@ -37,7 +40,7 @@ export function createStar(mobile: boolean): StageScene {
       // On a phone the instrument fills the top of the screen, so the star steps back.
       starMat.uniforms.uOpacity.value = f.weight * (f.mobile ? 0.25 : 0.9);
       starMat.uniforms.uPixelRatio.value = f.pixelRatio;
-      const cross = range(f.local, 31, 35);
+      const cross = range(f.local, LOCK, LOCK + 4);
       planet.position.set(sx + (cross - 0.5) * (26 / f.height) * 2.6, sy - 0.002, 0);
       planetMat.uniforms.uOpacity.value = f.weight * smoothstep(0, 0.1, cross) * (1 - smoothstep(0.9, 1, cross));
       planetMat.uniforms.uPixelRatio.value = f.pixelRatio;

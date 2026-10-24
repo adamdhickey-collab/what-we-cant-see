@@ -1,14 +1,24 @@
-// The director owns the one clock. Guided play advances it, Explore mode
-// moves it by hand, and every scene and every line of text is a function of
-// it, so the two modes can never fall out of step.
+// The director owns the one clock. The ride (guided) advances it, Wander
+// (explore) moves it by hand, and every scene and every line of text is a
+// function of it, so the two modes can never fall out of step. At a hold the
+// ride stops and waits for the viewer to try something, then carries on.
 
 import { useSyncExternalStore } from 'react';
-import { CHAPTERS, STARTS, TOTAL, chapterIndexAt, beatIndexAt } from '../content/chapters';
+import { CHAPTERS, HOLDS, STARTS, TOTAL, chapterIndexAt, beatIndexAt, type HoldId } from '../content/chapters';
+import type { LensId } from '../content/extras';
 
 export type Mode = 'guided' | 'explore';
 export type ProteinView = 'auto' | 'prediction' | 'confidence' | 'verify';
 
-export interface DirectorState {
+export interface Prefs {
+  /** Show each line's kind of claim and its source. */
+  evidence: boolean;
+  sound: boolean;
+  /** Read the lines aloud with the device's voice. */
+  voice: boolean;
+}
+
+export interface DirectorState extends Prefs {
   t: number;
   playing: boolean;
   mode: Mode;
@@ -20,9 +30,17 @@ export interface DirectorState {
   /** Days, or null while the narration drives the period search. */
   foldPeriod: number | null;
   webgl: boolean;
+  /** The hold the ride is stopped at, if any. */
+  waiting: HoldId | null;
+  /** What the viewer did at each hold. */
+  answers: Partial<Record<HoldId, string>>;
+  /** Zoobot's teal picks, which the viewer can hide to compare. */
+  picks: boolean;
+  lens: LensId | null;
+  /** Wall-clock milliseconds when the ride began, and when it ended, for the meter. */
+  beganAt: number;
+  endedAt: number | null;
 }
-
-type Listener = () => void;
 
 /**
  * Something other than the frame clock that says where the story is, such
@@ -37,10 +55,24 @@ export interface ClockSource {
   total: number;
 }
 
+type Listener = () => void;
+
+const PREFS_KEY = 'wwcs-prefs';
+function loadPrefs(): Prefs {
+  const fallback: Prefs = { evidence: false, sound: false, voice: false };
+  try {
+    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+  } catch {
+    return fallback;
+  }
+}
+
 class Director {
   private s: DirectorState;
   private listeners = new Set<Listener>();
   source: ClockSource | null = null;
+  /** Set for a wall display: holds wait a few seconds, then carry on by themselves. */
+  kiosk = false;
 
   constructor() {
     const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -54,6 +86,13 @@ class Director {
       proteinView: 'auto',
       foldPeriod: null,
       webgl: true,
+      waiting: null,
+      answers: {},
+      picks: true,
+      lens: null,
+      beganAt: 0,
+      endedAt: null,
+      ...loadPrefs(),
     };
     if (typeof matchMedia !== 'undefined') {
       matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => this.set({ reduced: e.matches }));
@@ -72,15 +111,34 @@ class Director {
     this.listeners.forEach((l) => l());
   }
 
+  setPref(patch: Partial<Prefs>) {
+    this.set(patch);
+    const { evidence, sound, voice } = this.s;
+    try {
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ evidence, sound, voice }));
+    } catch {
+      /* A private window: the choice lasts this visit only. */
+    }
+  }
+
   tick(dt: number) {
     if (!this.s.playing) return;
-    const t = this.source ? this.source.read() : this.s.t + dt;
-    if (t >= TOTAL) this.set({ t: TOTAL, playing: false, ended: true });
-    else this.set({ t });
+    const from = this.s.t;
+    let t = this.source ? this.source.read() : from + dt;
+    // The ride stops at a hold it reaches while playing; a seek never trips one.
+    const hold = this.s.mode === 'guided' ? HOLDS.find((h) => from < h.t && t >= h.t) : undefined;
+    if (hold) {
+      this.set({ t: hold.t, playing: false, waiting: hold.id });
+      return;
+    }
+    if (t >= TOTAL) {
+      t = TOTAL;
+      this.set({ t, playing: false, ended: true, endedAt: this.s.endedAt ?? Date.now() });
+    } else this.set({ t });
   }
 
   begin(mode: Mode) {
-    this.set({ started: true, mode, playing: mode === 'guided', t: 0, ended: false });
+    this.set({ started: true, mode, playing: mode === 'guided', t: 0, ended: false, waiting: null, answers: {}, lens: null, beganAt: Date.now(), endedAt: null });
   }
 
   play() {
@@ -90,10 +148,25 @@ class Director {
       playing: true,
       mode: 'guided',
       ended: false,
+      waiting: null,
       t: restart ? 0 : this.s.t,
       proteinView: 'auto',
       foldPeriod: null,
+      ...(restart ? { answers: {}, lens: null, beganAt: Date.now(), endedAt: null } : {}),
     });
+  }
+
+  /** Record what the viewer did at a hold, without moving on. */
+  answer(hold: HoldId, value: string) {
+    this.set({ answers: { ...this.s.answers, [hold]: value } });
+  }
+
+  /** Carry on from a hold: the ride resumes, or in Wander the next line comes up. */
+  resolve() {
+    if (this.s.waiting) {
+      this.set({ waiting: null });
+      this.play();
+    } else this.step(1);
   }
 
   pause() {
@@ -102,16 +175,17 @@ class Director {
 
   toggle() {
     if (this.s.playing) this.pause();
+    else if (this.s.waiting) this.resolve();
     else this.play();
   }
 
   /** Hand control to the viewer: the clock stops and the instruments are theirs. */
   explore() {
-    this.set({ playing: false, mode: 'explore', started: true });
+    this.set({ playing: false, mode: 'explore', started: true, waiting: null });
   }
 
   seek(t: number) {
-    this.set({ t: Math.max(0, Math.min(TOTAL, t)), ended: false, started: true });
+    this.set({ t: Math.max(0, Math.min(TOTAL, t)), ended: false, started: true, waiting: null });
   }
 
   goToChapter(i: number) {

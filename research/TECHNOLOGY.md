@@ -26,8 +26,8 @@ chapter without touching the rest.
 experience has one source of time, the director, and every scene is a pure
 function of it, so guided play, scrubbing, chapter jumps and replay are the
 same code path. GSAP would be a second clock to keep in step with the first,
-and ScrollTrigger is scroll-driven, which this piece deliberately is not:
-Explore mode is a scrubber, not a hijacked scroll. Easing is eight lines in
+and ScrollTrigger is scroll-driven. Scrolling and swiping do move the story,
+one line at a time, but through the same director as every other control. Easing is eight lines in
 `src/animation/ease.ts`. If a later chapter wants GSAP's timeline authoring,
 drive a paused GSAP timeline's `progress()` from the director.
 
@@ -49,11 +49,12 @@ shaders to TSL.
 
 | Chapter | Medium | Why |
 | --- | --- | --- |
-| 1, 7 Shore | Full-screen fragment shader | Sky, sea and light are fields, not objects. A shader paints them at any resolution in one pass, and the figure is negative space |
-| 2 Horizon | Three.js points + lines | Real orbit ratios as fine lines; a procedural galaxy of up to 120,000 points |
-| 3 Structure | Three.js points | Up to 200,000 points along filaments; the largest single moment |
-| 4 Patterns | 2D canvas + D3 scales, over a dimmed starfield | Thousands of measurements and a live search are a chart's job. Canvas, not SVG, because 3,803 points redraw every frame while folding |
-| 5, 6 Within, Instrument | Three.js points + a line through a real structure | 393 real residues from AlphaFold DB, colored by confidence |
+| 1 Your eyes, 6 Time | HTML and SVG | A blind-spot test and a time ruler are page things: exact sizes, text, buttons |
+| 2, 9 Shore | Full-screen fragment shader, plus a second full-screen pass for the lenses | Sky, sea and light are fields, not objects. The lenses draw over the shore without touching its shader |
+| 3 Too far | Three.js points + lines | Real orbit ratios as fine lines; a procedural galaxy of up to 120,000 points and a halo around it |
+| 4 Too many | Three.js points | 113,741 real SDSS galaxies, decoded from Int16 positions; a haze and a shell of light |
+| 5 Too faint | 2D canvas + D3 scales, over a dimmed starfield | Thousands of measurements and a live search are a chart's job. Canvas, not SVG, because 3,803 points redraw every frame while folding |
+| 7, 8 Too small, Too unsure | Three.js points + a line through a real structure | A fingertip, a cell and bacteria; 393 real residues from AlphaFold DB, colored by confidence |
 | All | HTML typography | Text is text: selectable, translatable, read by screen readers |
 
 ## Performance budget
@@ -65,8 +66,12 @@ shaders to TSL.
 - Scenes outside the current crossfade window are not drawn at all.
 - The protein JSON (~20 KB) is fetched after first paint, and the period
   search (about 0.1 s) runs in an idle callback, so neither is waited for.
-- Three.js is most of the 235 KB gzipped bundle. Splitting it from the
-  first load, so the intro paints from HTML alone, is the next cut.
+- Three.js and the scenes load as their own chunk (about 150 KB gzipped)
+  after the page shell (about 110 KB), so the intro paints from HTML first.
+- The galaxy survey (about 0.9 MB) is fetched in the background and drawn
+  when it arrives; phones draw every other galaxy.
+- Sound is synthesized with the Web Audio API: no files, and nothing at all
+  until the viewer turns it on.
 
 ## Fallbacks
 

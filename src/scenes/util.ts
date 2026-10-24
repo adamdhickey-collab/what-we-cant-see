@@ -18,13 +18,14 @@ export function distanceFor(scale: number, metersPerUnit: number, fovDeg: number
 }
 
 /**
- * Frame the subject clear of the narration: right of center on a wide
- * screen, where the text sits lower left, and higher on a phone, where the
- * text fills the bottom. Call before updateProjectionMatrix.
+ * Frame the subject clear of the narration: right of center and a little
+ * high on a wide screen, where the caption sits lower left, and higher on a
+ * phone, where the caption fills the bottom. Call before updateProjectionMatrix.
  */
 export function compose(camera: THREE.PerspectiveCamera, f: Frame, shift = 0.12) {
   const x = f.aspect > 1.2 ? -f.width * shift : 0;
-  const y = f.aspect < 0.8 ? f.height * 0.12 : 0;
+  // On a wide screen the caption sits along the bottom, so the subject rides a little high.
+  const y = f.aspect < 0.8 ? f.height * 0.12 : f.height * 0.06;
   camera.setViewOffset(f.width, f.height, x, y, f.width, f.height);
 }
 

@@ -9,8 +9,8 @@
 
 import * as THREE from 'three';
 import { lerp, rng, smoothstep } from '../animation/ease';
-import { beatIndexAt, CHAPTERS } from '../content/chapters';
-import type { ProteinView } from '../animation/director';
+import { beatStart, CH } from '../content/chapters';
+import { autoView } from './views';
 import { rgb } from '../shaders/palette';
 import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points';
 import type { Frame, StageScene } from './types';
@@ -34,11 +34,10 @@ const PROTEIN_COLOR = /* glsl */ `
   }
 `;
 
-/** The view the narration calls for at a moment in Chapter 6. */
-function autoView(local: number): Exclude<ProteinView, 'auto'> | 'shape' {
-  const beat = beatIndexAt(CHAPTERS[5], local);
-  return beat < 2 ? 'shape' : beat === 2 ? 'prediction' : beat === 3 || beat === 5 ? 'confidence' : 'verify';
-}
+// Moments in the inward chapter, keyed to its lines.
+const MICROBES = beatStart('small', 'microbes');
+const P53 = beatStart('small', 'p53');
+const ATOM = beatStart('small', 'atom');
 
 export function createWithin(mobile: boolean): StageScene {
   const r = rng(41);
@@ -119,6 +118,45 @@ export function createWithin(mobile: boolean): StageScene {
   const cellMat = pointsMaterial(depth);
   const cell = new THREE.Points(pointsGeometry(cp, cc, cs), cellMat);
 
+  // Bacteria, schematic: rods about 2 µm long, a tenth of the cell's width,
+  // drawn around it at true ratio. In a body most of them live in the gut.
+  const rods = 46, perRod = mobile ? 70 : 150;
+  const bp = new Float32Array(rods * perRod * 3), bc = new Float32Array(rods * perRod * 3), bs = new Float32Array(rods * perRod);
+  for (let k = 0; k < rods; k++) {
+    const at = dir().multiplyScalar(1.18 + r.next() * 0.5);
+    at.y *= 0.82;
+    const axis = dir();
+    for (let j = 0; j < perRod; j++) {
+      const i = k * perRod + j;
+      const along = (r.next() * 2 - 1) * 0.09;
+      const p = at.clone().addScaledVector(axis, along).add(dir().projectOnPlane(axis).normalize().multiplyScalar(0.022));
+      bp.set([p.x, p.y, p.z], i * 3);
+      bc.set(ivory.map((c, n) => (c * 0.6 + rgb('copper')[n] * 0.4) * (0.6 + 0.3 * r.next())), i * 3);
+      bs[i] = 0.9;
+    }
+  }
+  const microbeMat = pointsMaterial(depth);
+  const microbes = new THREE.Points(pointsGeometry(bp, bc, bs), microbeMat);
+
+  // A fingertip's ridges, generated: a loop pattern of fine lines, about 2 cm across.
+  const fN = mobile ? 14000 : 30000;
+  const fp = new Float32Array(fN * 3), fc = new Float32Array(fN * 3), fs = new Float32Array(fN);
+  for (let i = 0; i < fN; i++) {
+    const x = r.next() * 2 - 1, y = r.next() * 2 - 1;
+    const oval = x * x + (y * y) / 1.69;
+    const qx = x + 0.12 * (fbm3(x * 2, y * 2, 3) - 0.5), qy = y + 0.12 * (fbm3(x * 2, y * 2, 9) - 0.5);
+    const ridge = Math.hypot(qx * 1.15, (qy + 0.25) * 0.9 + 0.3 * qx * qx) * 15;
+    if (oval > 1 || ridge % 1 > 0.32) {
+      i--;
+      continue;
+    }
+    fp.set([x * 0.85, y * 0.85, (r.next() - 0.5) * 0.02 - 0.3 * oval], i * 3);
+    fc.set(ivory.map((c, n) => (c * 0.75 + rgb('copper')[n] * 0.25) * (0.5 + 0.4 * r.next()) * (1 - 0.6 * oval)), i * 3);
+    fs[i] = 1;
+  }
+  const fingerMat = pointsMaterial(depth);
+  const finger = new THREE.Points(pointsGeometry(fp, fc, fs), fingerMat);
+
   // Hydrogen's 1s state: radius drawn from r² e^(-2r/a0), a Gamma(3, a0/2).
   // The ring marks a0, the most likely distance, and faces the viewer.
   const aN = mobile ? 24000 : 60000;
@@ -146,7 +184,7 @@ export function createWithin(mobile: boolean): StageScene {
   let unsureIndex = 0;
   const viewNow = new THREE.Vector3();
 
-  scene.add(cell, atom, ring, protein);
+  scene.add(finger, cell, microbes, atom, ring, protein);
   scene.traverse((o) => (o.frustumCulled = false));
 
   // The structure arrives over the network; until it does, the chapter has
@@ -214,7 +252,7 @@ export function createWithin(mobile: boolean): StageScene {
       camera.aspect = f.aspect;
       camera.position.z = 3.2 / Math.min(1, f.aspect * 1.15);
       // In Chapter 6 a panel takes the right, so the protein sits nearer center.
-      compose(camera, f, f.chapter === 5 ? 0.02 : 0.12);
+      compose(camera, f, f.chapter === CH.unsure ? 0.02 : 0.12);
       camera.updateProjectionMatrix();
       depth.uniforms.uNear.value = camera.position.z - 0.9;
       depth.uniforms.uFar.value = camera.position.z + 1.1;
@@ -225,25 +263,34 @@ export function createWithin(mobile: boolean): StageScene {
         obj.scale.setScalar(k);
         return smoothstep(0.03, 0.25, k) * (1 - smoothstep(2.5, 9, k));
       };
+      const fingerA = show(finger, -1.7);
       const cellA = show(cell, -4.7);
+      microbes.scale.copy(cell.scale);
+      const microbeA = cellA * (f.chapter === CH.small ? (f.state.reduced ? (f.local >= MICROBES ? 1 : 0) : smoothstep(MICROBES, MICROBES + 2.5, f.local)) : 0);
       const proteinA = show(protein, -8);
       const atomA = show(atom, -9.6);
       ring.scale.copy(atom.scale);
       ringMat.uniforms.uOpacity.value = w * atomA * 0.55 * smoothstep(0.7, 1, atom.scale.x);
 
       const spin = f.state.reduced ? 0 : f.elapsed * 0.1;
-      for (const o of [cell, protein, atom]) {
+      for (const o of [cell, microbes, protein, atom]) {
         o.rotation.set(0.25 + f.drag.y * 0.6, spin + f.drag.x, 0);
       }
 
+      // The fingertip faces the viewer and only sways.
+      finger.rotation.set(0.15 + f.drag.y * 0.3, Math.sin(spin) * 0.25 + f.drag.x * 0.3, 0);
+      fingerMat.uniforms.uOpacity.value = w * fingerA;
+      microbeMat.uniforms.uOpacity.value = w * microbeA;
       cellMat.uniforms.uOpacity.value = w * cellA;
       atomMat.uniforms.uOpacity.value = w * atomA;
-      for (const m of [cellMat, atomMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
+      for (const m of [cellMat, atomMat, fingerMat, microbeMat]) m.uniforms.uPixelRatio.value = f.pixelRatio;
+      fingerMat.uniforms.uSize.value = 1.3;
+      microbeMat.uniforms.uSize.value = 1.4;
       cellMat.uniforms.uSize.value = 1.5;
       atomMat.uniforms.uSize.value = 2;
 
       // Which view the protein is in: the narration's, or the viewer's.
-      const chosen = f.chapter === 5 ? (f.state.proteinView === 'auto' ? autoView(f.local) : f.state.proteinView) : 'shape';
+      const chosen = f.chapter === CH.unsure ? (f.state.proteinView === 'auto' ? autoView(f.local) : f.state.proteinView) : 'shape';
       viewNow.lerp(target[chosen], f.state.reduced ? 1 : Math.min(1, f.dt * 3));
       proteinMats.forEach((m, i) => {
         m.uniforms.uOpacity.value = w * proteinA * (i === 0 ? 1 : 0.45);
@@ -254,6 +301,8 @@ export function createWithin(mobile: boolean): StageScene {
       renderer.render(scene, camera);
 
       const labels = [
+        labelAt('A fingertip · about 2 cm across', anchor.set(0.7, 0.9, 0).multiplyScalar(finger.scale.x), camera, f, fingerA * smoothstep(0.6, 0.9, finger.scale.x) * (1 - smoothstep(1.4, 2, finger.scale.x))),
+        labelAt('Bacteria · each about 2 µm (schematic)', anchor.set(1.3, -0.7, 0.3).multiplyScalar(cell.scale.x), camera, f, microbeA * (1 - smoothstep(1.4, 2, cell.scale.x)), 'left'),
         labelAt('A cell · about 20 µm across (schematic)', anchor.set(0.75, 0.62, 0).multiplyScalar(cell.scale.x), camera, f, cellA * smoothstep(0.6, 0.9, cell.scale.x) * (1 - smoothstep(1.4, 2, cell.scale.x))),
         labelAt('Nucleus · drawn 60,000 times too large', anchor.set(0, 0, 0), camera, f, atomA * smoothstep(0.7, 1, atom.scale.x)),
         labelAt('Most likely distance · 0.053 nm', anchor.set(a0 * 0.71, a0 * 0.71, 0).multiplyScalar(atom.scale.x), camera, f, atomA * smoothstep(0.7, 1, atom.scale.x)),
@@ -261,8 +310,8 @@ export function createWithin(mobile: boolean): StageScene {
       if (residuePos.length) {
         protein.updateMatrixWorld();
         const head = anchor.copy(residuePos[0]).applyMatrix4(protein.matrixWorld);
-        if (f.chapter === 4) labels.push(labelAt('p53 · 393 amino acids', head, camera, f, proteinA * smoothstep(13, 14, f.local) * (1 - smoothstep(19, 20, f.local))));
-        if (f.chapter === 5) {
+        if (f.chapter === CH.small) labels.push(labelAt('p53 · 393 amino acids', head, camera, f, proteinA * smoothstep(P53 + 1, P53 + 2, f.local) * (1 - smoothstep(ATOM - 1, ATOM, f.local))));
+        if (f.chapter === CH.unsure) {
           const u = anchor.copy(residuePos[Math.max(0, unsureIndex + 4)]).applyMatrix4(protein.matrixWorld);
           labels.push(labelAt('Confidence below 50: loose, or unknown?', u, camera, f, proteinA * viewNow.z));
         }
@@ -274,7 +323,7 @@ export function createWithin(mobile: boolean): StageScene {
         if (o instanceof THREE.Points) o.geometry.dispose();
       });
       ring.geometry.dispose();
-      [cellMat, atomMat, ringMat, ...proteinMats].forEach((m) => m.dispose());
+      [cellMat, atomMat, ringMat, fingerMat, microbeMat, ...proteinMats].forEach((m) => m.dispose());
     },
   };
 }
