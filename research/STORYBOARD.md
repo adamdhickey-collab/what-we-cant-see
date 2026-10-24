@@ -6,7 +6,7 @@ and reduced-motion behavior, and the director, the stage, the narrative, the
 sound and the scale navigator all read it. This page is the overview; the
 file is the script.
 
-Running time: **9 minutes**, straight through. The ride never stops or asks
+Running time: **about 10 minutes**, straight through. The ride never stops or asks
 anything of the viewer; it plays like a film. Nobody times a line by hand: each stays up for 1.5
 seconds plus a second for every three words, and `npm run build` fails if a
 line runs past 18 words or cites a source the ledger lacks
@@ -22,6 +22,16 @@ unsure. The arc:
 > instruments to get past each limit →
 > now we see more than anyone can look at → so we built machines to look for
 > us → and they have blind spots too → so what's still in front of you?
+
+**Two voices.** The outer voice says what instruments have found. After the
+key finding in each chapter, an inner voice (`inner: true`, set in italics,
+given an extra moment) turns it toward the viewer's own awareness: the stars
+hidden by daylight and an awareness hidden by thought; light from the past
+and the only moment that is here; thousands of galaxies and thousands of
+thoughts, and the one who notices them; a signal under noise and stillness;
+trillions of cells, none of them you. It is original writing in the spirit
+of Ram Dass's teachings, and it quotes no one. It makes no factual claims, so
+it carries no sources.
 
 AI appears where it actually works in science, as an attention machine:
 Zoobot and ExoMiner don't see farther than we do, they look at more. The

@@ -16,6 +16,11 @@ too small (your cells, your bacteria, a protein, an atom), and too unsure (an
 AI's own blind spots). It ends on the same shore, seen through other eyes, and
 every claim says how we know it.
 
+Two voices tell it. The outer voice says what instruments have found; an
+inner voice, set in italics, turns each finding toward the viewer's own
+awareness, written in the spirit of Ram Dass's teachings: the stars hidden
+by daylight, and a quiet awareness hidden by thought.
+
 **Live:** https://adamdhickey-collab.github.io/what-we-cant-see/
 
 ## Run it
@@ -78,7 +83,7 @@ scripts/
 
 **Working now**
 
-- Eight chapters, the ride (9 minutes, never stopping) and Wander, on one clock:
+- Eight chapters, the ride (about 10 minutes, never stopping) and Wander, on one clock:
   play, pause, scrub, scroll or swipe by line, jump by chapter or by
   landmark on a true logarithmic scale navigator that speaks plainly.
 - Scripted moments in place of interaction: a scan along real Kepler data,
@@ -126,6 +131,8 @@ portfolio.
 Protein structure: AlphaFold DB (EMBL-EBI and Google DeepMind), CC BY 4.0.
 Light curve: NASA Kepler mission, via MAST.
 Music: Max Richter, "On the Nature of Daylight", used with permission.
+Reflections: the inner voice is original writing, in the spirit of the
+teachings of Ram Dass; it does not quote him.
 Galaxies: Sloan Digital Sky Survey DR17, funded by the Alfred P. Sloan
 Foundation, the U.S. Department of Energy Office of Science and the
 participating institutions.

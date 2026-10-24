@@ -20,7 +20,7 @@ export function Narrative({ onSource }: { onSource: (id: string) => void }) {
   const beat = chapter.beats[bi];
 
   const opening = chapter.id === 'shore' && bi === 0;
-  const cls = opening ? 'beat beat-hero' : bi === 0 ? 'beat beat-title' : beat.question ? 'beat beat-question' : 'beat';
+  const cls = opening ? 'beat beat-hero' : bi === 0 ? 'beat beat-title' : beat.question ? 'beat beat-question' : beat.inner ? 'beat beat-inner' : 'beat';
 
   return (
     <section className={`narrative narrative-${chapter.id}`} aria-live="polite" aria-atomic="true">

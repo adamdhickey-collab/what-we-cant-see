@@ -433,6 +433,12 @@ a {
   line-height: 1;
 }
 
+.beat-inner {
+  font-style: italic;
+  font-weight: 200;
+  color: var(--text-dim);
+}
+
 .beat-question {
   font-size: var(--t-question);
   font-stretch: 112%;
@@ -976,6 +982,11 @@ input[type='range']::-moz-range-thumb {
   font-size: 1.1875rem;
   line-height: 1.5;
   margin: 0 0 var(--s-4);
+}
+
+.transcript-line.is-inner {
+  font-style: italic;
+  color: var(--text-dim);
 }
 
 .transcript-line.is-question {

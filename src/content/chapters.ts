@@ -4,7 +4,9 @@
 // this one list. The prose companion is research/STORYBOARD.md.
 //
 // The ride plays straight through, start to finish, like a film: nothing waits
-// for the viewer. Nobody writes a line's timing by hand. Each line stays on
+// for the viewer. Two voices tell it: the outer one says what instruments
+// have found, and an inner one, set apart, turns each finding toward the
+// viewer's own awareness, written in the spirit of Ram Dass's teachings. Nobody writes a line's timing by hand. Each line stays on
 // screen for as long as an unhurried reader needs (READ_LEAD plus READ_WPS
 // words a second), so the ride can never outrun the person reading it, and
 // everything that moves with the story is keyed to a line's id rather than
@@ -33,6 +35,8 @@ export interface BeatDef {
   aside?: AsideId;
   /** On the closing shore, the other eyes this line looks through. */
   lens?: LensId;
+  /** The inner voice: a reflection that turns the line before it inward, set apart and given room to breathe. */
+  inner?: boolean;
   /** Seconds beyond reading time, for a picture that needs to land. */
   extra?: number;
 }
@@ -108,6 +112,7 @@ const DEFS: ChapterDef[] = [
         extra: 2,
         more: 'Sunlight scattered by the air makes the daytime sky far brighter than all but the brightest stars. As it fades, the stars that were always overhead appear.',
       },
+      { inner: true, text: 'Something in you is like that too: a quiet awareness, there all along beneath the noise.' },
       {
         id: 'horizon',
         text: 'Everything you can see of the sea ends 4.7 kilometers away, where the Earth curves out of sight.',
@@ -169,6 +174,7 @@ const DEFS: ChapterDef[] = [
         kind: 'inferred',
         more: 'Sunlight takes about 8 minutes 19 seconds to cross 150 million kilometers. The Moon you see is about 1.3 seconds old.',
       },
+      { inner: true, text: 'Everything you see is a message from the past. Only this moment is actually here.' },
       {
         id: 'grapefruit',
         text: 'Shrink the Sun to a grapefruit, and Earth is a grain of sand 14 meters away.',
@@ -258,6 +264,8 @@ const DEFS: ChapterDef[] = [
         more: 'Here the teal points mark the same share, about 1 in 70, of the survey’s galaxies. Which ones is illustrative.',
       },
       { id: 'looks', text: 'It learned from nearly 10,000 volunteers. It doesn’t see farther than we do. It looks at more.', sources: ['zoobot'], kind: 'measured' },
+      { inner: true, text: 'Your mind holds thousands of thoughts a day. You are not any one of them.' },
+      { inner: true, text: 'You are the one who notices them.' },
       { id: 'haze', text: 'Farther still, the threads blur into an even haze.', sources: ['homogeneity'], kind: 'inferred' },
       {
         id: 'limit',
@@ -312,6 +320,7 @@ const DEFS: ChapterDef[] = [
       { id: 'sweep', text: 'So a computer tries every possible orbit, stacking the measurements to see if a dip lines up.', sources: ['bls'], kind: 'inferred', extra: 2 },
       { id: 'searching', text: 'Thousands of guesses give only noise. Until one lines up.', extra: 1 },
       { id: 'lock', text: 'At 3.21 days, the dip appears. No single measurement showed it.', sources: ['bls', 'kepler-1772b'], kind: 'inferred', extra: 1 },
+      { inner: true, text: 'Stillness works the same way. Under the noise, something quieter was there the whole time.' },
       { text: 'Searches find thousands of dips like this. Most turn out to be something else.' },
       {
         id: 'exominer',
@@ -352,6 +361,7 @@ const DEFS: ChapterDef[] = [
         kind: 'inferred',
         more: 'Signals take tens of milliseconds to travel from eye to brain, and processing adds more. The brain predicts ahead to cover the gap.',
       },
+      { inner: true, text: 'Every moment you have ever lived, you lived now.' },
       { id: 'window', text: 'You see change only in a narrow window. Fast cameras, time-lapse and long surveys open the rest.', extra: 1 },
       { text: 'We’ve been looking outward. The strangest place might be in here.' },
     ],
@@ -387,6 +397,7 @@ const DEFS: ChapterDef[] = [
         kind: 'inferred',
         more: 'Hydrogen’s electron is most likely found 0.053 nanometers from the nucleus. The points are samples of that probability, not a picture of an electron.',
       },
+      { inner: true, text: 'None of these is you. And still, here you are, aware.' },
       { text: 'Down here, nobody can look directly. So we’ve started asking machines to guess.' },
     ],
     scale: [
@@ -439,6 +450,7 @@ const DEFS: ChapterDef[] = [
         kind: 'speculative',
         extra: 2,
       },
+      { inner: true, text: 'Science can’t yet say what awareness is. You have been looking out from it your whole life.' },
       { text: 'Which brings us back to the one instrument you carry everywhere.' },
     ],
     scale: [{ at: 0, log10m: -7.9 }],
@@ -465,6 +477,7 @@ const DEFS: ChapterDef[] = [
       { lens: 'magnetic', text: 'Overhead arcs the magnetic field that migrating birds can feel.', sources: ['bird-magnet'], kind: 'measured', extra: 2 },
       { lens: 'dark', text: 'And all around, if our models are right, dark matter drifts through, unseen.', sources: ['dark-matter'], kind: 'inferred', extra: 2 },
       { id: 'always', text: 'Every instrument we build shows us a little more of what was always there.' },
+      { inner: true, text: 'The oldest instrument is attention. It costs nothing, and it is always here.' },
       { id: 'last', text: 'So what’s in front of you right now that you haven’t learned to see?', question: true, extra: 3 },
     ],
     scale: [
@@ -479,7 +492,7 @@ const DEFS: ChapterDef[] = [
 function build(def: ChapterDef): Chapter {
   let at = 0;
   const beats: Beat[] = def.beats.map((b, i) => {
-    const dur = (i === 0 ? 3.5 : readTime(b.text)) + (b.question ? 1.5 : 0) + (b.extra ?? 0);
+    const dur = (i === 0 ? 3.5 : readTime(b.text)) + (b.question || b.inner ? 1.5 : 0) + (b.extra ?? 0);
     const beat = { ...b, at, dur };
     at += dur;
     return beat;
