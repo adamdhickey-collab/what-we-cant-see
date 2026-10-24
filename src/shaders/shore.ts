@@ -36,23 +36,43 @@ export const shoreFragment = /* glsl */ `
 
   float landY(float x) { return 0.115 + 0.11 * smoothstep(0.3, 1.05, x) + 0.006 * sin(x * 23.0) + 0.016 * (noise(vec2(x * 14.0, 1.0)) - 0.5); }
 
-  // The rock they sit on: three stones fused, with a weathered edge.
+  // One edge of a polygon, for its distance d and its inside/outside sign s.
+  void edge(vec2 p, vec2 a, vec2 b, inout float d, inout float s) {
+    vec2 e = b - a, w = p - a;
+    vec2 h = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
+    d = min(d, dot(h, h));
+    bvec3 c = bvec3(p.y >= a.y, p.y < b.y, e.x * w.y > e.y * w.x);
+    if (all(c) || all(not(c))) s = -s;
+  }
+
+  // The rock they sit on: one boulder with a flat top where they sit, a
+  // chipped shoulder at each end and faceted sides, its base buried in the
+  // sand. The top runs from behind their hips to past their feet.
   float rock(vec2 p, vec2 c) {
-    float d = ellipse(p, c + vec2(0.0, 0.0), vec2(0.058, 0.032));
-    d = smin(d, ellipse(p, c + vec2(0.048, -0.008), vec2(0.036, 0.022)), 0.012);
-    d = smin(d, ellipse(p, c + vec2(-0.05, -0.012), vec2(0.032, 0.02)), 0.012);
-    return d + 0.0035 * (fbm(p * 70.0) - 0.5);
+    vec2 q = p - c;
+    float d = 1e3, s = 1.0;
+    edge(q, vec2(-0.035, 0.026), vec2(0.066, 0.025), d, s);
+    edge(q, vec2(0.066, 0.025), vec2(0.08, 0.013), d, s);
+    edge(q, vec2(0.08, 0.013), vec2(0.089, -0.008), d, s);
+    edge(q, vec2(0.089, -0.008), vec2(0.084, -0.04), d, s);
+    edge(q, vec2(0.084, -0.04), vec2(-0.05, -0.04), d, s);
+    edge(q, vec2(-0.05, -0.04), vec2(-0.055, -0.002), d, s);
+    edge(q, vec2(-0.055, -0.002), vec2(-0.046, 0.017), d, s);
+    edge(q, vec2(-0.046, 0.017), vec2(-0.035, 0.026), d, s);
+    return s * sqrt(d) - 0.0015 + 0.0018 * (fbm(p * 70.0) - 0.5);
   }
 
   // The person, traced from a reference image and drawn to uFigure (see
   // figure.ts). q is in figure units: 1.0 is a standing height, the origin
   // under the hips. FIG_K is figure units per traced pixel.
   const float FIG_K = 0.00157;
-  float person(vec2 q) {
+  vec2 figureUv(vec2 q) {
     vec2 ip = vec2(q.x / FIG_K + 45.0, 332.0 - q.y / FIG_K);
-    vec2 fuv = vec2(ip.x / 371.0, 1.0 - ip.y / 361.0);
-    return texture2D(uFigure, fuv).a;
+    return vec2(ip.x / 371.0, 1.0 - ip.y / 361.0);
   }
+  float person(vec2 q) { return texture2D(uFigure, figureUv(q)).a; }
+  // The same, blurred by sampling a coarser mip, for a smooth outward normal.
+  float personSoft(vec2 q) { return texture2D(uFigure, figureUv(q), 2.5).a; }
 
   vec3 skyColor(float h, vec2 p, vec2 sun) {
     vec3 zen = mix(SLATE, INK, 0.35 + 0.65 * uDusk);
@@ -182,17 +202,36 @@ export const shoreFragment = /* glsl */ `
     float s = 0.15;
     vec2 fq = (p - seat) / s;
     float fig = person(fq);
-    // Lit where the figure ends a pixel or two toward the sun.
-    float rim = fig * (1.0 - person(fq + normalize(sun - p) * 2.0 * px1 / s));
+    // Rim light from the low sun: a crisp hot edge where the light first
+    // lands, and a glow behind it that fades a few pixels in. An edge that
+    // faces the sun squarely takes a wide rim; one the light only grazes
+    // takes a hairline; one turned away takes none. Edges that face up catch
+    // a little cool sky instead.
+    vec2 toSun = normalize(sun - p);
+    float fpx = 1.0 / (uRes.y * s);
+    vec2 h = vec2(1.5 * fpx, 0.0);
+    vec2 n = -normalize(vec2(personSoft(fq + h.xy) - personSoft(fq - h.xy), personSoft(fq + h.yx) - personSoft(fq - h.yx)) + 1e-6);
+    float facing = smoothstep(-0.15, 0.85, dot(n, toSun));
+    float reach = mix(0.5, 2.2, facing);
+    float edgeLit = fig * facing * (0.85 + 0.3 * noise(fq * 90.0));
+    float core = edgeLit * (1.0 - person(fq + toSun * 0.9 * fpx));
+    float glow = 0.0;
+    for (int k = 1; k <= 5; k++) {
+      float dk = float(k) * 0.9;
+      glow = max(glow, (1.0 - person(fq + toSun * dk * fpx)) * exp(-(dk - 0.9) / reach));
+    }
+    glow *= edgeLit;
+    float sky = fig * (1.0 - person(fq + vec2(0.0, 1.2) * fpx)) * smoothstep(0.3, 0.9, n.y);
     vec3 ground = INK * 0.55 + COPPER * 0.04 * fbm(p * 40.0);
-    vec3 stoneCol = INK * 0.62 + mix(SLATE, COPPER, 0.25) * 0.08 * fbm(p * 90.0 + 3.0);
+    vec3 stoneCol = INK * 0.5 + mix(SLATE, COPPER, 0.25) * 0.1 * fbm(p * vec2(60.0, 140.0) + 3.0);
     vec3 body = INK * 0.42;
     col = mix(col, ground, land);
     col = mix(col, stoneCol, stone);
-    // The top of the rock catches the sky.
-    col += mix(COPPER, VIOLET, 0.35) * 0.18 * stone * smoothstep(-0.006, 0.0, dr) * smoothstep(rockC.y - 0.01, rockC.y + 0.03, p.y) * (1.0 - uDusk * 0.5);
+    // The flat top of the rock catches the sky along its lip.
+    col += mix(COPPER, VIOLET, 0.35) * 0.16 * stone * smoothstep(-0.0025, 0.0, dr) * smoothstep(rockC.y + 0.018, rockC.y + 0.024, p.y) * (1.0 - uDusk * 0.5);
     col = mix(col, body, fig);
-    col += mix(COPPER, IVORY, 0.25) * 0.6 * rim * (1.0 - uDusk * 0.5);
+    col += (COPPER * 0.42 * glow + mix(COPPER, IVORY, 0.5) * 0.55 * core) * (1.0 - uDusk * 0.5);
+    col += mix(VIOLET, IVORY, 0.3) * 0.14 * sky * (1.0 - uDusk * 0.4);
     // Wet sand where the water reaches, and a thin lapping edge.
     float wet = exp(-abs(uv.y - ly) * uRes.y * 0.6) * smoothstep(0.35, 0.9, uv.x);
     float lap = 0.5 + 0.5 * sin(uv.x * 140.0 - t * 0.9 + noise(vec2(uv.x * 30.0, t * 0.3)) * 4.0);
