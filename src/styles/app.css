@@ -1153,52 +1153,6 @@ input[type='range']::-moz-range-thumb {
   margin-top: 0;
 }
 
-.tool {
-  min-height: 32px;
-  font-family: var(--font-data);
-  font-size: var(--t-data);
-  letter-spacing: 0.02em;
-  color: var(--text-dim);
-  text-decoration: underline;
-  text-decoration-color: var(--hairline-strong);
-  text-underline-offset: 4px;
-}
-
-.tool:hover {
-  color: var(--text);
-}
-
-.tool-fact {
-  color: var(--c-unresolved);
-}
-
-.beat-more,
-.fact-card {
-  max-width: var(--measure);
-  margin: var(--s-3) 0 0;
-  padding: var(--s-3) var(--s-4);
-  font-size: var(--t-small);
-  line-height: 1.55;
-  color: var(--text-dim);
-  background: var(--surface);
-  border-left: 1px solid var(--hairline-strong);
-  backdrop-filter: blur(6px);
-}
-
-.fact-card {
-  border-left-color: var(--c-unresolved);
-}
-
-.fact-card p {
-  margin: 0 0 var(--s-2);
-  color: var(--text);
-}
-
-.fact-actions {
-  display: flex;
-  gap: var(--s-4);
-}
-
 .btn-quiet {
   border-color: transparent;
   color: var(--text-dim);

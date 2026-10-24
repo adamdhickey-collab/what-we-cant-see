@@ -1,10 +1,10 @@
 // The caption: one line at a time, in a fixed place at the bottom of the
-// frame so the picture owns the middle. A line with more to it can be opened;
-// the kind of claim and its source show when the viewer asks for evidence; a
-// chapter's side doors offer a fact or two.
+// frame so the picture owns the middle. Nothing here asks to be clicked; the
+// kind of claim and its source show only when the viewer turns on evidence in
+// Options. A line's longer detail and a chapter's side facts live in the Text
+// version, for anyone who wants them.
 
-import { useEffect, useState } from 'react';
-import { director, useDirector } from '../animation/director';
+import { useDirector } from '../animation/director';
 import { beatIndexAt, chapterIndexAt, CHAPTERS, STARTS } from '../content/chapters';
 import { KIND_LABEL } from '../content/sources';
 
@@ -18,14 +18,9 @@ export function Narrative({ onSource }: { onSource: (id: string) => void }) {
   const bi = key % 100;
   const chapter = CHAPTERS[ci];
   const beat = chapter.beats[bi];
-  const [more, setMore] = useState(false);
-  const [fact, setFact] = useState<number | null>(null);
-  useEffect(() => setMore(false), [key]);
-  useEffect(() => setFact(null), [ci]);
 
   const opening = chapter.id === 'shore' && bi === 0;
   const cls = opening ? 'beat beat-hero' : bi === 0 ? 'beat beat-title' : beat.question ? 'beat beat-question' : 'beat';
-  const facts = chapter.facts ?? [];
 
   return (
     <section className={`narrative narrative-${chapter.id}`} aria-live="polite" aria-atomic="true">
@@ -36,57 +31,12 @@ export function Narrative({ onSource }: { onSource: (id: string) => void }) {
       <p key={key} className={cls}>
         {beat.text}
       </p>
-      <div className="beat-tools" key={`t${key}`}>
-        {beat.more && (
-          <button
-            type="button"
-            className="tool"
-            aria-expanded={more}
-            onClick={() => {
-              if (!more) director.pause();
-              setMore(!more);
-            }}
-          >
-            {more ? 'Less' : 'More'}
-          </button>
-        )}
-        {evidence && beat.sources && beat.kind && (
+      {evidence && beat.sources && beat.kind && (
+        <div className="beat-tools" key={`t${key}`}>
           <button type="button" className={`claim kind-${beat.kind}`} onClick={() => onSource(beat.sources![0])}>
             <span className="claim-dot" aria-hidden="true" />
             {KIND_LABEL[beat.kind]} · source
           </button>
-        )}
-        {facts.length > 0 && bi > 0 && (
-          <button
-            type="button"
-            className="tool tool-fact"
-            aria-expanded={fact !== null}
-            onClick={() => {
-              director.pause();
-              setFact(fact === null ? 0 : null);
-            }}
-          >
-            Did you know?
-          </button>
-        )}
-      </div>
-      {more && beat.more && <p className="beat-more">{beat.more}</p>}
-      {fact !== null && (
-        <div className="fact-card">
-          <p>{facts[fact].text}</p>
-          <div className="fact-actions">
-            <button type="button" className="tool" onClick={() => onSource(facts[fact].sources[0])}>
-              Source
-            </button>
-            {facts.length > 1 && (
-              <button type="button" className="tool" onClick={() => setFact((fact + 1) % facts.length)}>
-                Another
-              </button>
-            )}
-            <button type="button" className="tool" onClick={() => setFact(null)}>
-              Close
-            </button>
-          </div>
         </div>
       )}
     </section>
