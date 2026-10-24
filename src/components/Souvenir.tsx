@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { director } from '../animation/director';
 import { CHAPTERS } from '../content/chapters';
+import { EDITION_QUERY } from '../content/edition';
 import { METERS } from '../content/extras';
 import { clock } from './format';
 import { meterValue, useRideSeconds } from './Meter';
@@ -57,7 +58,7 @@ export function Souvenir({ onSources }: { onSources: () => void }) {
   const [note, setNote] = useState('');
   const summary = `What We Can’t See. While I watched for ${clock(seconds)}: ${lines(seconds)
     .map((l) => `${l.value} ${l.label}`)
-    .join('; ')}. ${QUESTION} ${location.href.split('?')[0]}`;
+    .join('; ')}. ${QUESTION} ${location.href.split('?')[0]}${EDITION_QUERY}`;
 
   const save = () => {
     draw(seconds).toBlob((blob) => {

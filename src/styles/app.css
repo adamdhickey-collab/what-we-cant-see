@@ -512,6 +512,13 @@ a {
 .kind.kind-speculative {
   color: var(--c-unresolved);
 }
+/* A contemplative teaching (the Naropa edition) is a person's way of knowing: ivory. */
+.kind-contemplative .claim-dot {
+  background: var(--c-human);
+}
+.kind.kind-contemplative {
+  color: var(--c-human);
+}
 
 .kind {
   font-family: var(--font-data);

@@ -35,6 +35,10 @@ npm run build      # typecheck and build to dist/
 npm run preview    # serve the build
 ```
 
+`?edition=naropa` is the Naropa edition: the same ride with an inner voice
+drawn from the contemplative psychology taught at Naropa University, each
+teaching cited to its course ([`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md)).
+
 `?kiosk` plays from the first frame and loops after a ten-second rest, for a
 wall display. `?music` turns the music
 on (a wall display will also need the browser's autoplay allowed), and
@@ -60,6 +64,7 @@ of the music for tuning the cues.
 | [`research/VISUAL-DIRECTION.md`](research/VISUAL-DIRECTION.md) | References, color as meaning, type, motion |
 | [`research/STORYBOARD.md`](research/STORYBOARD.md) | The eight chapters, the transitions, reduced motion |
 | [`research/EXPERIENCE-AUDIT.md`](research/EXPERIENCE-AUDIT.md) | The audit that turned the piece into a ride, and what changed |
+| [`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md) | The Naropa edition: what the program teaches, and where each teaching meets the ride |
 | [`research/ASSET-LICENSES.md`](research/ASSET-LICENSES.md) | What ships and under what terms |
 
 ```

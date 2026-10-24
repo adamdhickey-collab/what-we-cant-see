@@ -3,6 +3,8 @@ import { director, useDirector } from '../animation/director';
 import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
 import { CH, chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
+import { EDITION, EDITION_QUERY } from '../content/edition';
+import { NAROPA } from '../content/naropa';
 import { Aside } from './Aside';
 import { Controls } from './Controls';
 import { Meter } from './Meter';
@@ -140,7 +142,7 @@ export function App() {
       <div ref={labels} className="stage-labels" aria-hidden="true" />
 
       <header className="top">
-        <a className="wordmark" href="./" aria-label="What We Can’t See, start over">
+        <a className="wordmark" href={`./${EDITION_QUERY}`} aria-label="What We Can’t See, start over">
           What We Can’t See
         </a>
         <div className="top-links">
@@ -184,13 +186,13 @@ export function App() {
 
       {!started && (
         <section className="intro" aria-labelledby="intro-title">
-          <p className="intro-kicker">An interactive ride by Adam Hickey</p>
+          <p className="intro-kicker">{EDITION === 'naropa' ? NAROPA.kicker : 'An interactive ride by Adam Hickey'}</p>
           <h1 id="intro-title" className="intro-title">
             What We Can’t See
           </h1>
           <p className="intro-lede">
             Your senses edit the world. In about {MINUTES} minutes, go from a quiet shore to the edge of the observable universe and into your own cells,
-            and find out what they leave out.
+            and find out what they leave out.{EDITION === 'naropa' && <> {NAROPA.lede}</>}
           </p>
           <ol className="intro-map" aria-label="The ride’s stops">
             {CHAPTERS.map((c) => (

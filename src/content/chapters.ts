@@ -6,7 +6,9 @@
 // The ride plays straight through, start to finish, like a film: nothing waits
 // for the viewer. Two voices tell it: the outer one says what instruments
 // have found, and an inner one, set apart, turns each finding toward the
-// viewer's own awareness, written in the spirit of Ram Dass's teachings. Nobody writes a line's timing by hand. Each line stays on
+// viewer's own awareness, written in the spirit of Ram Dass's teachings. The
+// Naropa edition (naropa.ts) tells the same ride with another inner voice.
+// Nobody writes a line's timing by hand. Each line stays on
 // screen for as long as an unhurried reader needs (READ_LEAD plus READ_WPS
 // words a second), so the ride can never outrun the person reading it, and
 // everything that moves with the story is keyed to a line's id rather than
@@ -15,6 +17,9 @@
 
 import type { LensId } from './extras';
 import type { Kind } from './sources';
+// With the extension, so the script checker can run this file under Node.
+import { EDITION, type Edition } from './edition.ts';
+import { reviseForNaropa } from './naropa.ts';
 
 export type SceneId = 'none' | 'shore' | 'cosmos' | 'web' | 'star' | 'within';
 
@@ -65,7 +70,7 @@ export interface Fact {
   sources: string[];
 }
 
-interface ChapterDef {
+export interface ChapterDef {
   id: string;
   /** The reason we can't see it: the chapter's name on the ride map. */
   title: string;
@@ -509,7 +514,12 @@ function build(def: ChapterDef): Chapter {
   return { ...def, beats, scale, duration, sources };
 }
 
-export const CHAPTERS: Chapter[] = DEFS.map(build);
+/** The ride as one edition tells it. */
+export function chaptersFor(edition: Edition): Chapter[] {
+  return (edition === 'naropa' ? reviseForNaropa(DEFS) : DEFS).map(build);
+}
+
+export const CHAPTERS: Chapter[] = chaptersFor(EDITION);
 
 export const STARTS = CHAPTERS.reduce<number[]>((acc, _c, i) => {
   acc.push(i === 0 ? 0 : acc[i - 1] + CHAPTERS[i - 1].duration);
