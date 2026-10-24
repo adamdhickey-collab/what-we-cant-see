@@ -31,7 +31,7 @@ export function App() {
     if (!stage) director.set({ webgl: false });
     if (KIOSK) director.begin('guided');
     const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 300));
-    idle(() => warmTransit());
+    idle(() => void warmTransit());
     return () => stage?.dispose();
   }, []);
 

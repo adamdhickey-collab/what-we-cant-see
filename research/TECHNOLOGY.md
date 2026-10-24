@@ -52,7 +52,7 @@ shaders to TSL.
 | 1, 7 Shore | Full-screen fragment shader | Sky, sea and light are fields, not objects. A shader paints them at any resolution in one pass, and the figure is negative space |
 | 2 Horizon | Three.js points + lines | Real orbit ratios as fine lines; a procedural galaxy of up to 120,000 points |
 | 3 Structure | Three.js points | Up to 200,000 points along filaments; the largest single moment |
-| 4 Patterns | 2D canvas + D3 scales, over a dimmed starfield | Thousands of measurements and a live search are a chart's job. Canvas, not SVG, because 4,320 points redraw every frame while folding |
+| 4 Patterns | 2D canvas + D3 scales, over a dimmed starfield | Thousands of measurements and a live search are a chart's job. Canvas, not SVG, because 3,803 points redraw every frame while folding |
 | 5, 6 Within, Instrument | Three.js points + a line through a real structure | 393 real residues from AlphaFold DB, colored by confidence |
 | All | HTML typography | Text is text: selectable, translatable, read by screen readers |
 

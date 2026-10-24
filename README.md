@@ -49,10 +49,11 @@ src/
   experience/  Stage.ts (one renderer, crossfading scenes, labels)
   scenes/      shore, cosmos, galaxy, sky, web, star, within
   shaders/     palette, the shared point shader, the shore shader
-  data/        transit.ts (simulated light curve, box least squares)
+  data/        transit.ts (the Kepler light curve loader, box least squares)
   components/  the HTML layer: narrative, controls, scale navigator, instruments, panels
 scripts/
-  fetch-protein.mjs   AlphaFold DB → public/data/protein-<accession>.json
+  fetch-protein.mjs       AlphaFold DB → public/data/protein-<accession>.json
+  fetch-lightcurve.py     MAST Kepler light curve → public/data/lightcurve-kic<id>.json (needs astropy)
 ```
 
 ## Implemented, and not yet
@@ -64,7 +65,8 @@ scripts/
   logarithmic scale navigator.
 - The shoreline shader, the Earth-to-galaxy pull-back at true ratios, the
   cosmic web, the cell, the protein and the atom.
-- A working period search on a light curve, driven by the narration or by
+- A working period search on 90 days of real Kepler data for Kepler-1772,
+  one of the planets ExoMiner validated, driven by the narration or by
   hand, with a text summary of what the fold shows.
 - A real AlphaFold structure (human p53) in three views: prediction,
   confidence, needs checking.
@@ -75,8 +77,7 @@ scripts/
 
 **Still conceptual**
 
-- Real data in place of two illustrations: a Kepler or TESS light curve from
-  MAST for Chapter 4, and a real galaxy-survey sample for Chapter 3.
+- A real galaxy-survey sample in place of Chapter 3's illustrative web.
 - An experimental p53 fragment from the PDB to compare against the
   prediction in Chapter 6.
 - Atmospheric sound (off by default by design; none ships yet).
@@ -102,4 +103,5 @@ portfolio.
 ## Credits
 
 Protein structure: AlphaFold DB (EMBL-EBI and Google DeepMind), CC BY 4.0.
+Light curve: NASA Kepler mission, via MAST.
 Type: Archivo, Inter and JetBrains Mono, SIL Open Font License.

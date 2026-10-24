@@ -1,43 +1,30 @@
-// A simulated light curve and a real search. The data is synthetic and says
-// so: an Earth-size planet's 84 ppm transit, 3.9 hours long, every 9.7 days,
-// in 70 ppm of noise per 30-minute measurement over 90 days. That noise is
-// chosen so no single transit is visible and the folded signal is, which is
-// the real situation for small planets.
+// A real light curve and a real search. Ninety days of NASA Kepler
+// measurements of the star Kepler-1772, every 29.4 minutes from 19 December
+// 2009 to 19 March 2010 (quarter 4), reduced by scripts/fetch-lightcurve.py:
+// the pipeline's systematics-corrected flux, a two-day running median taken
+// out, and nothing done that knows where the planet is. Its transit, about
+// 150 ppm deep, sits under 132 ppm of scatter per measurement, so no single
+// crossing is visible and the folded signal is.
 //
 // The search is box least squares (Kovács, Zucker & Mazeh 2002), the family
 // of method transit pipelines use: for each trial period, fold the data,
 // slide a box across the phase, and score how far the in-box mean sits below
 // the rest in units of its own noise.
 
-import { rng } from '../animation/ease';
-
-export const TRUE_PERIOD = 9.7;
-export const DEPTH = 84e-6;
-export const DURATION = 3.9 / 24;
-export const NOISE = 70e-6;
-const T0 = 3.1;
-const BASELINE = 90;
-const CADENCE = 0.5 / 24;
+export const STAR = 'Kepler-1772';
+export const DATA_URL = 'data/lightcurve-kic4149450.json';
 
 export interface LightCurve {
   time: Float64Array;
   /** Relative brightness minus one, in ppm. */
   ppm: Float32Array;
+  /** Days from the first measurement to the last. */
+  span: number;
 }
 
-export function simulate(seed = 3): LightCurve {
-  const n = Math.round(BASELINE / CADENCE);
-  const r = rng(seed);
-  const time = new Float64Array(n);
-  const ppm = new Float32Array(n);
-  for (let i = 0; i < n; i++) {
-    const t = i * CADENCE;
-    const phase = (((t - T0) % TRUE_PERIOD) + TRUE_PERIOD) % TRUE_PERIOD;
-    const inTransit = phase < DURATION / 2 || phase > TRUE_PERIOD - DURATION / 2;
-    time[i] = t;
-    ppm[i] = (r.gauss() * NOISE - (inTransit ? DEPTH : 0)) * 1e6;
-  }
-  return { time, ppm };
+export async function loadLightCurve(base: string): Promise<LightCurve> {
+  const d: { time: number[]; ppm: number[] } = await (await fetch(base + DATA_URL)).json();
+  return { time: Float64Array.from(d.time), ppm: Float32Array.from(d.ppm), span: d.time[d.time.length - 1] };
 }
 
 export interface BoxFit {

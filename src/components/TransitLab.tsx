@@ -1,27 +1,25 @@
-// Chapter 4's instrument. Ninety days of a star's brightness, a fold at a
-// trial period, and the search across every period. In Guided mode the
+// Chapter 4's instrument. Ninety days of a real star's brightness from
+// NASA's Kepler, a fold at a trial period, and the search across every period. In Guided mode the
 // narration drives the period, so scrubbing the timeline scrubs the search;
 // in Explore mode the slider and the Search button are the viewer's.
 
 import { scaleLinear, scaleLog } from 'd3-scale';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { director, useDirector } from '../animation/director';
 import { easeInOutCubic, range } from '../animation/ease';
 import { STARTS } from '../content/chapters';
-import { boxSearch, fold, periodogram, P_MAX, P_MIN, simulate } from '../data/transit';
+import { boxSearch, fold, loadLightCurve, periodogram, P_MAX, P_MIN, STAR, type LightCurve } from '../data/transit';
 
 const CHAPTER = 3;
 const SWEEP_START = 20;
 const SWEEP_END = 29;
 const LOCK = 31;
 
-let cache: { lc: ReturnType<typeof simulate>; pg: ReturnType<typeof periodogram> } | null = null;
-/** The search takes about a tenth of a second, so it runs before anyone needs it. */
+type Search = { lc: LightCurve; pg: ReturnType<typeof periodogram> };
+let cache: Promise<Search> | null = null;
+/** The data is 54 KB and the search about a tenth of a second, so both happen before anyone needs them. */
 export function warmTransit() {
-  if (!cache) {
-    const lc = simulate();
-    cache = { lc, pg: periodogram(lc) };
-  }
+  cache ??= loadLightCurve(import.meta.env.BASE_URL).then((lc) => ({ lc, pg: periodogram(lc) }));
   return cache;
 }
 
@@ -30,7 +28,21 @@ const toSlider = (p: number) => Math.round((Math.log(p / P_MIN) / Math.log(P_MAX
 const fromSlider = (v: number) => P_MIN * Math.pow(P_MAX / P_MIN, v / 1000);
 
 export function TransitLab() {
-  const { lc, pg } = useMemo(warmTransit, []);
+  const [data, setData] = useState<Search | null>(null);
+  useEffect(() => {
+    warmTransit().then(setData, () => setData(null));
+  }, []);
+  if (!data) {
+    return (
+      <section className="lab" aria-label="A star’s brightness">
+        <p className="lab-summary">Loading 90 days of Kepler measurements…</p>
+      </section>
+    );
+  }
+  return <LabView {...data} />;
+}
+
+function LabView({ lc, pg }: Search) {
   const local = useDirector((s) => s.t - STARTS[CHAPTER]);
   const reduced = useDirector((s) => s.reduced);
   const manual = useDirector((s) => s.foldPeriod);
@@ -85,16 +97,16 @@ export function TransitLab() {
 
     // 1. Ninety days of measurements.
     let top = 14;
-    const xd = scaleLinear().domain([0, 90]).range([0, W]);
+    const xd = scaleLinear().domain([0, lc.span]).range([0, W]);
     const yr = yppm(top, rawH);
-    label(narrow ? 'Brightness, 90 days' : 'Brightness over 90 days · each dot one measurement', 0, 0);
+    label(narrow ? `${STAR} · 90 days` : `${STAR} · brightness over 90 days, each dot one measurement`, 0, 0);
     g.fillStyle = copper;
     g.globalAlpha = 0.55;
     for (let i = 0; i < lc.ppm.length; i++) g.fillRect(xd(lc.time[i]), yr(lc.ppm[i]), 1.4, 1.4);
     g.globalAlpha = 1;
     if (locked && fit) {
       g.fillStyle = teal;
-      for (let t = fit.phase * fit.period; t < 90; t += fit.period) g.fillRect(xd(t) - 0.5, top + rawH + 3, 1, 6);
+      for (let t = fit.phase * fit.period; t < lc.span; t += fit.period) g.fillRect(xd(t) - 0.5, top + rawH + 3, 1, 6);
       if (!narrow) label('ticks: predicted crossings', W, 0, teal, 'right');
     }
 
@@ -183,7 +195,7 @@ export function TransitLab() {
   useEffect(() => () => cancelAnimationFrame(glide.current), []);
 
   const summary = !fit
-    ? '90 days of simulated measurements, 4,320 in all. No period has been tried yet.'
+    ? `90 days of Kepler measurements of ${STAR}, ${lc.ppm.length.toLocaleString('en-US')} in all. No period has been tried yet.`
     : fit.snr >= 8
       ? `Folded at ${fit.period.toFixed(2)} days, the brightness drops by about ${Math.round(fit.depthPpm)} parts per million for ${(fit.durationDays * 24).toFixed(1)} hours: ${fit.snr.toFixed(1)} times the noise. A planet-like signal.`
       : `Folded at ${fit.period.toFixed(2)} days, nothing stands out: the strongest dip is ${fit.snr.toFixed(1)} times the noise, which chance alone produces.`;
@@ -192,7 +204,7 @@ export function TransitLab() {
     <section className="lab" aria-labelledby="lab-title">
       <header className="lab-head">
         <h2 id="lab-title" className="lab-title">A star’s brightness</h2>
-        <span className="kind kind-simulated">Simulated data</span>
+        <span className="kind kind-measured">Kepler data · 2009–10</span>
       </header>
       <canvas ref={canvas} className="lab-canvas" role="img" aria-label={summary} />
       <p className="lab-summary" aria-live={manual !== null ? 'polite' : 'off'}>

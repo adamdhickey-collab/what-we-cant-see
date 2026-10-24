@@ -13,7 +13,7 @@ Running time: **3 min 40 s** guided.
 | 1 | One human moment | 0:00–0:24 | `shore` shader | 0.2 → 3.9 | A person at dusk. The horizon, 4.7 km away, becomes a row of points |
 | 2 | Beyond the horizon | 0:24–0:58 | `cosmos` points + lines | 3.9 → 21.1 | The points rise into stars; Earth; orbits at true scale; Proxima; the galaxy, "The Sun is here" |
 | 3 | The great structure | 0:58–1:38 | `web` points | 21.1 → 26.9 | **The big one.** Out of one galaxy into filaments and voids; Zoobot's 1.5% in teal; the web evens into haze inside the observable limit |
-| 4 | The patterns we miss | 1:38–2:18 | `star` + transit instrument | 9.1 | 4,320 measurements of noise; the period search sweeps; at 9.7 days the dip appears |
+| 4 | The patterns we miss | 1:38–2:18 | `star` + transit instrument | 9.1 | 3,803 real Kepler measurements that look like noise; the period search sweeps; at 3.21 days Kepler-1772 b appears |
 | 5 | The universe within | 2:18–2:43 | `within` points | 0.2 → −9.8 | A cell, then p53 (real AlphaFold coordinates), then hydrogen's 1s cloud |
 | 6 | A new instrument | 2:43–3:15 | `within` + protein panel | −7.9 | Prediction, Confidence, Needs checking: the instrument's claims and its doubt |
 | 7 | Back to the shore | 3:15–3:40 | `shore` | 0.2 | The same frame; Andromeda named; the closing question |
@@ -33,7 +33,7 @@ chapters run, and these three carry the most work:
    computed from the scale value, then 180,000 galaxies along procedural
    filaments, orbited, out past a sphere marking the observable limit.
 3. **Data revelation** (Chapter 4). A real box-least-squares search over a
-   simulated light curve, drawn live: raw copper measurements, the fold in
+   real Kepler light curve, drawn live: raw copper measurements, the fold in
    teal, and the periodogram building as the narration sweeps the period.
    Scrubbing the timeline scrubs the search.
 

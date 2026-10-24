@@ -53,23 +53,46 @@ navigator draws it that way rather than flattering the viewer.
 | `euclid-lenses` | Strong gravitational lens candidates | 500, almost all new | measured | Same | Built from AI, citizen science, **expert vetting** and modelling |
 | `exominer` | Kepler planets validated by ExoMiner | 301 | measured | Valizadegan et al. 2022, ApJ 926, 120; NASA Ames, 22 Nov 2021 | "Validated" is statistical, not independent confirmation. At 99% precision it recovered 93.6% of known planets in its test set |
 | `exominer-pp` | TESS candidates from ExoMiner++'s first run | ≈ 7,000 | measured | NASA Science, "Deep learning exoplanets TESS", 22 Jan 2026 | **Candidates**, each needing follow-up |
-| `transit-depth` | Dimming as an Earth crosses a Sun | ≈ 84 ppm (0.0084%) | inferred | (R⊕/R☉)², R☉ = 695,700 km (IAU 2015 B3) | ~13 hours for a central transit |
+| `kepler-1772` | The light curve in Chapter 4 | 3,803 measurements of Kepler-1772 (KIC 4149450), 29.4-minute cadence, 19 Dec 2009 to 19 Mar 2010 | measured | NASA Kepler quarter 4 long cadence, MAST: `kplr004149450-2010078095331_llc.fits` | Reduced by `scripts/fetch-lightcurve.py` (below) |
+| `kepler-1772-star` | The star | ≈ 5,540 K, 0.93 R☉, ≈ 870 pc (2,800 ly) | inferred | NASA Exoplanet Archive, composite parameters | |
+| `kepler-1772b` | The planet | P = 3.21509 d; depth ≈ 158 ppm; ≈ 3.9 h | inferred | NASA Exoplanet Archive; validated in Valizadegan et al. 2022 | Radius 1.5 R⊕ (KOI table) or 2.7 R⊕ (composite): the star's size is uncertain, so the piece says "a few times wider than Earth" |
+| `bls` | The period search | 3.215 d at signal-to-noise ≈ 11; fitted depth ≈ 130 ppm; strongest unrelated period ≈ 6 | inferred | Box least squares, Kovács, Zucker & Mazeh 2002, A&A 391, 369, run live over 3,000 periods | Multiples of the period (12.86 d) score higher than 6 because they contain the same dips |
+| `transit-depth` | For scale: dimming as an Earth crosses a Sun | ≈ 84 ppm (0.0084%) | inferred | (R⊕/R☉)², R☉ = 695,700 km (IAU 2015 B3) | ~13 hours for a central transit |
 | `alphafold-db` | Structures in the AlphaFold Protein Structure Database | ≈ 200 million | measured | EMBL-EBI, 9 Oct 2024 | Launched July 2021 with ~360,000 |
 | `nobel-2024` | Nobel Prize in Chemistry 2024 | Baker (design); Hassabis and Jumper (prediction) | measured | EMBL-EBI as above | |
 | `plddt` | What AlphaFold's confidence score means | > 90 very high, 70-90 confident, 50-70 low, < 50 very low | measured | Jumper et al. 2021, Nature 596, 583 | Low can mean disorder **or** a poor prediction |
 | `p53` | The structure drawn in Chapters 5 and 6 | AF-P04637-F1, model v6, 393 residues, 117 below pLDDT 50 | measured | alphafold.ebi.ac.uk, fetched by `scripts/fetch-protein.mjs` | p53's ends are known to be intrinsically disordered |
 
-## Simulated or illustrative, said so on screen
+## Chapter 4's data, and how it was chosen
 
-- **Chapter 4's light curve is simulated**: an 84 ppm box-shaped transit lasting
-  3.9 hours every 9.7 days, in 70 ppm per-point noise over 90 days, sampled
-  every 30 minutes. The search recovers 9.70 days at a signal-to-noise of
-  about 11, with a fitted depth near 90 ppm; the next-best period scores 6.
-  The noise level is chosen so a single transit is invisible by eye and the
-  folded signal is not, which is the real situation for Earth-size planets.
-  The search (box least squares) is real, runs in the browser, and is the
-  same family of method the Kepler pipeline used. It is not ExoMiner, and the
-  chapter says what ExoMiner adds: sorting real signals from look-alikes.
+The light curve is real: NASA Kepler's quarter 4 observations of
+Kepler-1772, a planet that ExoMiner validated in 2021. It was chosen in three
+steps, recorded so the choice can be checked:
+
+1. From the NASA Exoplanet Archive, single-planet systems whose discovery
+   reference is Valizadegan et al. 2022 (the ExoMiner paper), with periods
+   from 1.5 to 20 days.
+2. Of those, ranked by the Kepler pipeline's own model signal-to-noise over
+   the whole mission, a planet strong enough to stand out in one 90-day
+   quarter (Kepler-1772 b, 53) with a dip smaller than the scatter of a
+   single measurement (158 ppm against 132 ppm), so no one crossing is
+   visible. Kepler-1933 b, the first choice, was rejected at this step: its
+   126 ppm dip sits under 400 to 900 ppm of scatter.
+3. Of that star's quarters, the full one with the least scatter: quarter 4.
+
+`scripts/fetch-lightcurve.py` then takes the pipeline's systematics-corrected
+flux (PDCSAP), keeps good-quality cadences, normalizes the quarter, removes
+the star's slow variability with a two-day running median, and drops points
+more than 5 sigma above the trend. No step uses the planet's period or
+position; a pipeline that did would be answering its own question. The search
+in the browser then recovers 3.215 days, against the catalog's 3.21509.
+
+The search is box least squares, the family of method the Kepler pipeline
+used. It is not ExoMiner, and the chapter says what ExoMiner added: sorting
+real signals from look-alikes.
+
+## Illustrative, said so on screen
+
 - **Chapter 3's cosmic web is illustrative.** Points are placed along
   procedural filaments between nodes to resemble the morphology in redshift
   surveys and N-body simulations. It is not a map of any real region.
@@ -78,8 +101,6 @@ navigator draws it that way rather than flattering the viewer.
 
 ## Still to source
 
-- A real Kepler or TESS light curve to replace the simulated one, from MAST
-  (a FITS reader in the build or a JSON export). The interaction is unchanged.
 - A real large-scale-structure sample (SDSS or 2MRS) for Chapter 3.
 - An experimental p53 structure fragment from the PDB to compare against the
   prediction in Chapter 6.
