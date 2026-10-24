@@ -69,8 +69,12 @@ one instrument you carry everywhere."
   replaced, eye jumps hidden (`src/content/extras.ts`).
 - **The souvenir** at the end shows the meter's totals and the closing
   question, to save as an image or share.
-- **Options**: sound (synthesized, off by default), the device's voice
-  reading each line, and the evidence tags on each line.
+- **Music**, off until chosen on the intro or in Options: "On the Nature of
+  Daylight" follows the story's own clock, so lines keep their reading time.
+  It waits at stops and pauses, follows a scrub, and is placed to come in
+  with the galaxy (about 2:18) and end just after the closing question.
+- **Options**: music, sound effects (synthesized; quiet while the music
+  plays), the device's voice reading each line, and the evidence tags.
 
 ## Transitions
 

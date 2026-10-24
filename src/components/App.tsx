@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { director, useDirector } from '../animation/director';
+import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
 import { beatStart, CH, chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
 import { Aside } from './Aside';
@@ -33,6 +34,7 @@ export function App() {
   const ended = useDirector((s) => s.ended);
   const waiting = useDirector((s) => s.waiting);
   const soundOn = useDirector((s) => s.sound);
+  const musicOn = useDirector((s) => s.music);
   const ci = useDirector((s) => chapterIndexAt(s.t));
   // The instruments mount a moment before their chapter, so they fade in with it.
   const near = (i: number) => (s: { t: number }) => s.t > STARTS[i] - 0.4 && s.t < STARTS[i] + CHAPTERS[i].duration + 1;
@@ -51,6 +53,8 @@ export function App() {
       if (!stage) director.set({ webgl: false });
     });
     if (KIOSK) director.begin('guided');
+    // A viewer who chose music before gets the player loading now, so it is ready by Begin.
+    music.prepare();
     const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 300));
     idle(() => void warmTransit());
     return () => {
@@ -137,6 +141,7 @@ export function App() {
 
   const begin = (mode: 'guided' | 'explore') => {
     if (director.get().sound) sound.unlock();
+    if (director.get().music) music.wake();
     director.begin(mode);
   };
 
@@ -223,6 +228,19 @@ export function App() {
             <button type="button" className="btn" onClick={() => begin('explore')}>
               Wander at your own pace
             </button>
+          </div>
+          <div className="intro-actions intro-listen" role="group" aria-label="Listening">
+            <button
+              type="button"
+              className="btn btn-quiet"
+              aria-pressed={musicOn}
+              onClick={() => {
+                director.setPref({ music: !musicOn });
+                if (!musicOn) music.prepare();
+              }}
+            >
+              {musicOn ? 'Music on' : 'Play with music'}
+            </button>
             <button
               type="button"
               className="btn btn-quiet"
@@ -232,10 +250,14 @@ export function App() {
                 director.setPref({ sound: !soundOn });
               }}
             >
-              {soundOn ? 'Sound on' : 'Sound off'}
-              <span className="hide-narrow"> {soundOn ? '' : '(on is better)'}</span>
+              {soundOn ? 'Sound effects on' : 'Sound effects off'}
             </button>
           </div>
+          {musicOn && (
+            <p className="intro-note">
+              Music: {MUSIC.artist}, “{MUSIC.title}” ({MUSIC.label}), played from YouTube.
+            </p>
+          )}
           <p className="intro-note">
             The ride stops four times for you to try something. Space pauses, arrows or scrolling step, 1–9 jump to a stop.{' '}
             <button type="button" className="link-btn" onClick={() => setPanel({ kind: 'text' })}>

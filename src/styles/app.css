@@ -1990,7 +1990,7 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* Development only: YouTube's player for ?music, small but visible, as its terms require. */
+/* YouTube's player for the music: small but visible, as its terms require. */
 .music-player {
   position: fixed;
   right: var(--gutter);
@@ -2003,6 +2003,23 @@ input[type='range']::-moz-range-thumb {
   transition: opacity var(--dur-fast);
 }
 
-.music-player:hover {
+.music-player:hover,
+.music-player:focus-within {
   opacity: 1;
+}
+
+.music-player[hidden] {
+  display: none;
+}
+
+.intro-listen {
+  margin-top: calc(var(--s-2) * -1);
+}
+
+@media (max-width: 767px) {
+  .music-player {
+    top: auto;
+    bottom: 132px;
+    opacity: 0.25;
+  }
 }

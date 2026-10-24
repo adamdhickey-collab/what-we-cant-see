@@ -3,10 +3,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { director, useDirector, type Prefs } from '../animation/director';
+import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
 
 const ITEMS: { key: keyof Prefs; name: string; says: string }[] = [
-  { key: 'sound', name: 'Sound', says: 'A quiet bed for each place, and a bell at each reveal.' },
+  { key: 'music', name: 'Music', says: `${MUSIC.artist}, “${MUSIC.title},” played from YouTube alongside the ride.` },
+  { key: 'sound', name: 'Sound effects', says: 'A quiet bed for each place, and a bell at each reveal. Quiet while the music plays.' },
   { key: 'voice', name: 'Read aloud', says: 'Your device’s voice reads each line.' },
   { key: 'evidence', name: 'Show the evidence', says: 'Each line’s kind of claim (measured, inferred…) and its source.' },
 ];
@@ -15,7 +17,8 @@ export function Options() {
   const evidence = useDirector((s) => s.evidence);
   const soundOn = useDirector((s) => s.sound);
   const voice = useDirector((s) => s.voice);
-  const prefs: Prefs = { evidence, sound: soundOn, voice };
+  const musicOn = useDirector((s) => s.music);
+  const prefs: Prefs = { evidence, sound: soundOn, voice, music: musicOn };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -45,6 +48,10 @@ export function Options() {
                 checked={prefs[it.key]}
                 onChange={(e) => {
                   if (it.key === 'sound' && e.target.checked) sound.unlock();
+                  if (it.key === 'music' && e.target.checked) {
+                    director.setPref({ music: true });
+                    music.wake();
+                  }
                   director.setPref({ [it.key]: e.target.checked });
                 }}
               />

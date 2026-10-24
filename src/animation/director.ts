@@ -16,6 +16,8 @@ export interface Prefs {
   sound: boolean;
   /** Read the lines aloud with the device's voice. */
   voice: boolean;
+  /** Play On the Nature of Daylight alongside the ride; the built-in sound then stays quiet. */
+  music: boolean;
 }
 
 export interface DirectorState extends Prefs {
@@ -37,8 +39,6 @@ export interface DirectorState extends Prefs {
   /** Zoobot's teal picks, which the viewer can hide to compare. */
   picks: boolean;
   lens: LensId | null;
-  /** Music is playing alongside (development only), so the built-in sound stays quiet. */
-  music: boolean;
   /** Wall-clock milliseconds when the ride began, and when it ended, for the meter. */
   beganAt: number;
   endedAt: number | null;
@@ -61,11 +61,13 @@ type Listener = () => void;
 
 const PREFS_KEY = 'wwcs-prefs';
 function loadPrefs(): Prefs {
-  const fallback: Prefs = { evidence: false, sound: false, voice: false };
+  const fallback: Prefs = { evidence: false, sound: false, voice: false, music: false };
+  // ?music turns the music on for this visit, for a wall or a link that wants it.
+  const asked = typeof location !== 'undefined' && new URLSearchParams(location.search).has('music') ? { music: true } : {};
   try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}'), ...asked };
   } catch {
-    return fallback;
+    return { ...fallback, ...asked };
   }
 }
 
@@ -92,7 +94,6 @@ class Director {
       answers: {},
       picks: true,
       lens: null,
-      music: false,
       beganAt: 0,
       endedAt: null,
       ...loadPrefs(),
@@ -116,9 +117,9 @@ class Director {
 
   setPref(patch: Partial<Prefs>) {
     this.set(patch);
-    const { evidence, sound, voice } = this.s;
+    const { evidence, sound, voice, music } = this.s;
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ evidence, sound, voice }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ evidence, sound, voice, music }));
     } catch {
       /* A private window: the choice lasts this visit only. */
     }
