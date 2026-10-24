@@ -29,6 +29,8 @@ export class Stage {
   private labelEls: HTMLElement[] = [];
   private mobile: boolean;
   private windows: Record<SceneId, number[]>;
+  /** The root size over 16px: label text is in rem, so its width grows with it on a big screen. */
+  private rem = 1;
 
   static create(canvas: HTMLCanvasElement, labels: HTMLElement): Stage | null {
     try {
@@ -57,7 +59,11 @@ export class Stage {
 
   private resize = () => {
     const w = window.innerWidth, h = window.innerHeight;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.mobile ? 1.5 : 2));
+    // Cap the pixels drawn: a 4K TV at full density is over 30 million a frame.
+    // About 4.5 million (a little above 1440p) keeps points soft and the frame rate smooth.
+    const budget = Math.sqrt(4.5e6 / (w * h));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.mobile ? 1.5 : 2, Math.max(0.75, budget)));
+    this.rem = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
     this.renderer.setSize(w, h, false);
   };
 
@@ -151,7 +157,7 @@ export class Stage {
       el.style.opacity = String(l.opacity);
       el.style.transform = `translate(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px)`;
       // Text that would run off the right edge flips to the anchor's left.
-      el.dataset.side = l.side ?? (l.x + 24 + l.text.length * 7.4 > window.innerWidth - 16 ? 'left' : 'right');
+      el.dataset.side = l.side ?? (l.x + (24 + l.text.length * 7.4) * this.rem > window.innerWidth - 16 ? 'left' : 'right');
       const text = el.lastElementChild as HTMLElement;
       if (text.textContent !== l.text) text.textContent = l.text;
     });

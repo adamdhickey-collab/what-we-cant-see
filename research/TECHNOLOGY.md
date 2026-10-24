@@ -60,7 +60,11 @@ shaders to TSL.
 ## Performance budget
 
 - One `WebGLRenderer`, `powerPreference: 'high-performance'`, pixel ratio
-  capped at 2 on desktop and 1.5 on phones.
+  capped at 2 on desktop and 1.5 on phones, and at about 4.5 million drawn
+  pixels in all, so a 4K TV renders near 1440p and stays smooth.
+- The root font size follows the screen's height (16px on a laptop, about
+  20px on a 1080p TV, 32px at most; more with `?tv`), and every size is in
+  rem, so a big screen scales as one piece. Canvas text reads the root too.
 - Point budgets are halved below 768px and on devices reporting
   `hardwareConcurrency <= 4`.
 - Scenes outside the current crossfade window are not drawn at all.

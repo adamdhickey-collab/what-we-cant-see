@@ -4,6 +4,17 @@
   box-sizing: border-box;
 }
 
+/* Everything is sized in rem, and the root grows with the screen's height:
+   16px on a laptop, about 20px on a 1080p TV seen from across a room, up to
+   32px. ?tv adds a further step for a big screen far away. */
+html {
+  font-size: clamp(16px, 1.9vh, 32px);
+}
+
+html.is-tv {
+  font-size: clamp(18px, 2.3vh, 40px);
+}
+
 html,
 body {
   margin: 0;
@@ -11,10 +22,13 @@ body {
   background: var(--ink);
   color: var(--text);
   font-family: var(--font-text);
-  font-size: var(--t-body);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+body {
+  font-size: var(--t-body);
 }
 
 button {
@@ -84,29 +98,29 @@ a {
   position: absolute;
   left: -3px;
   top: -3px;
-  width: 6px;
-  height: 6px;
+  width: 0.375rem;
+  height: 0.375rem;
   border: 1px solid var(--text-dim);
   border-radius: 50%;
 }
 
 .stage-label-text {
   position: absolute;
-  left: 14px;
+  left: 0.875rem;
   top: -0.6em;
   width: max-content;
-  max-width: min(320px, 46vw);
+  max-width: min(20rem, 46vw);
   line-height: 1.4;
   font-family: var(--font-data);
   font-size: var(--t-data);
   letter-spacing: 0.02em;
   color: var(--text-dim);
-  text-shadow: 0 0 12px var(--ink);
+  text-shadow: 0 0 0.75rem var(--ink);
 }
 
 .stage-label[data-side='left'] .stage-label-text {
   left: auto;
-  right: 14px;
+  right: 0.875rem;
   text-align: right;
 }
 
@@ -149,7 +163,7 @@ a {
   min-height: var(--tap);
   text-decoration: underline;
   text-decoration-color: var(--hairline-strong);
-  text-underline-offset: 4px;
+  text-underline-offset: 0.25rem;
 }
 
 .link-btn:hover {
@@ -189,8 +203,8 @@ a {
   top: 50%;
   transform: translateY(-50%);
   max-width: 44rem;
-  max-height: calc(100dvh - 72px);
-  padding-top: 40px;
+  max-height: calc(100dvh - 4.5rem);
+  padding-top: 2.5rem;
   z-index: 2;
 }
 
@@ -213,7 +227,7 @@ a {
   letter-spacing: var(--track-title);
   text-transform: uppercase;
   margin: 0 0 var(--s-5);
-  text-shadow: 0 0 40px var(--ink);
+  text-shadow: 0 0 2.5rem var(--ink);
 }
 
 .intro-lede {
@@ -222,7 +236,7 @@ a {
   color: var(--text-dim);
   max-width: var(--measure);
   margin: 0 0 var(--s-6);
-  text-shadow: 0 0 24px var(--ink);
+  text-shadow: 0 0 1.5rem var(--ink);
 }
 
 .intro-actions {
@@ -266,8 +280,8 @@ a {
 
 .app {
   /* The two columns the fixed layers share on a wide screen. */
-  --nav-w: 190px;
-  --lab-w: min(46vw, 720px);
+  --nav-w: 11.875rem;
+  --lab-w: min(46vw, 45rem);
 }
 
 .scale {
@@ -310,11 +324,11 @@ a {
   position: absolute;
   top: var(--pos);
   left: -44px;
-  width: 36px;
+  width: 2.25rem;
   text-align: right;
   transform: translateY(-50%);
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-faint);
 }
 
@@ -324,7 +338,7 @@ a {
   text-align: left;
   padding-left: 0;
   color: var(--violet);
-  font-size: 9px;
+  font-size: 0.5625rem;
   letter-spacing: var(--track-kicker);
   text-transform: uppercase;
   transform: translate(-100%, -50%) translateX(-4px) rotate(0);
@@ -348,9 +362,9 @@ a {
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  min-height: 18px;
+  min-height: 1.125rem;
   padding-left: var(--s-3);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--text-faint);
   white-space: nowrap;
   position: relative;
@@ -361,7 +375,7 @@ a {
   content: '';
   position: absolute;
   left: 0;
-  width: 6px;
+  width: 0.375rem;
   height: 1px;
   background: var(--hairline-strong);
 }
@@ -375,11 +389,11 @@ a {
   position: absolute;
   top: var(--pos);
   left: -5px;
-  width: 9px;
-  height: 9px;
+  width: 0.5625rem;
+  height: 0.5625rem;
   border-radius: 50%;
   background: var(--ivory);
-  box-shadow: 0 0 0 4px rgb(243 241 234 / 0.12);
+  box-shadow: 0 0 0 0.25rem rgb(243 241 234 / 0.12);
   transform: translateY(-50%);
 }
 
@@ -387,8 +401,8 @@ a {
 
 .narrative {
   position: fixed;
-  left: calc(var(--gutter) + var(--nav-w) + 40px);
-  bottom: 168px;
+  left: calc(var(--gutter) + var(--nav-w) + 2.5rem);
+  bottom: 10.5rem;
   max-width: var(--measure);
   z-index: 2;
   pointer-events: none;
@@ -411,7 +425,7 @@ a {
   line-height: 1.28;
   margin: 0;
   text-wrap: pretty;
-  text-shadow: 0 0 28px var(--ink), 0 0 8px var(--ink);
+  text-shadow: 0 0 1.75rem var(--ink), 0 0 0.5rem var(--ink);
   animation: beat-in var(--dur-text) var(--ease-out) both;
 }
 
@@ -434,9 +448,71 @@ a {
 }
 
 .beat-inner {
+  font-family: var(--font-inner);
   font-style: italic;
-  font-weight: 200;
-  color: var(--text-dim);
+  font-weight: var(--weight-inner);
+  font-size: var(--t-inner);
+  line-height: 1.2;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 0 1.875rem var(--ink), 0 0 3.75rem var(--ink);
+  animation: inner-in var(--dur-inner) var(--ease-out) both;
+}
+
+/* The inner voice arises in the open middle of the frame, over a soft
+   darkening, while the chapter label steps back. Where an instrument holds
+   the right of the frame, it stays in the caption's place. */
+.narrative:has(.beat-inner) {
+  left: 50%;
+  bottom: 34vh;
+  max-width: min(30rem, 84vw);
+  transform: translateX(-50%);
+}
+
+.narrative:has(.beat-inner) .kicker {
+  visibility: hidden;
+}
+
+.app:has(.beat-inner)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 50% 62%, rgb(10 20 35 / 0.55), transparent 70%);
+  animation: fade-in var(--dur-inner) var(--ease-out) both;
+}
+
+.chapter-faint .narrative:has(.beat-inner),
+.chapter-time .narrative:has(.beat-inner) {
+  left: calc(var(--gutter) + var(--nav-w) + 2.5rem);
+  bottom: 10.5rem;
+  transform: none;
+}
+
+.chapter-faint .beat-inner,
+.chapter-time .beat-inner {
+  text-align: left;
+}
+
+.app.chapter-faint:has(.beat-inner)::after,
+.app.chapter-time:has(.beat-inner)::after {
+  display: none;
+}
+
+@keyframes inner-in {
+  from {
+    opacity: 0;
+    filter: blur(0.375rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes inner-in {
+    from {
+      opacity: 0;
+    }
+  }
 }
 
 .beat-question {
@@ -448,7 +524,7 @@ a {
 @keyframes beat-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(0.625rem);
   }
 }
 
@@ -465,7 +541,7 @@ a {
   align-items: center;
   gap: var(--s-2);
   margin-top: var(--s-4);
-  min-height: 32px;
+  min-height: 2rem;
   font-family: var(--font-data);
   font-size: var(--t-data);
   color: var(--text-dim);
@@ -477,8 +553,8 @@ a {
 }
 
 .claim-dot {
-  width: 7px;
-  height: 7px;
+  width: 0.4375rem;
+  height: 0.4375rem;
   border-radius: 50%;
   background: currentColor;
 }
@@ -515,7 +591,7 @@ a {
 
 .kind {
   font-family: var(--font-data);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: var(--track-kicker);
   text-transform: uppercase;
   margin: 0;
@@ -537,8 +613,8 @@ a {
 
 .instrument-lab {
   right: var(--gutter);
-  top: 76px;
-  bottom: 160px;
+  top: 4.75rem;
+  bottom: 10rem;
   width: var(--lab-w);
 }
 
@@ -589,7 +665,7 @@ a {
 
 .lab-slider {
   flex: 1;
-  min-width: 220px;
+  min-width: 13.75rem;
   display: flex;
   align-items: center;
   gap: var(--s-3);
@@ -612,7 +688,7 @@ a {
 .instrument-protein {
   right: var(--gutter);
   top: 22vh;
-  width: 360px;
+  width: 22.5rem;
 }
 
 .protein {
@@ -621,7 +697,7 @@ a {
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(0.375rem);
 }
 
 .segmented,
@@ -634,7 +710,7 @@ a {
 .segmented button,
 .mode button {
   flex: 1;
-  min-height: 36px;
+  min-height: 2.25rem;
   padding: 0 var(--s-3);
   font-size: 0.8125rem;
   color: var(--text-dim);
@@ -670,21 +746,21 @@ a {
 
 .bands li {
   display: grid;
-  grid-template-columns: 10px 1fr auto auto;
+  grid-template-columns: 0.625rem 1fr auto auto;
   align-items: center;
   gap: var(--s-3);
   font-size: 0.8125rem;
 }
 
 .band-swatch {
-  width: 10px;
-  height: 10px;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: 50%;
 }
 
 .band-range {
   font-family: var(--font-data);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--text-faint);
 }
 
@@ -696,7 +772,7 @@ a {
 }
 
 .protein-foot {
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.5;
   color: var(--text-faint);
   margin: 0;
@@ -708,7 +784,7 @@ input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
-  height: 24px;
+  height: 1.5rem;
   margin: 0;
   cursor: pointer;
 }
@@ -730,8 +806,8 @@ input[type='range']::-moz-range-progress {
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
   margin-top: -6px;
   border-radius: 50%;
   background: var(--ivory);
@@ -739,8 +815,8 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
   border-radius: 50%;
   background: var(--ivory);
   border: 0;
@@ -783,8 +859,8 @@ input[type='range']::-moz-range-thumb {
 
 .icon-btn svg,
 .play svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   fill: none;
   stroke: var(--ivory);
   stroke-width: 1.5;
@@ -836,13 +912,13 @@ input[type='range']::-moz-range-thumb {
 
 .chapters button {
   width: 100%;
-  min-height: 32px;
+  min-height: 2rem;
   display: flex;
   align-items: baseline;
   gap: var(--s-2);
   padding: var(--s-1) 0 0;
   border-top: 1px solid var(--hairline);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--text-faint);
   text-align: left;
   overflow: hidden;
@@ -873,7 +949,7 @@ input[type='range']::-moz-range-thumb {
   margin: 0 0 0 auto;
   height: 100dvh;
   max-height: 100dvh;
-  width: min(580px, 100%);
+  width: min(36.25rem, 100%);
   max-width: 100%;
   padding: 0;
   border: 0;
@@ -985,8 +1061,10 @@ input[type='range']::-moz-range-thumb {
 }
 
 .transcript-line.is-inner {
+  font-family: var(--font-inner);
   font-style: italic;
-  color: var(--text-dim);
+  font-weight: var(--weight-inner);
+  font-size: 1.375rem;
 }
 
 .transcript-line.is-question {
@@ -995,10 +1073,54 @@ input[type='range']::-moz-range-thumb {
 
 .transcript-ref {
   font-family: var(--font-data);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--text-dim);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* ---------- Watching ---------- */
+
+.top,
+.controls,
+.scale,
+.meter {
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+/* A few still seconds into the ride, only the picture and its words remain. */
+.app.is-idle .top,
+.app.is-idle .controls,
+.app.is-idle .scale,
+.app.is-idle .meter {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app.is-idle {
+  cursor: none;
+}
+
+/* While the inner voice speaks, the data steps back. */
+.app:has(.beat-inner) .scale,
+.app:has(.beat-inner) .meter {
+  opacity: 0.15;
+}
+
+/* ?tv: the picture and its words, nothing that needs reading up close. */
+html.is-tv .app {
+  --nav-w: 0rem;
+}
+
+html.is-tv .scale,
+html.is-tv .meter {
+  display: none;
+}
+
+.option-action {
+  grid-template-columns: 1fr;
+  width: 100%;
+  text-align: left;
 }
 
 /* ---------- Narrower screens ---------- */
@@ -1008,7 +1130,7 @@ input[type='range']::-moz-range-thumb {
     display: none;
   }
   .app {
-    --nav-w: 160px;
+    --nav-w: 10rem;
   }
 }
 
@@ -1020,7 +1142,7 @@ input[type='range']::-moz-range-thumb {
     gap: var(--s-4);
   }
   .scale {
-    top: 58px;
+    top: 3.625rem;
     bottom: auto;
     left: var(--gutter);
     right: var(--gutter);
@@ -1052,13 +1174,13 @@ input[type='range']::-moz-range-thumb {
     top: 0;
     left: calc(100% - var(--pos));
     transform: translate(-50%, -50%);
-    width: 7px;
-    height: 7px;
+    width: 0.4375rem;
+    height: 0.4375rem;
   }
   .narrative {
     left: var(--gutter);
     right: var(--gutter);
-    bottom: 132px;
+    bottom: 8.25rem;
   }
   .beat {
     font-size: 1.25rem;
@@ -1079,8 +1201,8 @@ input[type='range']::-moz-range-thumb {
   .instrument-lab {
     left: var(--gutter);
     right: var(--gutter);
-    top: 90px;
-    bottom: 328px;
+    top: 5.625rem;
+    bottom: 20.5rem;
     width: auto;
   }
   .lab-controls {
@@ -1102,7 +1224,7 @@ input[type='range']::-moz-range-thumb {
   .instrument-protein {
     left: var(--gutter);
     right: var(--gutter);
-    top: 90px;
+    top: 5.625rem;
     width: auto;
   }
   .protein {
@@ -1133,11 +1255,11 @@ input[type='range']::-moz-range-thumb {
 @media (min-width: 768px) {
   .chapter-shore .narrative,
   .chapter-return .narrative {
-    max-width: min(var(--measure), calc(56vw - var(--nav-w) - var(--gutter) - 40px));
+    max-width: min(var(--measure), calc(56vw - var(--nav-w) - var(--gutter) - 2.5rem));
   }
   .chapter-faint .narrative,
   .chapter-time .narrative {
-    max-width: min(var(--measure), calc(100vw - var(--lab-w) - var(--nav-w) - var(--gutter) * 2 - 88px));
+    max-width: min(var(--measure), calc(100vw - var(--lab-w) - var(--nav-w) - var(--gutter) * 2 - 5.5rem));
   }
   .chapter-faint .beat:not(.beat-title),
   .chapter-time .beat:not(.beat-title) {
@@ -1208,7 +1330,7 @@ input[type='range']::-moz-range-thumb {
   position: absolute;
   right: 0;
   top: calc(100% + var(--s-1));
-  width: min(320px, calc(100vw - var(--gutter) * 2));
+  width: min(20rem, calc(100vw - var(--gutter) * 2));
   padding: var(--s-2);
   display: grid;
   gap: var(--s-1);
@@ -1233,8 +1355,8 @@ input[type='range']::-moz-range-thumb {
 
 .option input {
   grid-row: span 2;
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   margin: 2px 0 0;
   accent-color: var(--ivory);
 }
@@ -1255,7 +1377,7 @@ input[type='range']::-moz-range-thumb {
   position: fixed;
   right: var(--gutter);
   top: 26vh;
-  width: min(600px, 52vw);
+  width: min(37.5rem, 52vw);
   margin: 0;
   z-index: 2;
   animation: fade-in var(--dur-slow) var(--ease-out) both;
@@ -1263,38 +1385,38 @@ input[type='range']::-moz-range-thumb {
 
 .spectrum-bar {
   position: relative;
-  height: 64px;
+  height: 4rem;
   border-bottom: 1px solid var(--hairline-strong);
 }
 
 .spectrum-band {
   position: absolute;
   bottom: 0;
-  height: 14px;
+  height: 0.875rem;
   border-left: 1px solid var(--hairline-strong);
 }
 
 .spectrum-name {
   position: absolute;
-  left: 4px;
-  bottom: 18px;
+  left: 0.25rem;
+  bottom: 1.125rem;
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-faint);
   white-space: nowrap;
 }
 
 .spectrum-band.is-high .spectrum-name {
-  bottom: 32px;
+  bottom: 2rem;
 }
 
 .spectrum-visible {
   position: absolute;
   bottom: 0;
   min-width: 3px;
-  height: 40px;
+  height: 2.5rem;
   background: var(--ivory);
-  box-shadow: 0 0 16px var(--ivory);
+  box-shadow: 0 0 1rem var(--ivory);
 }
 
 .spectrum-callout {
@@ -1312,13 +1434,13 @@ input[type='range']::-moz-range-thumb {
   justify-content: space-between;
   margin: var(--s-2) 0 0;
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-faint);
 }
 
 .composition-bar {
   display: flex;
-  height: 14px;
+  height: 0.875rem;
   gap: 2px;
 }
 
@@ -1380,7 +1502,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 .time-demo svg {
-  width: min(140px, 100%);
+  width: min(8.75rem, 100%);
   height: auto;
 }
 
@@ -1429,7 +1551,7 @@ input[type='range']::-moz-range-thumb {
 
 .time-ruler {
   position: relative;
-  height: 130px;
+  height: 8.125rem;
   margin-top: var(--s-4);
 }
 
@@ -1437,15 +1559,15 @@ input[type='range']::-moz-range-thumb {
   position: absolute;
   left: 0;
   right: 0;
-  top: 70px;
+  top: 4.375rem;
   height: 1px;
   background: var(--hairline-strong);
 }
 
 .time-window {
   position: absolute;
-  top: 58px;
-  height: 25px;
+  top: 3.625rem;
+  height: 1.5625rem;
   background: color-mix(in srgb, var(--ivory) 10%, transparent);
   border: 1px solid var(--hairline-strong);
   transition: background var(--dur-slow) var(--ease-out), border-color var(--dur-slow);
@@ -1461,17 +1583,17 @@ input[type='range']::-moz-range-thumb {
   left: 0;
   top: -58px;
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
   color: var(--text-dim);
 }
 
 .time-tick {
   position: absolute;
-  top: 92px;
+  top: 5.75rem;
   transform: translateX(-50%);
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: 0.625rem;
   white-space: nowrap;
   color: var(--text-faint);
 }
@@ -1482,19 +1604,19 @@ input[type='range']::-moz-range-thumb {
 
 .time-mark {
   position: absolute;
-  top: 64px;
+  top: 4rem;
   width: 1px;
-  height: 13px;
+  height: 0.8125rem;
   background: var(--text-dim);
 }
 
 .time-mark-name {
   position: absolute;
-  bottom: 20px;
+  bottom: 1.25rem;
   left: 0;
   transform: translateX(-50%);
   width: max-content;
-  max-width: 140px;
+  max-width: 8.75rem;
   text-align: center;
   font-size: var(--t-data);
   line-height: 1.3;
@@ -1505,8 +1627,8 @@ input[type='range']::-moz-range-thumb {
 
 .time-mark.is-on {
   background: var(--ivory);
-  height: 21px;
-  top: 60px;
+  height: 1.3125rem;
+  top: 3.75rem;
 }
 
 .time-mark.is-on .time-mark-name {
@@ -1526,16 +1648,16 @@ input[type='range']::-moz-range-thumb {
 .meter {
   position: fixed;
   right: var(--gutter);
-  bottom: 168px;
-  width: 270px;
+  bottom: 10.5rem;
+  width: 16.875rem;
   z-index: 2;
   font-family: var(--font-data);
   font-size: var(--t-data);
 }
 
 .meter-head {
-  min-height: 28px;
-  font-size: 10px;
+  min-height: 1.75rem;
+  font-size: 0.625rem;
   letter-spacing: var(--track-kicker);
   text-transform: uppercase;
   color: var(--text-faint);
@@ -1567,7 +1689,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 .meter-label {
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: left;
   color: var(--text-faint);
 }
@@ -1594,8 +1716,8 @@ input[type='range']::-moz-range-thumb {
 
 .souvenir {
   position: fixed;
-  left: calc(var(--gutter) + var(--nav-w) + 40px);
-  bottom: 168px;
+  left: calc(var(--gutter) + var(--nav-w) + 2.5rem);
+  bottom: 10.5rem;
   max-width: 36rem;
   z-index: 2;
   animation: fade-in var(--dur-slow) var(--ease-out) both;
@@ -1606,7 +1728,7 @@ input[type='range']::-moz-range-thumb {
   font-weight: var(--weight-display);
   font-size: var(--t-beat);
   margin: 0 0 var(--s-4);
-  text-shadow: 0 0 28px var(--ink);
+  text-shadow: 0 0 1.75rem var(--ink);
 }
 
 .souvenir-list {
@@ -1644,7 +1766,7 @@ input[type='range']::-moz-range-thumb {
   font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
   line-height: 1.3;
   margin: 0 0 var(--s-5);
-  text-shadow: 0 0 28px var(--ink);
+  text-shadow: 0 0 1.75rem var(--ink);
 }
 
 .souvenir-actions {
@@ -1663,7 +1785,7 @@ input[type='range']::-moz-range-thumb {
 /* ---------- Scale readout, plain words ---------- */
 
 .scale-label {
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: var(--track-kicker);
   text-transform: uppercase;
   color: var(--text-faint);
@@ -1711,7 +1833,7 @@ input[type='range']::-moz-range-thumb {
   .aside {
     left: var(--gutter);
     right: var(--gutter);
-    top: 132px;
+    top: 8.25rem;
     width: auto;
   }
   .scale-label,
@@ -1728,7 +1850,7 @@ input[type='range']::-moz-range-thumb {
     text-overflow: ellipsis;
   }
   .scale-track {
-    min-width: 48px;
+    min-width: 3rem;
   }
   .spectrum-name {
     display: none;
@@ -1737,7 +1859,7 @@ input[type='range']::-moz-range-thumb {
     gap: var(--s-3);
   }
   .time-demo svg {
-    width: 84px;
+    width: 5.25rem;
   }
   .time-lab {
     gap: var(--s-4);
@@ -1745,7 +1867,7 @@ input[type='range']::-moz-range-thumb {
   .souvenir {
     left: var(--gutter);
     right: var(--gutter);
-    bottom: 132px;
+    bottom: 8.25rem;
   }
   .souvenir-row {
     grid-template-columns: 7rem 1fr;
@@ -1754,7 +1876,7 @@ input[type='range']::-moz-range-thumb {
     margin-bottom: var(--s-5);
   }
   .narrative {
-    max-height: calc(100dvh - 330px);
+    max-height: calc(100dvh - 20.625rem);
     overflow-y: auto;
   }
 }

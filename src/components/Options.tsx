@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { director, useDirector, type Prefs } from '../animation/director';
 import { music, MUSIC } from '../animation/music';
 import { sound } from '../audio/sound';
+import { toggleFullscreen } from './fullscreen';
 
 const ITEMS: { key: keyof Prefs; name: string; says: string }[] = [
   { key: 'music', name: 'Music', says: `${MUSIC.artist}, “${MUSIC.title},” alongside the ride.` },
@@ -59,6 +60,10 @@ export function Options() {
               <span className="option-says">{it.says}</span>
             </label>
           ))}
+          <button type="button" className="option option-action" onClick={toggleFullscreen}>
+            <span className="option-name">Full screen</span>
+            <span className="option-says">For a TV or a projector. The F key does the same.</span>
+          </button>
         </div>
       )}
     </div>

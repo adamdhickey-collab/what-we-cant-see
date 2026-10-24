@@ -40,6 +40,12 @@ wall display. `?music` turns the music
 on (a wall display will also need the browser's autoplay allowed), and
 `?from=<seconds>` starts it later in the story.
 
+**On a TV or projector:** press F for full screen. Type grows with the
+screen's height, margins stay inside a TV's overscan, and a few seconds into
+the ride the controls and cursor fade until the mouse moves or a key is
+pressed. `?tv` goes further for a big screen far away: larger type, and no
+scale bar or meter.
+
 `npm run build` also runs `scripts/check-script.mjs`, which fails on a line
 over 18 words or a source missing from the ledger.
 

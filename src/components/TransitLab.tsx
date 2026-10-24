@@ -86,11 +86,15 @@ function LabView({ lc, pg }: Search) {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, W, H);
     const copper = css('--copper'), teal = css('--teal'), ivory = css('--ivory'), faint = css('--text-faint'), hair = css('--hairline');
-    g.font = `11px ${css('--font-data')}`;
+    // Chart text grows with the page's root size, so it reads on a TV as on a laptop.
+    const k = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+    g.font = `${Math.round(11 * k)}px ${css('--font-data')}`;
     g.textBaseline = 'top';
 
     const narrow = W < 480;
-    const gap = narrow ? 16 : 22;
+    const gap = Math.round((narrow ? 16 : 22) * k);
+    // The height of one row of chart text.
+    const T = Math.round(14 * k);
     const rawH = Math.round(H * 0.3), foldH = Math.round(H * 0.38), pgH = H - rawH - foldH - gap * 3;
     const label = (text: string, x: number, yy: number, color = faint, align: CanvasTextAlign = 'left') => {
       g.fillStyle = color;
@@ -100,7 +104,7 @@ function LabView({ lc, pg }: Search) {
     const yppm = (top: number, h: number) => scaleLinear().domain([260, -320]).range([top, top + h]).clamp(true);
 
     // 1. Ninety days of measurements.
-    let top = 14;
+    let top = T;
     const xd = scaleLinear().domain([0, lc.span]).range([0, W]);
     const yr = yppm(top, rawH);
     label(narrow ? 'Each dot: one brightness measurement' : 'Each dot: one measurement of the star’s brightness, over 90 days', 0, 0, scan !== null ? ivory : faint);
@@ -120,17 +124,17 @@ function LabView({ lc, pg }: Search) {
       grad.addColorStop(1, ivory);
       g.globalAlpha = 0.18;
       g.fillStyle = grad;
-      g.fillRect(sx - 60, 14, 60, rawH);
+      g.fillRect(sx - 60, T, 60, rawH);
       g.globalAlpha = 0.8;
       g.fillStyle = ivory;
-      g.fillRect(sx - 0.5, 14, 1, rawH);
+      g.fillRect(sx - 0.5, T, 1, rawH);
       g.globalAlpha = 1;
     }
 
     // 2. The fold.
     top += rawH + gap;
     const xh = scaleLinear().domain([-12, 12]).range([0, W]);
-    const yf = yppm(top + 14, foldH - 14);
+    const yf = yppm(top + T, foldH - T);
     if (period && fit) {
       label(narrow ? `Stacked every ${period.toFixed(2)} days` : `Stacked as if the planet circled every ${period.toFixed(2)} days · hours from the middle of a pass`, 0, top);
       const f = fold(lc, period, fit.phase);
@@ -172,7 +176,7 @@ function LabView({ lc, pg }: Search) {
     // 3. The search.
     top += foldH + gap;
     const xp = scaleLog().domain([P_MIN, P_MAX]).range([0, W]);
-    const ys = scaleLinear().domain([0, pg.best.snr * 1.1]).range([top + pgH, top + 14]);
+    const ys = scaleLinear().domain([0, pg.best.snr * 1.1]).range([top + pgH, top + T]);
     label(narrow ? 'How well each orbit lines up' : 'How well each guess lines up · orbits from 1 to 20 days', 0, top);
     const n = Math.floor(revealed * (pg.periods.length - 1));
     g.strokeStyle = teal;
@@ -188,9 +192,9 @@ function LabView({ lc, pg }: Search) {
     (W < 420 ? [1, 10, 20] : [1, 2, 5, 10, 20]).forEach((p) => label(`${p} d`, xp(p), top + pgH + 4, faint, p === 1 ? 'left' : p === 20 ? 'right' : 'center'));
     if (period) {
       g.fillStyle = ivory;
-      g.fillRect(xp(period) - 0.5, top + 14, 1, pgH - 14);
+      g.fillRect(xp(period) - 0.5, top + T, 1, pgH - T);
     }
-    if (revealed >= 1) label(`${pg.best.period.toFixed(2)} days`, xp(pg.best.period) + 6, top + 16, ivory);
+    if (revealed >= 1) label(`${pg.best.period.toFixed(2)} days`, xp(pg.best.period) + 6, top + T + 2, ivory);
   });
 
   const take = () => director.explore();

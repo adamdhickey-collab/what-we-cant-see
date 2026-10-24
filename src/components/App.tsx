@@ -5,6 +5,7 @@ import { sound } from '../audio/sound';
 import { CH, chapterIndexAt, CHAPTERS, STARTS, TOTAL } from '../content/chapters';
 import { Aside } from './Aside';
 import { Controls } from './Controls';
+import { toggleFullscreen } from './fullscreen';
 import { Meter } from './Meter';
 import { Narrative } from './Narrative';
 import { Options } from './Options';
@@ -20,6 +21,12 @@ type Panel = null | { kind: 'sources'; focus: string | null } | { kind: 'text' }
 const params = new URLSearchParams(location.search);
 /** ?kiosk plays from the first frame and loops, for a wall. */
 const KIOSK = params.has('kiosk');
+/** ?tv: a big screen seen from across a room. Larger type, and only the picture and its words. */
+const TV = params.has('tv');
+if (TV) document.documentElement.classList.add('is-tv');
+/** How long the controls stay after the last mouse move or key, while the ride plays. */
+const IDLE_MS = 2800;
+
 const MINUTES = Math.round(TOTAL / 60);
 
 export function App() {
@@ -29,6 +36,8 @@ export function App() {
   const started = useDirector((s) => s.started);
   const webgl = useDirector((s) => s.webgl);
   const ended = useDirector((s) => s.ended);
+  const playing = useDirector((s) => s.playing);
+  const [idle, setIdle] = useState(KIOSK);
   const soundOn = useDirector((s) => s.sound);
   const musicOn = useDirector((s) => s.music);
   const ci = useDirector((s) => chapterIndexAt(s.t));
@@ -63,6 +72,24 @@ export function App() {
     return () => clearTimeout(id);
   }, [ended]);
 
+  // While the ride plays, the controls and the cursor fade after a few still
+  // seconds, leaving only the picture; any movement or key brings them back.
+  useEffect(() => {
+    let timer = 0;
+    const wake = () => {
+      setIdle(false);
+      clearTimeout(timer);
+      timer = window.setTimeout(() => setIdle(true), IDLE_MS);
+    };
+    wake();
+    const events = ['pointermove', 'pointerdown', 'keydown', 'touchstart', 'wheel'] as const;
+    events.forEach((e) => window.addEventListener(e, wake, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, wake));
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (panel || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -75,6 +102,7 @@ export function App() {
       } else if (!typing && e.key === 'ArrowRight') director.step(1);
       else if (!typing && e.key === 'ArrowLeft') director.step(-1);
       else if (/^[1-9]$/.test(e.key) && +e.key <= CHAPTERS.length) director.goToChapter(+e.key - 1);
+      else if (e.key === 'f') toggleFullscreen();
       else if (e.key === 's') setPanel({ kind: 'sources', focus: null });
       else if (e.key === 't') setPanel({ kind: 'text' });
     };
@@ -135,7 +163,7 @@ export function App() {
   const chapterId = CHAPTERS[ci].id;
 
   return (
-    <div className={`app chapter-${chapterId}${started ? ' is-started' : ''}${webgl ? '' : ' no-webgl'}${ended ? ' is-ended' : ''}`}>
+    <div className={`app chapter-${chapterId}${started ? ' is-started' : ''}${webgl ? '' : ' no-webgl'}${ended ? ' is-ended' : ''}${idle && playing && !panel ? ' is-idle' : ''}`}>
       <canvas ref={canvas} className="stage" aria-hidden="true" />
       <div ref={labels} className="stage-labels" aria-hidden="true" />
 
@@ -235,7 +263,7 @@ export function App() {
             </p>
           )}
           <p className="intro-note">
-            Sit back: it plays straight through, like a film. Space pauses, arrows or scrolling step, 1–8 jump to a chapter.{' '}
+            Sit back: it plays straight through, like a film. F for full screen, Space pauses, arrows step, 1–8 jump to a chapter.{' '}
             <button type="button" className="link-btn" onClick={() => setPanel({ kind: 'text' })}>
               Read it as text
             </button>

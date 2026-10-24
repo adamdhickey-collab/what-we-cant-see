@@ -31,33 +31,40 @@
   --track-title: 0.01em;
   --font-text: 'Inter', system-ui, -apple-system, sans-serif;
   --font-data: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* The inner voice: a calligraphic italic, a poet's hand beside the instrument
+     lettering, after Naropa's roots in brush calligraphy and poetics. */
+  --font-inner: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --weight-inner: 500;
 
   /* Type: fluid from a phone to a wall. */
   --t-hero: clamp(2.25rem, 1rem + 5vw, 6rem);
   --t-title: clamp(1.75rem, 1.1rem + 2.8vw, 4rem);
   --t-beat: clamp(1.25rem, 1rem + 1.1vw, 2.125rem);
   --t-question: clamp(1.625rem, 1.1rem + 2.2vw, 3.25rem);
+  --t-inner: clamp(1.7rem, 1.25rem + 1.5vw, 2.9rem);
   --t-body: 1rem;
   --t-small: 0.875rem;
   --t-data: 0.75rem;
   --track-kicker: 0.14em;
 
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 24px;
-  --s-6: 32px;
-  --s-7: 48px;
-  --s-8: 72px;
-  --gutter: clamp(16px, 4vw, 56px);
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  /* Wide enough on a TV to clear the edges sets crop (overscan). */
+  --gutter: clamp(1rem, 4.5vw, 6rem);
   --measure: 34rem;
   --radius: 2px;
-  --tap: 44px;
+  --tap: 2.75rem;
 
   --dur-fast: 160ms;
   --dur-text: 900ms;
   --dur-slow: 1600ms;
+  --dur-inner: 2600ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
@@ -67,5 +74,6 @@
     /* Opacity still fades; nothing travels. */
     --dur-text: 400ms;
     --dur-slow: 600ms;
+    --dur-inner: 800ms;
   }
 }

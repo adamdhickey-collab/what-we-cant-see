@@ -40,6 +40,11 @@ uncertain ones fade to violet.
   instrument.)
 - **Text**: *Inter*, for reading copy.
 - **Data**: *JetBrains Mono*, for every number, unit and axis.
+- **Inner voice**: *Cormorant Garamond* italic, 500, for the reflective
+  lines. A calligraphic serif beside the instrument lettering: a poet's hand,
+  after Naropa's roots in brush calligraphy (Chögyam Trungpa) and poetics
+  (the Jack Kerouac School). Centered in the open frame over a soft
+  darkening, it fades in from a slight blur, like a thought surfacing.
 
 All three from Google Fonts. Display sizes are fluid with `clamp()` so a
 title is enormous on a wall display and still fits a phone.
