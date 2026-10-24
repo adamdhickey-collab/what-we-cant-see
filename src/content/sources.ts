@@ -1,10 +1,8 @@
 // The source ledger. Every figure the experience shows points at an entry
 // here by id, and the Sources drawer and the transcript render from it.
 // research/SCIENTIFIC-SOURCES.md is the reading copy, with the reasoning.
-// The Naropa edition's teachings are here too, marked with their edition,
-// and research/NAROPA-EDITION.md is their reading copy.
-
-import { EDITION, type Edition } from './edition.ts';
+// The inner voice's teachings are here too, and research/NAROPA-EDITION.md
+// is their reading copy.
 
 export type Kind = 'measured' | 'inferred' | 'simulated' | 'illustrative' | 'speculative' | 'contemplative';
 
@@ -26,14 +24,11 @@ export interface Source {
   url?: string;
   published?: string;
   note?: string;
-  /** Only this edition cites it. */
-  edition?: Edition;
 }
 
 export const RETRIEVED = '2026-10-24';
 
-/** Every entry, for every edition. */
-export const LEDGER: Source[] = [
+export const SOURCES: Source[] = [
   {
     id: 'horizon',
     claim: 'Distance to the sea horizon for an eye 1.7 m above the water',
@@ -551,7 +546,8 @@ export const LEDGER: Source[] = [
     kind: 'inferred',
     source: 'Karst et al. 2023, Nature Ecology & Evolution 7, 501',
     url: 'https://doi.org/10.1038/s41559-023-01986-1',
-  },  // The Naropa edition's teachings. Each is a view from a contemplative
+  },
+  // The inner voice's teachings. Each is a view from a contemplative
   // tradition, cited to where Naropa University teaches it, not a finding.
   {
     id: 'naropa-psych',
@@ -560,7 +556,6 @@ export const LEDGER: Source[] = [
     kind: 'contemplative',
     source: 'Naropa University Academic Catalog 2025–26, BA Psychology, Program Vision',
     url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
-    edition: 'naropa',
   },
   {
     id: 'basic-goodness',
@@ -570,7 +565,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa University, Tree of Contemplative Education; taught in the core course COR-130, in “Basic Goodness and the Awakened Heart”',
     url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
     note: 'Trungpa, a Tibetan Buddhist teacher, founded Naropa in Boulder in 1974. A view from the Shambhala tradition, not a scientific finding.',
-    edition: 'naropa',
   },
   {
     id: 'beginners-mind',
@@ -579,7 +573,6 @@ export const LEDGER: Source[] = [
     kind: 'contemplative',
     source: 'Naropa University, Tree of Contemplative Education; COR-130 introduces contemplative practice “through the lens of beginner’s mind”',
     url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
-    edition: 'naropa',
   },
   {
     id: 'dependent-origination',
@@ -589,7 +582,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa University Academic Catalog 2025–26: Buddhist psychology courses study it “as an approach to understanding interdependence and systems thinking”',
     url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
     note: 'The cosmic web is shaped by gravity acting on dark and ordinary matter. The likeness is a resemblance, not a law.',
-    edition: 'naropa',
   },
   {
     id: 'mindfulness-awareness',
@@ -599,7 +591,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa catalog, PSYB-314 Psychology of Mindfulness Meditation, required in the BA in Psychology',
     url: 'https://catalog.naropa.edu/all-course-descriptions/',
     note: 'Meditation trains where attention goes. Nothing here suggests it raises the pace of conscious thought.',
-    edition: 'naropa',
   },
   {
     id: 'impermanence',
@@ -609,7 +600,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa catalog, REL-160 Meditation Practicum I: Freeing the Mind, on “the discovery of impermanence”',
     url: 'https://catalog.naropa.edu/all-course-descriptions/',
     note: 'The brain’s delay in building the present is measured; impermanence is a teaching about experience.',
-    edition: 'naropa',
   },
   {
     id: 'interbeing',
@@ -619,7 +609,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa University, Tree of Contemplative Education, “Social Justice, Interbeing and the Earth”',
     url: 'https://www.naropa.edu/the-naropa-difference/tree-contemplative-education/',
     note: 'The bacteria are measured; interbeing is a way of seeing them.',
-    edition: 'naropa',
   },
   {
     id: 'skandhas',
@@ -629,7 +618,6 @@ export const LEDGER: Source[] = [
     source: 'Naropa catalog, CNSC-603 Buddhist Foundations for Counseling I, on “the development of a false sense of self”',
     url: 'https://catalog.naropa.edu/all-course-descriptions/',
     note: 'A graduate counseling course at Naropa. The atom on screen says nothing about selves; the line turns from the parts of matter to the parts of a person.',
-    edition: 'naropa',
   },
   {
     id: 'maitri',
@@ -638,7 +626,6 @@ export const LEDGER: Source[] = [
     kind: 'contemplative',
     source: 'Naropa catalog, REL-160 (“the cultivation of maitri (loving-kindness)”) and PSYB-415 Maitri: Working With Emotions',
     url: 'https://catalog.naropa.edu/all-course-descriptions/',
-    edition: 'naropa',
   },
   {
     id: 'contemplative-neuro',
@@ -647,11 +634,7 @@ export const LEDGER: Source[] = [
     kind: 'contemplative',
     source: 'Naropa University Academic Catalog 2025–26, PSYB-462 Contemplative Neuroscience',
     url: 'https://catalog.naropa.edu/wp-content/uploads/2025/08/Naropa-Catalog-PDF-2025-2026-1.pdf',
-    edition: 'naropa',
   },
 ];
-
-/** The entries this edition can cite. */
-export const SOURCES: Source[] = LEDGER.filter((s) => !s.edition || s.edition === EDITION);
 
 export const sourceById = (id: string) => SOURCES.find((s) => s.id === id);

@@ -3,9 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './components/App';
 import './styles/tokens.css';
 import './styles/app.css';
-import { EDITION } from './content/edition';
-
-if (EDITION === 'naropa') document.title = 'What We Can’t See · The Naropa edition';
 
 // A private soundtrack for local screenings: ?soundtrack plays
 // local/soundtrack.mp3 (or ?soundtrack=other.m4a) and lets it drive the clock.

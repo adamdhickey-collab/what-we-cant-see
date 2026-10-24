@@ -1,4 +1,5 @@
-// How the story's 3:40 lies along a 6:11 piece of music. The story keeps its
+// How the story lies along a private recording, for local screenings. The
+// public ride is cut to the length of its own music and needs no map. The story keeps its
 // own seconds, the ones every chapter and scene is written in; this map only
 // says which moment of the music each moment of the story lands on. Between
 // cues, time stretches evenly.

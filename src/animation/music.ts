@@ -5,11 +5,12 @@
 // The music does not drive the clock. The story keeps its own seconds, so
 // every line still gets its full reading time, and the music follows: it
 // plays while the ride plays, waits at every stop and pause, and jumps when
-// the viewer scrubs. It starts the moment the ride does and, being shorter
-// than the ride, ends partway through; the sound effects, if on, carry the
-// rest. ?from=<story seconds> starts it somewhere else.
+// the viewer scrubs. The script is cut to the recording's length, so music
+// and ride start together and end together (scripts/check-script.mjs holds
+// them to it). ?from=<story seconds> starts it somewhere else.
 
 import { director } from './director';
+import { MUSIC_SECONDS } from '../content/chapters';
 
 export const MUSIC = {
   src: 'audio/on-the-nature-of-daylight.mp3',
@@ -17,7 +18,7 @@ export const MUSIC = {
   artist: 'Max Richter',
 };
 /** The recording's length, until the file reports its own. */
-const FALLBACK_LENGTH = 374.9;
+const FALLBACK_LENGTH = MUSIC_SECONDS;
 /** How far the music may drift from the story before it is moved back in step. */
 const DRIFT = 0.4;
 

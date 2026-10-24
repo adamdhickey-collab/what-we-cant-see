@@ -6,7 +6,7 @@ out, and the instruments, AI among them, that find it. By Adam Hickey.
 > What happens to our understanding of ourselves when we can perceive more
 > of the universe than our senses ever evolved to see?
 
-It plays like a film, nine minutes straight through. It opens on a shore at
+It plays like a film, 6:15 straight through, the length of its music. It opens on a shore at
 dusk as the first stars come out, stars that were there all day, and then
 gives a chapter to each reason we can't see something: too far (the galaxy, and
 the dark matter holding it together), too many (113,741 real galaxies, and
@@ -18,8 +18,10 @@ every claim says how we know it.
 
 Two voices tell it. The outer voice says what instruments have found; an
 inner voice, set in italics, turns each finding toward the viewer's own
-awareness, written in the spirit of Ram Dass's teachings: the stars hidden
-by daylight, and a quiet awareness hidden by thought.
+awareness, drawn from the contemplative psychology taught at Naropa
+University: the stars hidden by daylight, and what Naropa's founder called
+basic goodness, hidden by thought. A line that names a teaching says so and
+cites where Naropa teaches it ([`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md)).
 
 **Live:** https://adamdhickey-collab.github.io/what-we-cant-see/
 
@@ -35,10 +37,6 @@ npm run build      # typecheck and build to dist/
 npm run preview    # serve the build
 ```
 
-`?edition=naropa` is the Naropa edition: the same ride with an inner voice
-drawn from the contemplative psychology taught at Naropa University, each
-teaching cited to its course ([`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md)).
-
 `?kiosk` plays from the first frame and loops after a ten-second rest, for a
 wall display. `?music` turns the music
 on (a wall display will also need the browser's autoplay allowed), and
@@ -49,7 +47,7 @@ over 18 words or a source missing from the ledger.
 
 `?soundtrack` (development only) plays `local/soundtrack.mp3`, or
 `?soundtrack=name.m4a` for another file in `local/`, and lets the music drive
-the clock: the 3:40 story stretches along a 6:11 piece through the cue map in
+the clock: the 6:15 story lies along a recording through the cue map in
 `src/content/soundtrack.ts`. `local/` is ignored by git and the public build
 contains neither the code nor the file. Press M while it plays to log a moment
 of the music for tuning the cues.
@@ -64,7 +62,7 @@ of the music for tuning the cues.
 | [`research/VISUAL-DIRECTION.md`](research/VISUAL-DIRECTION.md) | References, color as meaning, type, motion |
 | [`research/STORYBOARD.md`](research/STORYBOARD.md) | The eight chapters, the transitions, reduced motion |
 | [`research/EXPERIENCE-AUDIT.md`](research/EXPERIENCE-AUDIT.md) | The audit that turned the piece into a ride, and what changed |
-| [`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md) | The Naropa edition: what the program teaches, and where each teaching meets the ride |
+| [`research/NAROPA-EDITION.md`](research/NAROPA-EDITION.md) | The inner voice: what Naropa's contemplative psychology program teaches, and where each teaching meets the ride |
 | [`research/ASSET-LICENSES.md`](research/ASSET-LICENSES.md) | What ships and under what terms |
 
 ```
@@ -88,11 +86,11 @@ scripts/
 
 **Working now**
 
-- Eight chapters, the ride (about 10 minutes, never stopping) and Wander, on one clock:
+- Eight chapters, the ride (6:15, the length of the music, never stopping) and Wander, on one clock:
   play, pause, scrub, scroll or swipe by line, jump by chapter or by
   landmark on a true logarithmic scale navigator that speaks plainly.
 - Scripted moments in place of interaction: a scan along real Kepler data,
-  a clock that speeds itself up, five lenses dissolving over the closing
+  a clock that speeds itself up, two lenses dissolving over the closing
   shore, one narrated line each.
 - A real slice of the universe: 113,741 SDSS galaxies placed by redshift.
 - The galaxy turning too fast for what we can see, and its dark matter halo.
@@ -136,8 +134,9 @@ portfolio.
 Protein structure: AlphaFold DB (EMBL-EBI and Google DeepMind), CC BY 4.0.
 Light curve: NASA Kepler mission, via MAST.
 Music: Max Richter, "On the Nature of Daylight", used with permission.
-Reflections: the inner voice is original writing, in the spirit of the
-teachings of Ram Dass; it does not quote him.
+Reflections: the inner voice is original writing drawn from the
+contemplative psychology taught at Naropa University; each teaching it names
+is cited to the Naropa course or page that teaches it.
 Galaxies: Sloan Digital Sky Survey DR17, funded by the Alfred P. Sloan
 Foundation, the U.S. Department of Energy Office of Science and the
 participating institutions.
