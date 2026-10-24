@@ -142,7 +142,7 @@ export function createCosmos(mobile: boolean): StageScene {
       sky.material.uniforms.uPixelRatio.value = f.pixelRatio;
       renderer.render(sky.scene, sky.camera);
 
-      const earthA = smoothstep(7.0, 7.45, s) * (1 - smoothstep(9.2, 10.2, s));
+      const earthA = smoothstep(6.95, 7.35, s) * (1 - smoothstep(9.2, 10.2, s));
       earthMat.uniforms.uOpacity.value = w * earthA;
       earthMat.uniforms.uSize.value = f.mobile ? 1.4 : 1.2;
       const sysA = smoothstep(9.6, 11.0, s) * (1 - smoothstep(15.2, 16.6, s));
@@ -156,7 +156,7 @@ export function createCosmos(mobile: boolean): StageScene {
 
       const L = (text: string, at: THREE.Vector3, a: number, side?: Label['side']) => labelAt(text, at, camera, f, a, side);
       return [
-        L('Earth', tmp.set(0, EARTH_R * 1.4, 0), earthA * smoothstep(7.6, 8.0, s)),
+        L('Earth', tmp.set(0, EARTH_R * 1.4, 0), earthA * smoothstep(7.3, 7.45, s)),
         L('Earth', planetPos[2], sysA * (1 - smoothstep(12.2, 12.6, s))),
         L('The Sun · 8 light-minutes', sun, sysA * (1 - smoothstep(12.6, 13, s)) * smoothstep(10.6, 11, s), 'left'),
         L('Jupiter', planetPos[4], sysA * smoothstep(11.6, 12, s) * (1 - smoothstep(13.6, 14, s))),

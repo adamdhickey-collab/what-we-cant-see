@@ -101,9 +101,11 @@ export const CHAPTERS: Chapter[] = [
     ],
     scale: [
       { at: 0, log10m: 3.9 },
-      { at: 4, log10m: 5.5 },
-      { at: 8, log10m: 7.4 },
-      { at: 12, log10m: 9.2 },
+      { at: 3, log10m: 5.6 },
+      { at: 5.5, log10m: 7.42 },
+      // Hold on the whole planet while its line is read, drifting out only a little.
+      { at: 10.5, log10m: 7.68 },
+      { at: 13, log10m: 9.2 },
       { at: 16, log10m: 11.6 },
       { at: 21, log10m: 12.95 },
       { at: 25, log10m: 16.7 },
