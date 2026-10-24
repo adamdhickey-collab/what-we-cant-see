@@ -10,7 +10,7 @@ import { rgb } from '../shaders/palette';
 import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points';
 import { galaxyPoints } from './galaxy';
 import type { Frame, StageScene } from './types';
-import { distanceFor, labelAt, orbit, present } from './util';
+import { compose, distanceFor, labelAt, orbit, present } from './util';
 
 const MPC = 3.0857e22;
 const MPC_PER_KLY = 0.00030660;
@@ -138,6 +138,7 @@ export function createWeb(mobile: boolean): StageScene {
       const D = distanceFor(s, MPC, 50, f.aspect);
       const ambient = f.state.reduced ? 0 : f.elapsed * 0.03;
       camera.aspect = f.aspect;
+      compose(camera, f);
       orbit(camera, origin, D, 0.4 + ambient + f.drag.x, lerp(0.75, 0.38, smoothstep(21.2, 23.5, s)) + f.drag.y * 0.4);
       camera.far = Math.max(D * 1e3, 1e5);
       camera.updateProjectionMatrix();

@@ -52,7 +52,7 @@ export function pointsMaterial(chunks: PointsChunks = {}) {
           s *= clamp(k, 1.0, 4.0);
           alpha *= clamp(k * 2.5, 0.3, 1.0);
         }
-        gl_PointSize = clamp(s, 1.0, 48.0);
+        gl_PointSize = clamp(s, 1.0, 256.0);
         vColor = col;
         // A point smaller than a pixel fades instead of shimmering.
         vAlpha = uOpacity * alpha * min(s, 1.0);

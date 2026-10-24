@@ -12,9 +12,10 @@ import { lerp, rng, smoothstep } from '../animation/ease';
 import { beatIndexAt, CHAPTERS } from '../content/chapters';
 import type { ProteinView } from '../animation/director';
 import { rgb } from '../shaders/palette';
-import { pointsGeometry, pointsMaterial } from '../shaders/points';
+import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points';
 import type { Frame, StageScene } from './types';
-import { labelAt, present } from './util';
+import { fbm3 } from './noise';
+import { compose, labelAt, present } from './util';
 
 export interface ProteinData {
   entryId: string;
@@ -46,49 +47,98 @@ export function createWithin(mobile: boolean): StageScene {
   camera.position.set(0, 0, 3.2);
   const ivory = rgb('ivory'), violet = rgb('violet'), teal = rgb('teal');
 
-  // A cell, schematic: membrane, nucleus, contents.
-  const cN = mobile ? 9000 : 18000;
+  // Nearer points brighter, farther ones dimmer: depth without a fog pass.
+  const depth = {
+    decls: 'uniform float uNear, uFar;',
+    uniforms: { uNear: { value: 2 }, uFar: { value: 4.4 } },
+    view: 'alpha *= mix(1.0, 0.22, smoothstep(uNear, uFar, -mv.z));',
+  };
+
+  // A cell, schematic: a two-layered membrane, the nucleus with its double
+  // envelope and nucleolus, folded endoplasmic reticulum around it,
+  // mitochondria and vesicles in a faint cytosol.
+  const cN = mobile ? 14000 : 32000;
   const cp = new Float32Array(cN * 3), cc = new Float32Array(cN * 3), cs = new Float32Array(cN);
+  const nucleus = new THREE.Vector3(0.16, 0.04, 0);
+  const mitos = Array.from({ length: 14 }, () => {
+    const at = new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize().multiplyScalar(0.55 + r.next() * 0.3);
+    if (at.distanceTo(nucleus) < 0.5) at.add(at.clone().sub(nucleus).setLength(0.3));
+    return { at, axis: new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize(), len: 0.1 + r.next() * 0.08 };
+  });
+  const vesicles = Array.from({ length: 28 }, () => ({
+    at: new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize().multiplyScalar(0.45 + r.next() * 0.45),
+    rad: 0.015 + r.next() * 0.025,
+  }));
+  const dir = () => new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize();
   for (let i = 0; i < cN; i++) {
-    const v = new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize();
     const k = r.next();
-    let rad = 1, tint = ivory, b = 0.8;
-    if (k < 0.5) rad = 1 + 0.04 * Math.sin(v.x * 7 + v.y * 5) + r.gauss() * 0.006;
-    else if (k < 0.72) {
-      rad = 0.34 + r.gauss() * 0.005;
-      v.multiplyScalar(rad).add(new THREE.Vector3(0.18, 0.05, 0));
-      rad = 1;
+    let p: THREE.Vector3, tint = ivory, b: number;
+    if (k < 0.36) {
+      const n = dir();
+      const wob = 1 + 0.07 * (fbm3(n.x * 2.4, n.y * 2.4, n.z * 2.4) - 0.5);
+      p = n.multiplyScalar(wob + (r.next() < 0.5 ? -0.007 : 0.007));
+      b = 0.85;
+    } else if (k < 0.5) {
+      p = dir().multiplyScalar(0.32 + (r.next() < 0.5 ? -0.005 : 0.005)).add(nucleus);
       tint = violet;
-      b = 1;
+      b = 1.05;
+    } else if (k < 0.54) {
+      p = new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).multiplyScalar(0.05).add(nucleus).add(new THREE.Vector3(0.05, 0.05, 0.04));
+      tint = violet;
+      b = 1.2;
+    } else if (k < 0.66) {
+      // Endoplasmic reticulum: sheets where a noise field crosses a band of radii.
+      const n = dir();
+      const shell = 0.4 + r.next() * 0.2;
+      if (fbm3(n.x * 4 + shell * 6, n.y * 4, n.z * 4) < 0.55) {
+        i--;
+        continue;
+      }
+      p = n.multiplyScalar(shell).add(nucleus);
+      tint = violet;
+      b = 0.5;
+    } else if (k < 0.8) {
+      const m = mitos[Math.floor(r.next() * mitos.length)];
+      const along = (r.next() * 2 - 1) * m.len;
+      const ring = dir().projectOnPlane(m.axis).normalize().multiplyScalar(0.035);
+      p = m.at.clone().addScaledVector(m.axis, along).add(ring);
+      b = 0.95;
+    } else if (k < 0.87) {
+      const v = vesicles[Math.floor(r.next() * vesicles.length)];
+      p = dir().multiplyScalar(v.rad).add(v.at);
+      b = 0.7;
     } else {
-      rad = 0.42 + Math.cbrt(r.next()) * 0.5;
-      b = 0.4;
+      p = dir().multiplyScalar(0.36 + Math.cbrt(r.next()) * 0.6);
+      b = 0.25;
     }
-    v.multiplyScalar(rad);
-    v.y *= 0.82;
-    cp.set([v.x, v.y, v.z], i * 3);
-    cc.set(tint.map((c) => c * b * (0.6 + 0.4 * r.next())), i * 3);
-    cs[i] = 0.9 + r.next() * 0.8;
+    p.y *= 0.82;
+    cp.set([p.x, p.y, p.z], i * 3);
+    cc.set(tint.map((c) => c * b * (0.7 + 0.3 * r.next())), i * 3);
+    cs[i] = 0.8 + r.next() * 0.6;
   }
-  const cellMat = pointsMaterial();
+  const cellMat = pointsMaterial(depth);
   const cell = new THREE.Points(pointsGeometry(cp, cc, cs), cellMat);
 
   // Hydrogen's 1s state: radius drawn from r² e^(-2r/a0), a Gamma(3, a0/2).
-  const aN = mobile ? 12000 : 26000;
+  // The ring marks a0, the most likely distance, and faces the viewer.
+  const aN = mobile ? 24000 : 60000;
   const ap = new Float32Array(aN * 3), ac = new Float32Array(aN * 3), as = new Float32Array(aN);
   const a0 = 0.3;
   for (let i = 0; i < aN; i++) {
     const rad = -(a0 / 2) * Math.log(Math.max(r.next() * r.next() * r.next(), 1e-12));
-    const v = new THREE.Vector3(r.gauss(), r.gauss(), r.gauss()).normalize().multiplyScalar(rad);
+    const v = dir().multiplyScalar(rad);
     ap.set([v.x, v.y, v.z], i * 3);
-    ac.set(teal.map((c, k) => (c * 0.6 + ivory[k] * 0.4) * 1.0), i * 3);
-    as[i] = 1;
+    ac.set(teal.map((c, k) => (c * 0.65 + ivory[k] * 0.35) * 0.85), i * 3);
+    as[i] = 0.9;
   }
   ap.set([0, 0, 0], 0);
   ac.set(ivory, 0);
   as[0] = 5;
-  const atomMat = pointsMaterial();
+  const atomMat = pointsMaterial(depth);
   const atom = new THREE.Points(pointsGeometry(ap, ac, as), atomMat);
+  const ringMat = lineMaterial(rgb('teal'), 0);
+  const ringPts = Array.from({ length: 129 }, (_, k) => new THREE.Vector3(Math.cos((k / 128) * Math.PI * 2) * a0, Math.sin((k / 128) * Math.PI * 2) * a0, 0));
+  const ring = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPts), ringMat);
 
   const protein = new THREE.Group();
   const proteinMats: THREE.ShaderMaterial[] = [];
@@ -96,7 +146,7 @@ export function createWithin(mobile: boolean): StageScene {
   let unsureIndex = 0;
   const viewNow = new THREE.Vector3();
 
-  scene.add(cell, atom, protein);
+  scene.add(cell, atom, ring, protein);
   scene.traverse((o) => (o.frustumCulled = false));
 
   // The structure arrives over the network; until it does, the chapter has
@@ -122,9 +172,10 @@ export function createWithin(mobile: boolean): StageScene {
         pl[i] = plddt[i];
       });
       const chunks = {
-        decls: `attribute float aPlddt; ${PROTEIN_COLOR}`,
-        uniforms: { uView: { value: viewNow } },
+        decls: `attribute float aPlddt; ${depth.decls} ${PROTEIN_COLOR}`,
+        uniforms: { uView: { value: viewNow }, ...depth.uniforms },
         object: 'float a; col = proteinColor(aPlddt, a); alpha *= a;',
+        view: depth.view,
       };
       const dotMat = pointsMaterial(chunks);
       const dots = new THREE.Points(pointsGeometry(pp, pc, psz, { aPlddt: [pl, 1] }), dotMat);
@@ -162,7 +213,11 @@ export function createWithin(mobile: boolean): StageScene {
       const s = f.scale, w = f.weight;
       camera.aspect = f.aspect;
       camera.position.z = 3.2 / Math.min(1, f.aspect * 1.15);
+      // In Chapter 6 a panel takes the right, so the protein sits nearer center.
+      compose(camera, f, f.chapter === 5 ? 0.02 : 0.12);
       camera.updateProjectionMatrix();
+      depth.uniforms.uNear.value = camera.position.z - 0.9;
+      depth.uniforms.uFar.value = camera.position.z + 1.1;
 
       // Each object's true width, in log10 meters: cell 20 µm, p53 about 10 nm, the 1s cloud about 0.3 nm.
       const show = (obj: THREE.Object3D, width: number) => {
@@ -173,6 +228,8 @@ export function createWithin(mobile: boolean): StageScene {
       const cellA = show(cell, -4.7);
       const proteinA = show(protein, -8);
       const atomA = show(atom, -9.6);
+      ring.scale.copy(atom.scale);
+      ringMat.uniforms.uOpacity.value = w * atomA * 0.55 * smoothstep(0.7, 1, atom.scale.x);
 
       const spin = f.state.reduced ? 0 : f.elapsed * 0.1;
       for (const o of [cell, protein, atom]) {
@@ -197,8 +254,9 @@ export function createWithin(mobile: boolean): StageScene {
       renderer.render(scene, camera);
 
       const labels = [
-        labelAt('A cell, about 20 micrometers across (schematic)', anchor.set(0.75, 0.62, 0).multiplyScalar(cell.scale.x), camera, f, cellA * smoothstep(0.6, 0.9, cell.scale.x) * (1 - smoothstep(1.4, 2, cell.scale.x))),
+        labelAt('A cell · about 20 µm across (schematic)', anchor.set(0.75, 0.62, 0).multiplyScalar(cell.scale.x), camera, f, cellA * smoothstep(0.6, 0.9, cell.scale.x) * (1 - smoothstep(1.4, 2, cell.scale.x))),
         labelAt('Nucleus · drawn 60,000 times too large', anchor.set(0, 0, 0), camera, f, atomA * smoothstep(0.7, 1, atom.scale.x)),
+        labelAt('Most likely distance · 0.053 nm', anchor.set(a0 * 0.71, a0 * 0.71, 0).multiplyScalar(atom.scale.x), camera, f, atomA * smoothstep(0.7, 1, atom.scale.x)),
       ];
       if (residuePos.length) {
         protein.updateMatrixWorld();
@@ -215,7 +273,8 @@ export function createWithin(mobile: boolean): StageScene {
       scene.traverse((o) => {
         if (o instanceof THREE.Points) o.geometry.dispose();
       });
-      [cellMat, atomMat, ...proteinMats].forEach((m) => m.dispose());
+      ring.geometry.dispose();
+      [cellMat, atomMat, ringMat, ...proteinMats].forEach((m) => m.dispose());
     },
   };
 }

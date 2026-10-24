@@ -20,7 +20,7 @@ export function galaxyPoints(count: number, seed = 5) {
     let x: number, y: number, z: number;
     let warm = 0;
     let bright = 0.5;
-    if (k < 0.14) {
+    if (k < 0.08) {
       // Bulge
       const rad = Math.abs(r.gauss()) * 2.6;
       const th = r.next() * Math.PI * 2;
@@ -29,8 +29,8 @@ export function galaxyPoints(count: number, seed = 5) {
       z = rad * Math.sin(ph) * Math.sin(th);
       y = rad * Math.cos(ph) * 0.55;
       warm = 0.35;
-      bright = 0.6;
-    } else if (k < 0.22) {
+      bright = 0.38;
+    } else if (k < 0.15) {
       // Bar
       const s = (r.next() * 2 - 1) * 9;
       const w = r.gauss() * 1.3;
@@ -38,7 +38,7 @@ export function galaxyPoints(count: number, seed = 5) {
       z = s * Math.sin(bar) + w * Math.cos(bar);
       y = r.gauss() * 0.5;
       warm = 0.25;
-      bright = 0.55;
+      bright = 0.4;
     } else if (k < 0.84) {
       // Arms: logarithmic spirals, r = r0 e^(b θ)
       const major = r.next() < 0.72;
@@ -49,7 +49,7 @@ export function galaxyPoints(count: number, seed = 5) {
       x = rad * Math.cos(th) + r.gauss() * spread;
       z = rad * Math.sin(th) + r.gauss() * spread;
       y = r.gauss() * 0.35;
-      bright = major ? 0.55 : 0.4;
+      bright = major ? 0.62 : 0.42;
     } else {
       // Diffuse disk
       const rad = -Math.log(Math.max(r.next(), 1e-6)) * 11;

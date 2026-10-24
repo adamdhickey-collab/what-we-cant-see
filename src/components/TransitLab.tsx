@@ -73,7 +73,8 @@ export function TransitLab() {
     g.font = `11px ${css('--font-data')}`;
     g.textBaseline = 'top';
 
-    const gap = 22;
+    const narrow = W < 480;
+    const gap = narrow ? 16 : 22;
     const rawH = Math.round(H * 0.3), foldH = Math.round(H * 0.38), pgH = H - rawH - foldH - gap * 3;
     const label = (text: string, x: number, yy: number, color = faint, align: CanvasTextAlign = 'left') => {
       g.fillStyle = color;
@@ -86,7 +87,7 @@ export function TransitLab() {
     let top = 14;
     const xd = scaleLinear().domain([0, 90]).range([0, W]);
     const yr = yppm(top, rawH);
-    label('Brightness over 90 days · each dot one measurement', 0, 0);
+    label(narrow ? 'Brightness, 90 days' : 'Brightness over 90 days · each dot one measurement', 0, 0);
     g.fillStyle = copper;
     g.globalAlpha = 0.55;
     for (let i = 0; i < lc.ppm.length; i++) g.fillRect(xd(lc.time[i]), yr(lc.ppm[i]), 1.4, 1.4);
@@ -94,7 +95,7 @@ export function TransitLab() {
     if (locked && fit) {
       g.fillStyle = teal;
       for (let t = fit.phase * fit.period; t < 90; t += fit.period) g.fillRect(xd(t) - 0.5, top + rawH + 3, 1, 6);
-      label('teal: where the model says it crosses', W, top + rawH + 11, teal, 'right');
+      if (!narrow) label('ticks: predicted crossings', W, 0, teal, 'right');
     }
 
     // 2. The fold.
@@ -143,7 +144,7 @@ export function TransitLab() {
     top += foldH + gap;
     const xp = scaleLog().domain([P_MIN, P_MAX]).range([0, W]);
     const ys = scaleLinear().domain([0, pg.best.snr * 1.1]).range([top + pgH, top + 14]);
-    label('Search · signal strength at every period, 1 to 20 days', 0, top);
+    label(narrow ? 'Search · 1 to 20 days' : 'Search · signal strength at every period, 1 to 20 days', 0, top);
     const n = Math.floor(revealed * (pg.periods.length - 1));
     g.strokeStyle = teal;
     g.lineWidth = 1;
@@ -155,12 +156,12 @@ export function TransitLab() {
     g.moveTo(0, top + pgH + 0.5);
     g.lineTo(W, top + pgH + 0.5);
     g.stroke();
-    [1, 2, 5, 10, 20].forEach((p) => label(`${p}d`, xp(p), top + pgH + 4, faint, p === 1 ? 'left' : p === 20 ? 'right' : 'center'));
+    (W < 420 ? [1, 10, 20] : [1, 2, 5, 10, 20]).forEach((p) => label(`${p} d`, xp(p), top + pgH + 4, faint, p === 1 ? 'left' : p === 20 ? 'right' : 'center'));
     if (period) {
       g.fillStyle = ivory;
       g.fillRect(xp(period) - 0.5, top + 14, 1, pgH - 14);
     }
-    if (revealed >= 1) label(`${pg.best.period.toFixed(2)} days`, xp(pg.best.period) + 6, ys(pg.best.snr) - 2, ivory);
+    if (revealed >= 1) label(`${pg.best.period.toFixed(2)} days`, xp(pg.best.period) + 6, top + 16, ivory);
   });
 
   const take = () => director.explore();
@@ -199,7 +200,7 @@ export function TransitLab() {
       </p>
       <div className="lab-controls">
         <label className="lab-slider">
-          <span>Fold period</span>
+          <span className="hide-narrow">Fold period</span>
           <input
             type="range"
             min={0}
@@ -214,7 +215,7 @@ export function TransitLab() {
           <output>{(manual ?? period ?? 3).toFixed(2)} d</output>
         </label>
         <button type="button" className="btn" onClick={search}>
-          Search every period
+          Search<span className="hide-narrow"> every period</span>
         </button>
       </div>
     </section>

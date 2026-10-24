@@ -149,7 +149,7 @@ export class Stage {
       el.style.opacity = String(l.opacity);
       el.style.transform = `translate(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px)`;
       // Text that would run off the right edge flips to the anchor's left.
-      el.dataset.side = l.side ?? (l.x > window.innerWidth * 0.6 ? 'left' : 'right');
+      el.dataset.side = l.side ?? (l.x + 24 + l.text.length * 7.4 > window.innerWidth - 16 ? 'left' : 'right');
       const text = el.lastElementChild as HTMLElement;
       if (text.textContent !== l.text) text.textContent = l.text;
     });

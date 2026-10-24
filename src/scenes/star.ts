@@ -15,7 +15,7 @@ export function createStar(mobile: boolean): StageScene {
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
   const glow = rgb('ivory').map((v, k) => v * 0.85 + rgb('copper')[k] * 0.25);
   const starMat = pointsMaterial();
-  const star = new THREE.Points(pointsGeometry(new Float32Array([0, 0, 0, 0, 0, 0]), new Float32Array([...glow, ...glow.map((v) => v * 0.4)]), new Float32Array([26, 120])), starMat);
+  const star = new THREE.Points(pointsGeometry(new Float32Array([0, 0, 0, 0, 0, 0]), new Float32Array([...glow, ...glow.map((v) => v * 0.22)]), new Float32Array([30, 220])), starMat);
   const planetMat = pointsMaterial({ blending: THREE.NormalBlending });
   const planet = new THREE.Points(pointsGeometry(new Float32Array(3), new Float32Array(rgb('ink')), new Float32Array([6])), planetMat);
   scene.add(star, planet);
@@ -31,8 +31,8 @@ export function createStar(mobile: boolean): StageScene {
       renderer.render(sky.scene, sky.camera);
 
       // The star sits left of the instrument on wide screens, above it on phones.
-      const sx = f.mobile ? 0 : -0.22;
-      const sy = f.mobile ? 0.62 : 0.42;
+      const sx = f.mobile ? 0 : -0.3;
+      const sy = f.mobile ? 0.62 : 0.36;
       star.position.set(sx, sy, 0);
       // On a phone the instrument fills the top of the screen, so the star steps back.
       starMat.uniforms.uOpacity.value = f.weight * (f.mobile ? 0.25 : 0.9);

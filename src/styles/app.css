@@ -94,7 +94,9 @@ a {
   position: absolute;
   left: 14px;
   top: -0.6em;
-  white-space: nowrap;
+  width: max-content;
+  max-width: min(320px, 46vw);
+  line-height: 1.4;
   font-family: var(--font-data);
   font-size: var(--t-data);
   letter-spacing: 0.02em;
@@ -105,6 +107,7 @@ a {
 .stage-label[data-side='left'] .stage-label-text {
   left: auto;
   right: 14px;
+  text-align: right;
 }
 
 /* ---------- Top ---------- */
@@ -155,12 +158,36 @@ a {
 
 /* ---------- Intro ---------- */
 
+/* A scrim under the text column only, so the horizon's glow never sits behind words. */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(90deg, rgb(10 20 35 / 0.62) 0%, rgb(10 20 35 / 0.38) 38%, rgb(10 20 35 / 0) 62%);
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.app.is-started::before {
+  opacity: 0.55;
+}
+
+@media (max-width: 767px) {
+  .app::before {
+    background: linear-gradient(0deg, rgb(10 20 35 / 0.75) 0%, rgb(10 20 35 / 0.4) 32%, rgb(10 20 35 / 0) 55%);
+  }
+  .app:not(.is-started)::before {
+    background: rgb(10 20 35 / 0.45);
+  }
+}
+
 .intro {
   position: fixed;
   left: var(--gutter);
   right: var(--gutter);
   top: 50%;
-  transform: translateY(-58%);
+  transform: translateY(-64%);
   max-width: 44rem;
   z-index: 2;
 }
@@ -235,12 +262,18 @@ a {
 
 /* ---------- Scale navigator ---------- */
 
+.app {
+  /* The two columns the fixed layers share on a wide screen. */
+  --nav-w: 190px;
+  --lab-w: min(46vw, 720px);
+}
+
 .scale {
   position: fixed;
   left: var(--gutter);
   top: 15vh;
   bottom: 25vh;
-  width: 168px;
+  width: var(--nav-w);
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -352,7 +385,7 @@ a {
 
 .narrative {
   position: fixed;
-  left: calc(var(--gutter) + 210px);
+  left: calc(var(--gutter) + var(--nav-w) + 40px);
   bottom: 168px;
   max-width: var(--measure);
   z-index: 2;
@@ -498,7 +531,7 @@ a {
   right: var(--gutter);
   top: 76px;
   bottom: 160px;
-  width: min(50vw, 780px);
+  width: var(--lab-w);
 }
 
 .lab,
@@ -961,8 +994,8 @@ input[type='range']::-moz-range-thumb {
   .chapters button:not(.is-current) .chapter-name {
     display: none;
   }
-  .narrative {
-    left: calc(var(--gutter) + 180px);
+  .app {
+    --nav-w: 160px;
   }
 }
 
@@ -1033,9 +1066,17 @@ input[type='range']::-moz-range-thumb {
     left: var(--gutter);
     right: var(--gutter);
     top: 90px;
-    bottom: auto;
-    height: 50vh;
+    bottom: 328px;
     width: auto;
+  }
+  .lab-controls {
+    flex-wrap: nowrap;
+  }
+  .lab-slider {
+    min-width: 0;
+  }
+  .lab-title {
+    font-size: 1rem;
   }
   .lab-summary,
   .hide-narrow {
@@ -1076,7 +1117,7 @@ input[type='range']::-moz-range-thumb {
 /* While the lab is up on a wide screen, the narrative narrows to the left column. */
 @media (min-width: 768px) {
   .chapter-4 .narrative {
-    max-width: min(var(--measure), calc(50vw - var(--gutter) - 260px));
+    max-width: min(var(--measure), calc(100vw - var(--lab-w) - var(--nav-w) - var(--gutter) * 2 - 88px));
   }
   .chapter-4 .beat:not(.beat-title) {
     font-size: clamp(1.125rem, 0.9rem + 0.7vw, 1.625rem);

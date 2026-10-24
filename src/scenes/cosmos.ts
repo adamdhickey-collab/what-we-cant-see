@@ -12,7 +12,8 @@ import { lineMaterial, pointsGeometry, pointsMaterial } from '../shaders/points'
 import { galaxyPoints } from './galaxy';
 import { createSky } from './sky';
 import type { Frame, Label, StageScene } from './types';
-import { distanceFor, labelAt, orbit, present } from './util';
+import { fbm3 } from './noise';
+import { compose, distanceFor, labelAt, orbit, present } from './util';
 
 const AU = 149_597_870_700;
 const AU_PER_LY = 63_241.077;
@@ -29,18 +30,34 @@ export function createCosmos(mobile: boolean): StageScene {
   const sun = new THREE.Vector3(-1, 0, 0);
   const r = rng(3);
 
-  // Earth: a sphere of points lit from the Sun's side.
-  const eN = mobile ? 2500 : 5000;
-  const ePos = new Float32Array(eN * 3), eCol = new Float32Array(eN * 3), eSize = new Float32Array(eN);
-  const ivory = rgb('ivory'), slate = rgb('slate'), teal = rgb('teal');
-  for (let i = 0; i < eN; i++) {
+  // Earth: continents from noise, lit from the Sun's side with a soft
+  // terminator, and a thin limb of atmosphere. Oceans are sparse and dim, so
+  // land reads by density as much as by brightness.
+  const eN = mobile ? 7000 : 16000;
+  const limbN = mobile ? 1200 : 2600;
+  const ePos = new Float32Array((eN + limbN) * 3), eCol = new Float32Array((eN + limbN) * 3), eSize = new Float32Array(eN + limbN);
+  const ivory = rgb('ivory'), slate = rgb('slate');
+  for (let i = 0; i < eN + limbN; i++) {
     const u = r.next() * 2 - 1, th = r.next() * Math.PI * 2, s = Math.sqrt(1 - u * u);
     const n = [s * Math.cos(th), u, s * Math.sin(th)];
+    const lit = smoothstep(-0.12, 0.45, -n[0]);
+    if (i >= eN) {
+      ePos.set(n.map((c) => c * EARTH_R * 1.018), i * 3);
+      eCol.set(ivory.map((v) => v * 0.16 * (0.15 + lit)), i * 3);
+      eSize[i] = 1;
+      continue;
+    }
+    const land = smoothstep(0.5, 0.56, fbm3(n[0] * 1.9 + 4, n[1] * 1.9, n[2] * 1.9 - 2));
+    const ice = smoothstep(0.82, 0.9, Math.abs(n[1]));
+    const surface = Math.max(land, ice);
+    if (surface < 0.5 && r.next() < 0.55) {
+      i--;
+      continue;
+    }
     ePos.set(n.map((c) => c * EARTH_R), i * 3);
-    const lit = Math.max(0, -n[0]);
-    const c = lit > 0.02 ? ivory.map((v, k) => v * (0.15 + 0.75 * lit) + teal[k] * 0.08) : slate.map((v) => v * 0.9);
-    eCol.set(c, i * 3);
-    eSize[i] = 1.1 + r.next() * 0.6;
+    const b = surface > 0.5 ? 0.92 : 0.3;
+    eCol.set(ivory.map((v, k) => (v * b * (0.03 + 0.97 * lit)) + slate[k] * 0.25 * (1 - lit)), i * 3);
+    eSize[i] = surface > 0.5 ? 1.1 : 0.9;
   }
   const earthMat = pointsMaterial();
   earthMat.uniforms.uSize.value = 1.3;
@@ -93,7 +110,7 @@ export function createCosmos(mobile: boolean): StageScene {
     g.pos[i + 2] = g.pos[i + 2] * KLY + center.z;
   }
   const galMat = pointsMaterial();
-  galMat.uniforms.uSize.value = 1.25;
+  galMat.uniforms.uSize.value = 1.1;
   const galaxy = new THREE.Points(pointsGeometry(g.pos, g.col, g.size), galMat);
   scene.add(galaxy);
   scene.traverse((o) => (o.frustumCulled = false));
@@ -115,6 +132,7 @@ export function createCosmos(mobile: boolean): StageScene {
       const az = 0.6 + ambient + f.drag.x;
       const el = lerp(lerp(0.1, 0.42, smoothstep(8.5, 12.5, s)), 1.0, smoothstep(17, 20.5, s)) + f.drag.y * 0.4;
       camera.aspect = f.aspect;
+      compose(camera, f);
       orbit(camera, target, D, az, Math.max(-1.4, Math.min(1.45, el)));
 
       const rise = range(f.local, 0.2, 5.5);
@@ -126,7 +144,7 @@ export function createCosmos(mobile: boolean): StageScene {
 
       const earthA = smoothstep(7.0, 7.45, s) * (1 - smoothstep(9.2, 10.2, s));
       earthMat.uniforms.uOpacity.value = w * earthA;
-      earthMat.uniforms.uSize.value = f.mobile ? 1.6 : 1.3;
+      earthMat.uniforms.uSize.value = f.mobile ? 1.4 : 1.2;
       const sysA = smoothstep(9.6, 11.0, s) * (1 - smoothstep(15.2, 16.6, s));
       orbitMat.uniforms.uOpacity.value = w * sysA * 0.32;
       bodyMat.uniforms.uOpacity.value = w * smoothstep(9.0, 10.5, s) * (1 - smoothstep(17.5, 19.0, s));
