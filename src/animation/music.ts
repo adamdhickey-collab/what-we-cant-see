@@ -5,10 +5,12 @@
 // The music does not drive the clock. The story keeps its own seconds, so
 // every line still gets its full reading time, and the music follows: it
 // plays while the ride plays, waits at every stop and pause, and jumps when
-// the viewer scrubs. It is placed so its last note lands just after the
-// closing question; ?from=<story seconds> starts it somewhere else.
+// the viewer scrubs. At a stop, where the ride waits for the viewer to try
+// something, the music keeps going and the story picks up under wherever it
+// has got to. It starts the moment the ride does and, being shorter
+// than the ride, ends partway through; the sound effects, if on, carry the
+// rest. ?from=<story seconds> starts it somewhere else.
 
-import { beatStart, CH, STARTS } from '../content/chapters';
 import { director } from './director';
 
 export const MUSIC = {
@@ -18,8 +20,6 @@ export const MUSIC = {
 };
 /** The recording's length, until the file reports its own. */
 const FALLBACK_LENGTH = 374.9;
-/** Story time at which the last note should fall: a few seconds into the closing question. */
-const LAND = STARTS[CH.return] + beatStart('return', 'last') + 5;
 /** How far the music may drift from the story before it is moved back in step. */
 const DRIFT = 0.4;
 
@@ -27,16 +27,27 @@ class Music {
   private audio: HTMLAudioElement | null = null;
   private length = FALLBACK_LENGTH;
   private from: number | null = null;
+  /** Story time at which the music's first note falls; moves on by however long each stop takes. */
+  private anchor = 0;
+  private began = 0;
+  private holding = false;
   private playing = false;
 
   constructor() {
     const from = new URLSearchParams(location.search).get('from');
     this.from = from === null ? null : +from;
+    this.anchor = this.from ?? 0;
     director.subscribe(this.sync);
   }
 
   private offset() {
-    return this.from ?? LAND - this.length;
+    return this.anchor;
+  }
+
+  /** Whether the music is playing at a moment of the story, so other sound can step aside. */
+  covers(t: number) {
+    const at = t - this.offset();
+    return director.get().music && at >= 0 && at < this.length;
   }
 
   /** Start loading the recording, if the viewer wants music. Safe to call often. */
@@ -76,6 +87,22 @@ class Music {
     const a = this.audio;
     if (!a) return;
     const s = director.get();
+    // A new ride, or a replay, starts the music from its own beginning again.
+    if (s.beganAt !== this.began) {
+      this.began = s.beganAt;
+      this.anchor = this.from ?? 0;
+    }
+    // Through a stop the music plays on; afterwards the story continues under it.
+    if (s.waiting && this.playing && s.music) {
+      this.holding = true;
+      return;
+    }
+    if (this.holding) {
+      this.holding = false;
+      this.anchor = s.t - a.currentTime;
+    }
+    // Scrubbed back before where the music now starts: line it up with the story again.
+    if (this.from === null && s.t < this.anchor) this.anchor = 0;
     const at = s.t - this.offset();
     const inside = at >= 0 && at < this.length;
     const should = s.music && s.playing && inside;

@@ -33,7 +33,7 @@ npm run preview    # serve the build
 `?kiosk` plays from the first frame, carries on by itself at each stop, and
 loops after a ten-second rest, for a wall display. `?music` turns the music
 on (a wall display will also need the browser's autoplay allowed), and
-`?from=<seconds>` moves where in the story it begins.
+`?from=<seconds>` starts it later in the story.
 
 `npm run build` also runs `scripts/check-script.mjs`, which fails on a line
 over 18 words or a source missing from the ledger.
@@ -90,8 +90,7 @@ scripts/
 - A time instrument, a fingertip, bacteria, a spectrum bar, a composition
   bar, a hidden-systems meter and an end-of-ride souvenir card.
 - Music, off until chosen: Max Richter's "On the Nature of Daylight",
-  served with the site, following the ride's clock and landing its last note
-  on the closing question. Synthesized sound effects and a
+  served with the site, starting with the ride and following its clock. Synthesized sound effects and a
   read-aloud voice are options too.
 - Every claim tagged measured, inferred, illustrative or open question,
   behind an evidence option, with More on each line, side facts, a Sources

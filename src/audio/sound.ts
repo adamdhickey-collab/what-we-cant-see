@@ -6,6 +6,7 @@
 // the device's own speech voice.
 
 import { director, type DirectorState } from '../animation/director';
+import { music } from '../animation/music';
 import { beatIndexAt, beatStart, CH, chapterIndexAt, CHAPTERS, STARTS, type SceneId } from '../content/chapters';
 
 type Layer = 'sea' | 'space' | 'lab' | 'inner' | 'room';
@@ -131,7 +132,8 @@ class Sound {
   private mix() {
     const ctx = this.ctx!;
     const s = director.get();
-    const on = s.sound && s.started && !s.music;
+    // Quiet while the music plays; back for the stretch after it ends.
+    const on = s.sound && s.started && !music.covers(s.t);
     if (on !== this.on) {
       this.on = on;
       this.master.gain.cancelScheduledValues(ctx.currentTime);

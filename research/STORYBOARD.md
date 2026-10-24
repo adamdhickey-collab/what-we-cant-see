@@ -71,10 +71,10 @@ one instrument you carry everywhere."
   question, to save as an image or share.
 - **Music**, off until chosen on the intro or in Options: "On the Nature of
   Daylight" follows the story's own clock, so lines keep their reading time.
-  It waits at stops and pauses, follows a scrub, and is placed to come in
-  with the galaxy (about 2:18) and end just after the closing question.
+  It starts the moment the ride does, waits at stops and pauses, follows a
+  scrub, and, being 6:15 against a longer ride, ends during *Too small*.
 - **Options**: music, sound effects (synthesized; quiet while the music
-  plays), the device's voice reading each line, and the evidence tags.
+  plays, back for the stretch after it), the device's voice reading each line, and the evidence tags.
 
 ## Transitions
 
