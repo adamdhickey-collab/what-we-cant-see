@@ -1,9 +1,24 @@
 import * as THREE from 'three';
 import { lerp, range, smoothstep } from '../animation/ease';
+import { FIGURE } from '../shaders/figure';
 import { shoreFragment, shoreVertex } from '../shaders/shore';
 import type { Frame, Label, StageScene } from './types';
 
+// The traced figure, filled once onto a canvas at a few times its traced size
+// so it stays clean when sampled down to a few dozen pixels.
+function figureTexture(): THREE.CanvasTexture {
+  const scale = 3;
+  const canvas = document.createElement('canvas');
+  canvas.width = FIGURE.width * scale;
+  canvas.height = FIGURE.height * scale;
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(scale, scale);
+  ctx.fill(new Path2D(FIGURE.path), 'evenodd');
+  return new THREE.CanvasTexture(canvas);
+}
+
 export function createShore(): StageScene {
+  const figure = figureTexture();
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const uniforms = {
@@ -15,6 +30,7 @@ export function createShore(): StageScene {
     uAndromeda: { value: 0 },
     uMotion: { value: 1 },
     uReveal: { value: 0 },
+    uFigure: { value: figure },
   };
   const material = new THREE.ShaderMaterial({
     uniforms,
@@ -62,6 +78,7 @@ export function createShore(): StageScene {
     dispose() {
       material.dispose();
       mesh.geometry.dispose();
+      figure.dispose();
     },
   };
 }

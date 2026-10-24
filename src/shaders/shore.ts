@@ -20,6 +20,7 @@ export const shoreFragment = /* glsl */ `
   ${PALETTE_GLSL}
   uniform vec2 uRes;
   uniform float uTime, uOpacity, uDusk, uLift, uAndromeda, uMotion, uReveal;
+  uniform sampler2D uFigure;
   varying vec2 vUv;
 
   const float H = 0.42;
@@ -31,12 +32,6 @@ export const shoreFragment = /* glsl */ `
   }
   float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
   float smin(float a, float b, float k) { float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) - k * h * (1.0 - h); }
-  // A limb: a capsule whose radius tapers from a to b.
-  float limb(vec2 p, vec2 a, vec2 b, float ra, float rb) {
-    vec2 pa = p - a, ba = b - a;
-    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba * h) - mix(ra, rb, h);
-  }
   float ellipse(vec2 p, vec2 c, vec2 r) { return (length((p - c) / r) - 1.0) * min(r.x, r.y); }
 
   float landY(float x) { return 0.115 + 0.11 * smoothstep(0.3, 1.05, x) + 0.006 * sin(x * 23.0) + 0.016 * (noise(vec2(x * 14.0, 1.0)) - 0.5); }
@@ -49,22 +44,14 @@ export const shoreFragment = /* glsl */ `
     return d + 0.0035 * (fbm(p * 70.0) - 0.5);
   }
 
-  // Someone seated, knees drawn up high, back nearly upright, one forearm
-  // draped over a knee with the hand hanging loose past it, facing the last
-  // of the light. q is in figure units: 1.0 is a standing height.
+  // The person, traced from a reference image and drawn to uFigure (see
+  // figure.ts). q is in figure units: 1.0 is a standing height, the origin
+  // under the hips. FIG_K is figure units per traced pixel.
+  const float FIG_K = 0.00157;
   float person(vec2 q) {
-    float d = ellipse(q, vec2(0.02, 0.045), vec2(0.095, 0.06));                      // hips
-    d = smin(d, limb(q, vec2(0.0, 0.07), vec2(0.04, 0.24), 0.085, 0.09), 0.04);      // lower back
-    d = smin(d, limb(q, vec2(0.04, 0.24), vec2(0.085, 0.31), 0.09, 0.075), 0.04);    // shoulders, a little rounded
-    d = smin(d, limb(q, vec2(0.075, 0.32), vec2(0.07, 0.39), 0.045, 0.04), 0.03);    // neck
-    d = smin(d, ellipse(q, vec2(0.062, 0.45), vec2(0.07, 0.074)), 0.03);             // head, hair full
-    d = smin(d, limb(q, vec2(0.04, 0.04), vec2(0.33, 0.275), 0.07, 0.05), 0.03);     // thigh
-    d = smin(d, limb(q, vec2(0.34, 0.275), vec2(0.44, 0.0), 0.05, 0.032), 0.02);     // shin
-    d = smin(d, limb(q, vec2(0.435, -0.01), vec2(0.52, -0.03), 0.032, 0.022), 0.025); // foot
-    d = smin(d, limb(q, vec2(0.1, 0.3), vec2(0.19, 0.245), 0.045, 0.036), 0.02);     // upper arm
-    d = smin(d, limb(q, vec2(0.19, 0.245), vec2(0.385, 0.325), 0.034, 0.028), 0.02);  // forearm, over the knee
-    d = smin(d, limb(q, vec2(0.4, 0.32), vec2(0.425, 0.245), 0.026, 0.018), 0.015);  // hand, hanging
-    return d + 0.004 * (noise(q * 38.0) - 0.5);                                      // cloth, not skin
+    vec2 ip = vec2(q.x / FIG_K + 45.0, 332.0 - q.y / FIG_K);
+    vec2 fuv = vec2(ip.x / 371.0, 1.0 - ip.y / 361.0);
+    return texture2D(uFigure, fuv).a;
   }
 
   vec3 skyColor(float h, vec2 p, vec2 sun) {
@@ -194,16 +181,9 @@ export const shoreFragment = /* glsl */ `
     float stone = 1.0 - smoothstep(-px1, px1, dr);
     float s = 0.15;
     vec2 fq = (p - seat) / s;
-    float dp = 1e3;
-    float rim = 0.0;
-    if (abs(fq.x - 0.15) < 0.5 && fq.y > -0.2 && fq.y < 0.8) {
-      dp = person(fq) * s;
-      vec2 e = vec2(0.004, 0.0);
-      vec2 n = normalize(vec2(person(fq + e.xy) - person(fq - e.xy), person(fq + e.yx) - person(fq - e.yx)) + 1e-6);
-      vec2 toSun = normalize(sun - p);
-      rim = smoothstep(-3.0 * px1, -0.6 * px1, dp) * (1.0 - smoothstep(-0.6 * px1, px1, dp)) * smoothstep(-0.1, 0.8, dot(n, toSun));
-    }
-    float fig = 1.0 - smoothstep(-px1, px1, dp);
+    float fig = person(fq);
+    // Lit where the figure ends a pixel or two toward the sun.
+    float rim = fig * (1.0 - person(fq + normalize(sun - p) * 2.0 * px1 / s));
     vec3 ground = INK * 0.55 + COPPER * 0.04 * fbm(p * 40.0);
     vec3 stoneCol = INK * 0.62 + mix(SLATE, COPPER, 0.25) * 0.08 * fbm(p * 90.0 + 3.0);
     vec3 body = INK * 0.42;
